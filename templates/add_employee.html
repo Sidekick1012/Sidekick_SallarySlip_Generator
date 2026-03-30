@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if edit else 'Add' }} Employee — Sidekick Payroll{% endblock %}
+{% block page_title %}{{ 'Edit' if edit else 'Add' }} Employee{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-heading">{{ 'Edit Employee' if edit else 'Add New Employee' }}</div>
+    <div class="page-sub">{{ emp.name if edit else 'Fill in employee details below' }}</div>
+  </div>
+  <a href="{{ url_for('employees') }}" class="btn-sk-outline">
+    <i class="bi bi-arrow-left"></i> Back
+  </a>
+</div>
+
+<form method="POST">
+  <div class="row g-4">
+
+    <!-- Personal Info -->
+    <div class="col-lg-8">
+      <div class="sk-card">
+        <div class="sk-card-header">
+          <div class="sk-card-title"><i class="bi bi-person-fill" style="color:var(--accent);"></i> Personal Information</div>
+        </div>
+        <div class="sk-card-body">
+          <div class="section-divider">Basic Details</div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Full Name *</label>
+              <input type="text" name="name" class="form-control" required
+                     value="{{ emp.name if emp else '' }}" placeholder="Muhammad Ali">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Employee ID *</label>
+              <input type="text" name="employee_id" class="form-control" required
+                     value="{{ emp.employee_id if emp else '' }}" 
+                     placeholder="SK-001" {{ 'readonly' if edit else '' }}>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Designation *</label>
+              <input type="text" name="designation" class="form-control" required
+                     value="{{ emp.designation if emp else '' }}" placeholder="Software Engineer">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Department *</label>
+              <select name="department" class="form-select" required>
+                <option value="">Select Department</option>
+                {% for dept in ['Technology', 'HR', 'Finance', 'Marketing', 'Operations', 'Sales', 'Design', 'Management'] %}
+                  <option value="{{ dept }}" {{ 'selected' if emp and emp.department == dept else '' }}>{{ dept }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Joining Date *</label>
+              <input type="date" name="joining_date" class="form-control" required
+                     value="{{ emp.joining_date if emp else '' }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Bank Account Number</label>
+              <input type="text" name="bank_account" class="form-control"
+                     value="{{ emp.bank_account if emp else '' }}" placeholder="PK36SCBL0000001123456702">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Email Address <small style="color:var(--muted);">(salary slip bhejna ke liye)</small></label>
+              <input type="email" name="email" class="form-control"
+                     value="{{ emp.email if emp else '' }}" placeholder="employee@gmail.com">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Salary Summary -->
+    <div class="col-lg-4">
+      <div class="sk-card h-100">
+        <div class="sk-card-header">
+          <div class="sk-card-title"><i class="bi bi-calculator" style="color:var(--accent);"></i> Salary Preview</div>
+        </div>
+        <div class="sk-card-body">
+          <div class="salary-summary">
+            <div class="sum-row"><span class="sum-label">Basic</span><span class="sum-value" id="s_basic">0</span></div>
+            <div class="sum-row"><span class="sum-label">House</span><span class="sum-value" id="s_house">0</span></div>
+            <div class="sum-row"><span class="sum-label">Transport</span><span class="sum-value" id="s_transport">0</span></div>
+            <div class="sum-row"><span class="sum-label">Medical</span><span class="sum-value" id="s_medical">0</span></div>
+            <div class="sum-row"><span class="sum-label">Other</span><span class="sum-value" id="s_other">0</span></div>
+            <div class="sum-row mt-2">
+              <span class="sum-label" style="color:white; font-weight:700;">GROSS</span>
+              <span class="sum-value sum-net" id="s_gross">PKR 0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Salary Components -->
+    <div class="col-12">
+      <div class="sk-card">
+        <div class="sk-card-header">
+          <div class="sk-card-title"><i class="bi bi-cash-stack" style="color:var(--accent);"></i> Salary Structure (PKR)</div>
+        </div>
+        <div class="sk-card-body">
+          <div class="section-divider">Earnings</div>
+          <div class="row g-3">
+            <div class="col-md-4 col-sm-6">
+              <label class="form-label">Basic Salary *</label>
+              <input type="number" name="basic_salary" id="basic_salary" class="form-control salary-input" 
+                     required min="0" step="1"
+                     value="{{ emp.basic_salary|int if emp else 0 }}" placeholder="50000">
+            </div>
+            <div class="col-md-4 col-sm-6">
+              <label class="form-label">House Allowance</label>
+              <input type="number" name="house_allowance" id="house_allowance" class="form-control salary-input"
+                     min="0" step="1"
+                     value="{{ emp.house_allowance|int if emp else 0 }}" placeholder="0">
+            </div>
+            <div class="col-md-4 col-sm-6">
+              <label class="form-label">Transport Allowance</label>
+              <input type="number" name="transport_allowance" id="transport_allowance" class="form-control salary-input"
+                     min="0" step="1"
+                     value="{{ emp.transport_allowance|int if emp else 0 }}" placeholder="0">
+            </div>
+            <div class="col-md-4 col-sm-6">
+              <label class="form-label">Medical Allowance</label>
+              <input type="number" name="medical_allowance" id="medical_allowance" class="form-control salary-input"
+                     min="0" step="1"
+                     value="{{ emp.medical_allowance|int if emp else 0 }}" placeholder="0">
+            </div>
+            <div class="col-md-4 col-sm-6">
+              <label class="form-label">Other Allowance</label>
+              <input type="number" name="other_allowance" id="other_allowance" class="form-control salary-input"
+                     min="0" step="1"
+                     value="{{ emp.other_allowance|int if emp else 0 }}" placeholder="0">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div class="col-12 d-flex justify-content-end gap-2">
+      <a href="{{ url_for('employees') }}" class="btn-sk-outline">Cancel</a>
+      <button type="submit" class="btn-sk">
+        <i class="bi bi-{{ 'check-lg' if edit else 'person-plus-fill' }}"></i>
+        {{ 'Update Employee' if edit else 'Add Employee' }}
+      </button>
+    </div>
+  </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function fmt(val) {
+  return 'PKR ' + parseInt(val || 0).toLocaleString();
+}
+
+function updateSummary() {
+  const basic     = parseFloat(document.getElementById('basic_salary').value)     || 0;
+  const house     = parseFloat(document.getElementById('house_allowance').value)   || 0;
+  const transport = parseFloat(document.getElementById('transport_allowance').value)|| 0;
+  const medical   = parseFloat(document.getElementById('medical_allowance').value)  || 0;
+  const other     = parseFloat(document.getElementById('other_allowance').value)    || 0;
+  const gross     = basic + house + transport + medical + other;
+
+  document.getElementById('s_basic').textContent     = fmt(basic);
+  document.getElementById('s_house').textContent     = fmt(house);
+  document.getElementById('s_transport').textContent = fmt(transport);
+  document.getElementById('s_medical').textContent   = fmt(medical);
+  document.getElementById('s_other').textContent     = fmt(other);
+  document.getElementById('s_gross').textContent     = fmt(gross);
+}
+
+document.querySelectorAll('.salary-input').forEach(el => {
+  el.addEventListener('input', updateSummary);
+});
+
+updateSummary();
+</script>
+{% endblock %}

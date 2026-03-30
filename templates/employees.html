@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Employees — Sidekick Payroll{% endblock %}
+{% block page_title %}Employees{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-heading">Employees</div>
+    <div class="page-sub">{{ employees|length }} active employees</div>
+  </div>
+  <a href="{{ url_for('add_employee_route') }}" class="btn-sk">
+    <i class="bi bi-person-plus-fill"></i> Add Employee
+  </a>
+</div>
+
+<div class="sk-card">
+  <div class="sk-card-header">
+    <div class="sk-card-title">
+      <i class="bi bi-people-fill" style="color:var(--accent);"></i>
+      Employee Directory
+    </div>
+    <input type="text" id="searchInput" class="form-control" 
+           placeholder="Search employees..." 
+           style="width:220px; font-size:13px; padding:8px 12px;">
+  </div>
+
+  {% if employees %}
+  <div class="table-responsive">
+    <table class="sk-table" id="empTable">
+      <thead>
+        <tr>
+          <th>Employee</th>
+          <th>ID</th>
+          <th>Department</th>
+          <th>Joining Date</th>
+          <th>Basic Salary</th>
+          <th>Gross Salary</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for emp in employees %}
+        <tr>
+          <td>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div class="emp-avatar" style="margin:0;">{{ emp.name[0] }}</div>
+              <div>
+                <strong>{{ emp.name }}</strong><br>
+                <small style="color:var(--muted);">{{ emp.designation }}</small>
+              </div>
+            </div>
+          </td>
+          <td><span style="font-family:monospace; font-size:13px;">{{ emp.employee_id }}</span></td>
+          <td><span class="badge-dept">{{ emp.department }}</span></td>
+          <td>{{ emp.joining_date }}</td>
+          <td>PKR {{ "{:,.0f}".format(emp.basic_salary) }}</td>
+          <td>
+            <strong style="color:var(--accent);">
+              PKR {{ "{:,.0f}".format(
+                emp.basic_salary + emp.house_allowance + emp.transport_allowance + 
+                emp.medical_allowance + emp.other_allowance
+              ) }}
+            </strong>
+          </td>
+          <td>
+            <div style="display:flex; gap:6px;">
+              <a href="{{ url_for('edit_employee', emp_id=emp.id) }}" class="btn-sm-icon btn-edit" title="Edit">
+                <i class="bi bi-pencil-fill"></i>
+              </a>
+              <button onclick="confirmDelete({{ emp.id }}, '{{ emp.name }}')"
+                      class="btn-sm-icon btn-delete" title="Remove">
+                <i class="bi bi-trash-fill"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="sk-card-body text-center py-5">
+    <i class="bi bi-person-x" style="font-size:48px; color:var(--muted);"></i>
+    <p style="color:var(--muted); margin-top:12px;">No employees added yet.</p>
+    <a href="{{ url_for('add_employee_route') }}" class="btn-sk mt-2">
+      <i class="bi bi-person-plus-fill"></i> Add First Employee
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Delete confirm form (hidden) -->
+<form id="deleteForm" method="POST" style="display:none;">
+</form>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Search filter
+document.getElementById('searchInput').addEventListener('input', function() {
+  const val = this.value.toLowerCase();
+  document.querySelectorAll('#empTable tbody tr').forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(val) ? '' : 'none';
+  });
+});
+
+function confirmDelete(empId, name) {
+  if (confirm(`Remove ${name} from the system? Their data will be archived.`)) {
+    const form = document.getElementById('deleteForm');
+    form.action = `/employees/${empId}/delete`;
+    form.submit();
+  }
+}
+</script>
+{% endblock %}

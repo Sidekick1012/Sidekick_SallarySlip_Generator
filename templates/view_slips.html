@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}View Slips — Sidekick Payroll{% endblock %}
+{% block page_title %}Salary Slips Archive{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-heading">Salary Slips</div>
+    <div class="page-sub">{{ slips|length }} slips found</div>
+  </div>
+  <a href="{{ url_for('generate') }}" class="btn-sk">
+    <i class="bi bi-plus-lg"></i> New Slip
+  </a>
+</div>
+
+<!-- Filter -->
+<div class="sk-card mb-4">
+  <div class="sk-card-body" style="padding:16px 24px;">
+    <form method="GET" class="d-flex align-items-center gap-3 flex-wrap">
+      <label style="font-size:13px; font-weight:600; color:var(--muted);">Filter:</label>
+      <select name="month" class="form-select" style="width:150px; font-size:14px;">
+        <option value="">All Months</option>
+        {% for i in range(1, 13) %}
+          <option value="{{ i }}" {{ 'selected' if i == current_month else '' }}>{{ months[i] }}</option>
+        {% endfor %}
+      </select>
+      <select name="year" class="form-select" style="width:110px; font-size:14px;">
+        <option value="">All Years</option>
+        {% for y in years %}
+          <option value="{{ y }}" {{ 'selected' if y == current_year else '' }}>{{ y }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn-sk" style="padding:9px 18px;">
+        <i class="bi bi-funnel-fill"></i> Filter
+      </button>
+      <a href="{{ url_for('view_slips') }}" class="btn-sk-outline" style="padding:9px 18px;">
+        Clear
+      </a>
+    </form>
+  </div>
+</div>
+
+<div class="sk-card">
+  {% if slips %}
+  <div class="table-responsive">
+    <table class="sk-table">
+      <thead>
+        <tr>
+          <th>Employee</th>
+          <th>Period</th>
+          <th>Gross Salary</th>
+          <th>Deductions</th>
+          <th>Net Salary</th>
+          <th>Generated</th>
+          <th>Download</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for slip in slips %}
+        <tr>
+          <td>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div class="emp-avatar" style="margin:0;">{{ slip.employees.name[0] }}</div>
+              <div>
+                <strong>{{ slip.employees.name }}</strong><br>
+                <small style="color:var(--muted);">{{ slip.employees.employee_id }}</small>
+              </div>
+            </div>
+          </td>
+          <td>
+            <strong>{{ months[slip.month] }}</strong><br>
+            <small style="color:var(--muted);">{{ slip.year }}</small>
+          </td>
+          <td>PKR {{ "{:,.0f}".format(slip.gross_salary) }}</td>
+          <td>
+            <span style="color:var(--danger);">
+              PKR {{ "{:,.0f}".format(slip.total_deductions) }}
+            </span>
+          </td>
+          <td>
+            <strong style="color:var(--accent); font-size:15px;">
+              PKR {{ "{:,.0f}".format(slip.net_salary) }}
+            </strong>
+          </td>
+          <td>
+            <small style="color:var(--muted);">
+              {{ slip.generated_at[:10] if slip.generated_at else '-' }}
+            </small>
+          </td>
+          <td>
+            <div style="display:flex; gap:6px;">
+              <a href="{{ url_for('download_slip', slip_id=slip.id) }}"
+                 class="btn-sm-icon btn-dl" title="Download PDF">
+                <i class="bi bi-file-earmark-pdf-fill"></i>
+              </a>
+              <form method="POST" action="{{ url_for('send_slip_email', slip_id=slip.id) }}"
+                    style="display:inline;"
+                    onsubmit="return confirm('{{ slip.employees.name }} ko email bhejein?')">
+                <button type="submit" class="btn-sm-icon"
+                        style="background:rgba(0,194,203,0.1); color:var(--accent);"
+                        title="Email Bhejo {% if slip.employees.email %}({{ slip.employees.email }}){% else %}(email nahi hai){% endif %}">
+                  <i class="bi bi-envelope-fill"></i>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="sk-card-body text-center py-5">
+    <i class="bi bi-file-earmark-x" style="font-size:48px; color:var(--muted);"></i>
+    <p style="color:var(--muted); margin-top:12px;">No salary slips found for this period.</p>
+    <a href="{{ url_for('generate') }}" class="btn-sk mt-2">
+      <i class="bi bi-plus-lg"></i> Generate Slip
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

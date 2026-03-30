@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Manage Users — Sidekick Payroll{% endblock %}
+{% block page_title %}Manage Users{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-heading">User Management</div>
+    <div class="page-sub">{{ users|length }} registered users</div>
+  </div>
+  <a href="{{ url_for('add_user') }}" class="btn-sk">
+    <i class="bi bi-person-plus-fill"></i> Add User
+  </a>
+</div>
+
+<!-- Role Info Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(0,194,203,0.12); color:var(--accent);">
+        <i class="bi bi-shield-fill-check"></i>
+      </div>
+      <div>
+        <div class="stat-label">Admin</div>
+        <div style="font-size:12px; color:var(--muted); margin-top:2px;">Full access — users, employees, slips</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(27,102,86,0.12); color:#1b6656;">
+        <i class="bi bi-person-badge-fill"></i>
+      </div>
+      <div>
+        <div class="stat-label">HR</div>
+        <div style="font-size:12px; color:var(--muted); margin-top:2px;">Employees manage + slips generate</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(123,176,107,0.12); color:#7bb06b;">
+        <i class="bi bi-eye-fill"></i>
+      </div>
+      <div>
+        <div class="stat-label">Viewer</div>
+        <div style="font-size:12px; color:var(--muted); margin-top:2px;">Sirf dekh sakta hai, edit nahi</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sk-card">
+  <div class="sk-card-header">
+    <div class="sk-card-title">
+      <i class="bi bi-people-fill" style="color:var(--accent);"></i>
+      All Users
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="sk-table">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Role</th>
+          <th>Joined</th>
+          <th>Change Role</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+        <tr>
+          <td>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div class="emp-avatar" style="margin:0;
+                {% if user.role == 'admin' %}background: linear-gradient(135deg, #0a1f2b, #00c2cb);{% elif user.role == 'hr' %}background: linear-gradient(135deg, #1b6656, #7bb06b);{% else %}background: linear-gradient(135deg, #1d4354, #7bb06b);{% endif %}">
+                {{ user.email[0]|upper }}
+              </div>
+              <div>
+                <strong>{{ user.email }}</strong>
+                {% if user.id == current_user.id %}
+                  <span style="font-size:11px; color:var(--accent); margin-left:6px;">(You)</span>
+                {% endif %}
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="role-badge role-{{ user.role }}">
+              {% if user.role == 'admin' %}🛡 Admin
+              {% elif user.role == 'hr' %}👤 HR
+              {% else %}👁 Viewer{% endif %}
+            </span>
+          </td>
+          <td>
+            <small style="color:var(--muted);">
+              {{ user.created_at[:10] if user.created_at else '-' }}
+            </small>
+          </td>
+          <td>
+            {% if user.id != current_user.id %}
+            <form method="POST" action="{{ url_for('change_role', user_id=user.id) }}"
+                  style="display:flex; gap:6px; align-items:center;">
+              <select name="role" class="form-select" style="width:120px; font-size:13px; padding:6px 10px;">
+                <option value="admin"  {{ 'selected' if user.role == 'admin' }}>Admin</option>
+                <option value="hr"     {{ 'selected' if user.role == 'hr' }}>HR</option>
+                <option value="viewer" {{ 'selected' if user.role == 'viewer' }}>Viewer</option>
+              </select>
+              <button type="submit" class="btn-sm-icon"
+                      style="background:rgba(27,102,86,0.12); color:#1b6656;"
+                      title="Role Update Karo">
+                <i class="bi bi-check-lg"></i>
+              </button>
+            </form>
+            {% else %}
+            <span style="font-size:12px; color:var(--muted);">—</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if user.id != current_user.id %}
+            <form method="POST" action="{{ url_for('delete_user', user_id=user.id) }}"
+                  onsubmit="return confirm('{{ user.email }} ko delete karna chahte ho?')">
+              <button type="submit" class="btn-sm-icon btn-delete" title="Delete User">
+                <i class="bi bi-trash-fill"></i>
+              </button>
+            </form>
+            {% else %}
+            <span style="font-size:12px; color:var(--muted);">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
