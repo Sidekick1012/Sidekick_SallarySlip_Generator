@@ -108,35 +108,43 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
     elements.append(header_table)
     elements.append(Spacer(1, 8*mm))
 
-    # ── Employee Basics (Aligned with Deductions table) ──────────
+    # ── Employee Information Section (With Green Header) ─────────
+    emp_header_style = ParagraphStyle("eh", fontSize=10, fontName="Helvetica-Bold", textColor=WHITE, alignment=TA_CENTER)
+    emp_header = Table([[Paragraph("EMPLOYEE INFORMATION", emp_header_style)]], colWidths=[90*mm])
+    emp_header.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), COMPANY_GREEN),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("TOPPADDING", (0, 0), (-1, -1), 1*mm),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 1*mm),
+    ]))
+    
+    # Wrap emp_header in a table to align it with Deductions header
+    elements.append(Table([["", emp_header]], colWidths=[95*mm, 90*mm]))
+
     emp_details_data = [
         ["", "Name", employee_data.get("name", "-")],
         ["", "Designation", employee_data.get("designation", "-")],
+        ["", "", ""], # Spacer row
         ["", "Employee ID", employee_data.get("employee_id", "-")],
+        ["", "Pay Month", f"{MONTHS[month]} {year}"],
     ]
     
-    # Left col is spacer to push the rest to the right (aligned with Deductions header at 95mm)
     emp_details_table = Table(emp_details_data, colWidths=[95*mm, 35*mm, 50*mm])
     emp_details_table.setStyle(TableStyle([
-        ("FONTNAME", (1, 0), (2, -1), "Helvetica"),
-        ("FONTSIZE", (0, 0), (-1, -1), 10), # Set font size 10
-        ("TEXTCOLOR", (1, 0), (1, -1), COMPANY_GREEN), # Label colors green as per "upr jo green"
+        ("FONTNAME", (1, 0), (2, -1), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, -1), 9),
         ("ALIGN", (1, 0), (1, -1), "LEFT"),
         ("ALIGN", (2, 0), (2, -1), "LEFT"),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 1.5*mm),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 0.5*mm),
     ]))
     elements.append(emp_details_table)
     elements.append(Spacer(1, 6*mm))
 
     # ── Earnings & Deductions Headers ────────────────────────────
-    # Green headers for Salary and Deductions
-    
     header_style = ParagraphStyle("h", fontSize=10, fontName="Helvetica-Bold", textColor=WHITE)
-    
     headers_table = Table([
         [Paragraph("Salary", header_style), Paragraph("Amount", header_style), "", Paragraph("Deductions", header_style), Paragraph("Amount", header_style)]
     ], colWidths=[65*mm, 25*mm, 5*mm, 65*mm, 25*mm])
-    
     headers_table.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (1, 0), COMPANY_GREEN),
         ("BACKGROUND", (3, 0), (4, 0), COMPANY_GREEN),
@@ -148,9 +156,7 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
     ]))
     elements.append(headers_table)
 
-    # ── Main Content Table (Earnings on Left, Deductions/Month on Right) ──
-    
-    # Salary Items (Left)
+    # ── Main Content Table ──────────────────────────────────────
     salary_items = [
         ("Basic Pay", slip_data.get("basic_salary", 0)),
         ("Medical", slip_data.get("medical_allowance", 0)),
@@ -165,16 +171,16 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
         ("Overtime", slip_data.get("overtime", 0)),
     ]
     
-    # Deductions/Metadata (Right)
-    deductions_meta = [
-        ("Pay Month", f"{MONTHS[month]} {year}"),
-        ("", ""), # Empty row
-        ("", ""),
-        ("", ""),
+    # Empty right side for deductions
+    deductions_rows = [
         ("Income Tax", slip_data.get("income_tax", 0)),
         ("EOBI", slip_data.get("eobi_deduction", 0)),
         ("Unpaid Leaves", slip_data.get("unpaid_leaves", 0)),
         ("Other deductions (if any)", slip_data.get("other_deduction", 0)),
+        ("", ""),
+        ("", ""),
+        ("", ""),
+        ("", ""),
         ("", ""),
         ("", ""),
         ("", ""),
@@ -186,7 +192,7 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
     content_data = []
     for i in range(len(salary_items)):
         s_label, s_val = salary_items[i]
-        d_label, d_val = deductions_meta[i]
+        d_label, d_val = deductions_rows[i]
         
         row = [
             Paragraph(s_label, row_style),
@@ -200,9 +206,8 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
     content_table = Table(content_data, colWidths=[65*mm, 25*mm, 5*mm, 65*mm, 25*mm])
     content_table.setStyle(TableStyle([
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("LINEBELOW", (0, 0), (1, -1), 0.5, LINE_GRAY), # Only underline earnings
-        ("LINEBELOW", (3, 4), (4, 7), 0.5, LINE_GRAY), # Underline specific deductions
-        ("LINEBELOW", (3, 8), (4, 10), 0.5, LINE_GRAY), # Lines for more deductions
+        ("LINEBELOW", (0, 0), (1, -1), 0.5, LINE_GRAY), # Underline earnings
+        ("LINEBELOW", (3, 0), (4, 3), 0.5, LINE_GRAY), # Underline deductions (rows 0-3)
         ("LEFTPADDING", (0, 0), (-1, -1), 3*mm),
         ("RIGHTPADDING", (0, 0), (-1, -1), 3*mm),
     ]))
@@ -210,10 +215,8 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
     elements.append(Spacer(1, 2*mm))
 
     # ── Summary Totals ──────────────────────────────────────────
-    
     summary_data = [
         [
-            "", "", "", 
             Paragraph(f"<b>Gross Salary</b>", row_style),
             Paragraph(f"<b>{slip_data.get('gross_salary', 0):,.0f}</b>", amt_style),
             "",
@@ -221,12 +224,13 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
             Paragraph(f"<b>{slip_data.get('total_deductions', 0):,.0f}</b>", amt_style),
         ]
     ]
-    summary_table = Table(summary_data, colWidths=[10*mm, 20*mm, 25*mm, 35*mm, 25*mm, 5*mm, 35*mm, 25*mm])
+    summary_table = Table(summary_data, colWidths=[65*mm, 25*mm, 5*mm, 65*mm, 25*mm])
     summary_table.setStyle(TableStyle([
-        ("LINEBELOW", (3, 0), (4, 0), 1, TEXT_BLACK),
-        ("LINEBELOW", (6, 0), (7, 0), 1, TEXT_BLACK),
+        ("LINEABOVE", (0, 0), (1, 0), 1, TEXT_BLACK),
+        ("LINEABOVE", (3, 0), (4, 0), 1, TEXT_BLACK),
         ("LEFTPADDING", (0, 0), (-1, -1), 3*mm),
         ("RIGHTPADDING", (0, 0), (-1, -1), 3*mm),
+        ("TOPPADDING", (0, 0), (-1, -1), 2*mm),
     ]))
     elements.append(summary_table)
     elements.append(Spacer(1, 8*mm))
