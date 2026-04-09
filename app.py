@@ -481,30 +481,30 @@ def send_slip_email(slip_id):
         year       = slip["year"]
 
         msg = Message(
-            subject=f"Salary Slip — {month_name} {year} | Sidekick",
+            subject=f"Salary Slip — {month_name} {year} | DACI Engineering",
             recipients=[emp_email]
         )
         msg.html = f"""
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="background: #0a1f2b; padding: 24px; border-radius: 12px 12px 0 0; text-align: center;">
-                <h1 style="color: #00c2cb; margin: 0; font-size: 24px; letter-spacing: 3px;">SIDEKICK</h1>
-                <p style="color: rgba(255,255,255,0.6); margin: 4px 0 0; font-size: 13px;">Payroll Management System</p>
+            <div style="background: #333333; padding: 24px; border-radius: 12px 12px 0 0; text-align: center;">
+                <h1 style="color: #8dc63f; margin: 0; font-size: 24px; letter-spacing: 3px;">DACI</h1>
+                <p style="color: rgba(255,255,255,0.6); margin: 4px 0 0; font-size: 13px;">Engineering Services (Pvt) Ltd</p>
             </div>
             <div style="background: #f8fafc; padding: 32px; border-radius: 0 0 12px 12px; border: 1px solid #dde6ed;">
                 <p style="font-size: 16px; color: #1a2a35;">Dear <strong>{emp_data['name']}</strong>,</p>
                 <p style="color: #4a6070; line-height: 1.6;">
                     Please find attached your salary slip for <strong>{month_name} {year}</strong>.
                 </p>
-                <div style="background: #0a1f2b; border-radius: 10px; padding: 16px 20px; margin: 20px 0; display: inline-block;">
+                <div style="background: #333333; border-radius: 10px; padding: 16px 20px; margin: 20px 0; display: inline-block;">
                     <span style="color: rgba(255,255,255,0.6); font-size: 13px;">Net Salary</span><br>
-                    <span style="color: #00c2cb; font-size: 22px; font-weight: 800;">PKR {"{:,.0f}".format(slip['net_salary'])}</span>
+                    <span style="color: #8dc63f; font-size: 22px; font-weight: 800;">PKR {"{:,.0f}".format(slip['net_salary'])}</span>
                 </div>
                 <p style="color: #4a6070; font-size: 13px; line-height: 1.6;">
                     If you have any questions regarding your salary, please contact HR.
                 </p>
                 <hr style="border: none; border-top: 1px solid #dde6ed; margin: 24px 0;">
                 <p style="color: #9aacb8; font-size: 12px; text-align: center; margin: 0;">
-                    This is an automated email from Sidekick Payroll System.<br>
+                    This is an automated email from DACI Payroll System.<br>
                     Please do not reply to this email.
                 </p>
             </div>
