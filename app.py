@@ -286,38 +286,51 @@ def generate():
 
         emp = get_employee_by_id(emp_id)
 
-        basic       = float(request.form.get("basic_salary",        emp["basic_salary"]))
-        house       = float(request.form.get("house_allowance",     emp["house_allowance"]))
-        transport   = float(request.form.get("transport_allowance", emp["transport_allowance"]))
-        medical     = float(request.form.get("medical_allowance",   emp["medical_allowance"]))
-        other_allow = float(request.form.get("other_allowance",     emp["other_allowance"]))
-        overtime    = float(request.form.get("overtime",            0))
-        med_ex      = float(request.form.get("medical_exemption",   0))
+        basic        = float(request.form.get("basic_salary",              emp["basic_salary"]))
+        medical      = float(request.form.get("medical_allowance",        emp["medical_allowance"]))
+        dearness     = float(request.form.get("dearness_allowance",       0))
+        house        = float(request.form.get("house_allowance",          emp["house_allowance"]))
+        transport    = float(request.form.get("transport_allowance",      emp["transport_allowance"]))
+        cola         = float(request.form.get("cola_allowance",           0))
+        utility      = float(request.form.get("utility_allowance",        0))
+        prev_month   = float(request.form.get("previous_month_allowance", 0))
+        bonus        = float(request.form.get("bonus_allowance",          0))
+        leave_enc    = float(request.form.get("leave_encashment",         0))
+        overtime     = float(request.form.get("overtime",                 0))
+        other_allow  = float(request.form.get("other_allowance",          emp["other_allowance"]))
 
-        gross = basic + house + transport + medical + other_allow + overtime
+        gross = basic + medical + dearness + house + transport + cola + utility + prev_month + bonus + leave_enc + overtime + other_allow
 
-        eobi        = float(request.form.get("eobi_deduction", 0))
-        tax         = float(request.form.get("income_tax", 0))
-        other_ded   = float(request.form.get("other_deduction", 0))
-        total_ded   = eobi + tax + other_ded
-        net         = gross - total_ded
+        tax          = float(request.form.get("income_tax",               0))
+        eobi         = float(request.form.get("eobi_deduction",           0))
+        unpaid       = float(request.form.get("unpaid_leaves",            0))
+        other_ded    = float(request.form.get("other_deduction",          0))
+        
+        total_ded = tax + eobi + unpaid + other_ded
+        net       = gross - total_ded
 
         slip_data = {
             "employee_id":         emp_id,
             "month":               month,
             "year":                year,
-            "basic_salary":        basic,
-            "house_allowance":     house,
-            "transport_allowance": transport,
-            "medical_allowance":   medical,
-            "other_allowance":     other_allow,
-            "overtime":            overtime,
-            "medical_exemption":   med_ex,
-            "gross_salary":        gross,
-            "eobi_deduction":      eobi,
-            "income_tax":          tax,
-            "other_deduction":     other_ded,
-            "total_deductions":    total_ded,
+            "basic_salary":             basic,
+            "medical_allowance":        medical,
+            "dearness_allowance":       dearness,
+            "house_allowance":          house,
+            "transport_allowance":      transport,
+            "cola_allowance":           cola,
+            "utility_allowance":        utility,
+            "previous_month_allowance": prev_month,
+            "bonus_allowance":          bonus,
+            "leave_encashment":         leave_enc,
+            "overtime":                 overtime,
+            "other_allowance":          other_allow,
+            "gross_salary":             gross,
+            "income_tax":               tax,
+            "eobi_deduction":           eobi,
+            "unpaid_leaves":            unpaid,
+            "other_deduction":          other_ded,
+            "total_deductions":         total_ded,
             "net_salary":          net,
             "working_days":        working_days,
             "generated_by":        current_user.email,

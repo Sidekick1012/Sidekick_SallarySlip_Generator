@@ -149,19 +149,16 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
     salary_items = [
         ("Basic Pay", slip_data.get("basic_salary", 0)),
         ("Medical", slip_data.get("medical_allowance", 0)),
-        ("Dearness Allowance", 0), # Not in DB, set to 0
+        ("Dearness Allowance", slip_data.get("dearness_allowance", 0)),
         ("Accomodation Allowance", slip_data.get("house_allowance", 0)),
         ("Travel and Conveyance Allowance", slip_data.get("transport_allowance", 0)),
-        ("COLA", 0),
-        ("Utility Allowance", 0),
-        ("Previous Month Allowance", 0),
-        ("Bonus", 0),
-        ("Leave Encashment", 0),
+        ("COLA", slip_data.get("cola_allowance", 0)),
+        ("Utility Allowance", slip_data.get("utility_allowance", 0)),
+        ("Previous Month Allowance", slip_data.get("previous_month_allowance", 0)),
+        ("Bonus", slip_data.get("bonus_allowance", 0)),
+        ("Leave Encashment", slip_data.get("leave_encashment", 0)),
         ("Overtime", slip_data.get("overtime", 0)),
     ]
-    
-    # Combine some existing "other_allowance" into "Dearness Allowance" or similar if needed?
-    # No, let's just use what we have and show 0 for the rest to match the visual template.
     
     # Deductions/Metadata (Right)
     deductions_meta = [
@@ -171,7 +168,7 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
         ("", ""),
         ("Income Tax", slip_data.get("income_tax", 0)),
         ("EOBI", slip_data.get("eobi_deduction", 0)),
-        ("Unpaid Leaves", 0),
+        ("Unpaid Leaves", slip_data.get("unpaid_leaves", 0)),
         ("Other deductions (if any)", slip_data.get("other_deduction", 0)),
         ("", ""),
         ("", ""),

@@ -64,33 +64,53 @@
         </div>
         <div class="sk-card-body">
           <div class="row g-3">
-            <div class="col-md-6">
+            <div class="col-md-4">
               <label class="form-label">Basic Salary</label>
               <input type="number" name="basic_salary" id="f_basic" class="form-control slip-input" min="0" step="1" value="0">
             </div>
-            <div class="col-md-6">
-              <label class="form-label">House Allowance</label>
-              <input type="number" name="house_allowance" id="f_house" class="form-control slip-input" min="0" step="1" value="0">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Transport Allowance</label>
-              <input type="number" name="transport_allowance" id="f_transport" class="form-control slip-input" min="0" step="1" value="0">
-            </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
               <label class="form-label">Medical Allowance</label>
               <input type="number" name="medical_allowance" id="f_medical" class="form-control slip-input" min="0" step="1" value="0">
             </div>
-            <div class="col-md-6">
-              <label class="form-label">Other Allowance</label>
-              <input type="number" name="other_allowance" id="f_other" class="form-control slip-input" min="0" step="1" value="0">
+            <div class="col-md-4">
+              <label class="form-label">Dearness Allowance</label>
+              <input type="number" name="dearness_allowance" id="f_dearness" class="form-control slip-input" min="0" step="1" value="0">
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
+              <label class="form-label">House Allowance</label>
+              <input type="number" name="house_allowance" id="f_house" class="form-control slip-input" min="0" step="1" value="0">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Transport Allowance</label>
+              <input type="number" name="transport_allowance" id="f_transport" class="form-control slip-input" min="0" step="1" value="0">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">COLA</label>
+              <input type="number" name="cola_allowance" id="f_cola" class="form-control slip-input" min="0" step="1" value="0">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Utility Allowance</label>
+              <input type="number" name="utility_allowance" id="f_utility" class="form-control slip-input" min="0" step="1" value="0">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Prev. Month Allowance</label>
+              <input type="number" name="previous_month_allowance" id="f_prev_month" class="form-control slip-input" min="0" step="1" value="0">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Bonus</label>
+              <input type="number" name="bonus_allowance" id="f_bonus" class="form-control slip-input" min="0" step="1" value="0">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Leave Encashment</label>
+              <input type="number" name="leave_encashment" id="f_leave_enc" class="form-control slip-input" min="0" step="1" value="0">
+            </div>
+            <div class="col-md-4">
               <label class="form-label">Overtime</label>
               <input type="number" name="overtime" id="f_overtime" class="form-control slip-input" min="0" step="1" value="0">
             </div>
-            <div class="col-md-6">
-              <label class="form-label">Medical Exemption</label>
-              <input type="number" name="medical_exemption" id="f_medical_ex" class="form-control slip-input" min="0" step="1" value="0">
+            <div class="col-md-4">
+              <label class="form-label">Other Allowance</label>
+              <input type="number" name="other_allowance" id="f_other" class="form-control slip-input" min="0" step="1" value="0">
             </div>
           </div>
         </div>
@@ -103,15 +123,19 @@
         </div>
         <div class="sk-card-body">
           <div class="row g-3">
-            <div class="col-md-4">
-              <label class="form-label">EOBI</label>
-              <input type="number" name="eobi_deduction" id="f_eobi" class="form-control slip-input" min="0" step="1" value="0">
-            </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
               <label class="form-label">Income Tax</label>
               <input type="number" name="income_tax" id="f_tax" class="form-control slip-input" min="0" step="1" value="0">
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
+              <label class="form-label">EOBI</label>
+              <input type="number" name="eobi_deduction" id="f_eobi" class="form-control slip-input" min="0" step="1" value="0">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Unpaid Leaves</label>
+              <input type="number" name="unpaid_leaves" id="f_unpaid" class="form-control slip-input" min="0" step="1" value="0">
+            </div>
+            <div class="col-md-3">
               <label class="form-label">Other Deductions</label>
               <input type="number" name="other_deduction" id="f_other_ded" class="form-control slip-input" min="0" step="1" value="0">
             </div>
@@ -128,21 +152,18 @@
         </div>
         <div class="sk-card-body">
           <div class="salary-summary mb-3">
-            <div class="sum-row"><span class="sum-label">Basic</span><span class="sum-value" id="p_basic">PKR 0</span></div>
-            <div class="sum-row"><span class="sum-label">House</span><span class="sum-value" id="p_house">PKR 0</span></div>
-            <div class="sum-row"><span class="sum-label">Transport</span><span class="sum-value" id="p_transport">PKR 0</span></div>
-            <div class="sum-row"><span class="sum-label">Medical</span><span class="sum-value" id="p_medical">PKR 0</span></div>
-            <div class="sum-row"><span class="sum-label">Other</span><span class="sum-value" id="p_other">PKR 0</span></div>
+            <div class="sum-row"><span class="sum-label">Basic + Medical</span><span class="sum-value" id="p_basic_med">PKR 0</span></div>
+            <div class="sum-row"><span class="sum-label">Other Allowances</span><span class="sum-value" id="p_all_other">PKR 0</span></div>
             <div class="sum-row" style="border-top:1px solid rgba(255,255,255,0.15); margin-top:4px; padding-top:8px;">
-              <span class="sum-label" style="color:white;">Gross</span>
+              <span class="sum-label" style="color:white;">GROSS SALARY</span>
               <span class="sum-value" id="p_gross">PKR 0</span>
             </div>
             <div class="sum-row">
-              <span class="sum-label" style="color:#ff6b6b;">Deductions</span>
+              <span class="sum-label" style="color:#ff6b6b;">TOTAL DEDUCTIONS</span>
               <span class="sum-value" style="color:#ff6b6b;" id="p_ded">PKR 0</span>
             </div>
             <div class="sum-row mt-2">
-              <span class="sum-label" style="color:white; font-weight:800; font-size:15px;">NET PAY</span>
+              <span class="sum-label" style="color:white; font-weight:800; font-size:15px;">NET PAYABLE</span>
               <span class="sum-net" id="p_net">PKR 0</span>
             </div>
           </div>
@@ -163,28 +184,32 @@ function fmt(v) { return 'PKR ' + parseInt(v||0).toLocaleString(); }
 
 function updatePreview() {
   const basic     = parseFloat(document.getElementById('f_basic').value)     || 0;
+  const medical   = parseFloat(document.getElementById('f_medical').value)   || 0;
+  const dearness  = parseFloat(document.getElementById('f_dearness').value)  || 0;
   const house     = parseFloat(document.getElementById('f_house').value)     || 0;
   const transport = parseFloat(document.getElementById('f_transport').value) || 0;
-  const medical   = parseFloat(document.getElementById('f_medical').value)   || 0;
-  const other     = parseFloat(document.getElementById('f_other').value)     || 0;
+  const cola      = parseFloat(document.getElementById('f_cola').value)      || 0;
+  const utility   = parseFloat(document.getElementById('f_utility').value)   || 0;
+  const prev      = parseFloat(document.getElementById('f_prev_month').value)|| 0;
+  const bonus     = parseFloat(document.getElementById('f_bonus').value)     || 0;
+  const leaveEnc  = parseFloat(document.getElementById('f_leave_enc').value) || 0;
   const overtime  = parseFloat(document.getElementById('f_overtime').value)  || 0;
-  const medEx     = parseFloat(document.getElementById('f_medical_ex').value)|| 0;
-  const eobi      = parseFloat(document.getElementById('f_eobi').value)      || 0;
+  const other     = parseFloat(document.getElementById('f_other').value)     || 0;
+  
   const tax       = parseFloat(document.getElementById('f_tax').value)       || 0;
+  const eobi      = parseFloat(document.getElementById('f_eobi').value)      || 0;
+  const unpaid    = parseFloat(document.getElementById('f_unpaid').value)    || 0;
   const otherDed  = parseFloat(document.getElementById('f_other_ded').value) || 0;
 
-  const gross = basic + house + transport + medical + other + overtime;
-  const ded   = eobi + tax + otherDed;
-  const net   = gross - ded;
+  const grossEarnings = basic + medical + dearness + house + transport + cola + utility + prev + bonus + leaveEnc + overtime + other;
+  const totalDeductions = tax + eobi + unpaid + otherDed;
+  const netPay = grossEarnings - totalDeductions;
 
-  document.getElementById('p_basic').textContent     = fmt(basic);
-  document.getElementById('p_house').textContent     = fmt(house);
-  document.getElementById('p_transport').textContent = fmt(transport);
-  document.getElementById('p_medical').textContent   = fmt(medical);
-  document.getElementById('p_other').textContent     = fmt(other);
-  document.getElementById('p_gross').textContent     = fmt(gross);
-  document.getElementById('p_ded').textContent       = fmt(ded);
-  document.getElementById('p_net').textContent       = fmt(net);
+  document.getElementById('p_basic_med').textContent = fmt(basic + medical);
+  document.getElementById('p_all_other').textContent = fmt(grossEarnings - (basic + medical));
+  document.getElementById('p_gross').textContent     = fmt(grossEarnings);
+  document.getElementById('p_ded').textContent       = fmt(totalDeductions);
+  document.getElementById('p_net').textContent       = fmt(netPay);
 }
 
 document.querySelectorAll('.slip-input').forEach(el => el.addEventListener('input', updatePreview));
