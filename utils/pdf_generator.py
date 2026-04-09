@@ -88,7 +88,7 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
         logo_path = os.path.join("static", "img", "logo.png")
 
     if os.path.exists(logo_path):
-        logo_img = Image(logo_path, width=45*mm, height=18*mm)
+        logo_img = Image(logo_path, width=35*mm, height=14*mm)
     else:
         logo_img = Paragraph("<b>DACI</b>", ParagraphStyle("logo", fontSize=24, textColor=COMPANY_GREEN))
 
