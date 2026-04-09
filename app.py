@@ -777,5 +777,10 @@ def change_role(user_id):
     return redirect(url_for("manage_users"))
 
 
+@app.errorhandler(500)
+def internal_error(error):
+    import traceback
+    return f"<h3>Technical Error Details:</h3><pre>{traceback.format_exc()}</pre>", 500
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
