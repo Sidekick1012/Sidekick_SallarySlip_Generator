@@ -82,7 +82,11 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
     # ── Header Section ──────────────────────────────────────────
     # Logo and Address (Left) | PAY SLIP (Right)
     
-    logo_path = os.path.join("static", "img", "logo.png")
+    # Check for logo in several places, prioritizing the new assets folder
+    logo_path = os.path.join("assets", "logo", "logo.png")
+    if not os.path.exists(logo_path):
+        logo_path = os.path.join("static", "img", "logo.png")
+
     if os.path.exists(logo_path):
         logo_img = Image(logo_path, width=45*mm, height=18*mm)
     else:

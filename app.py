@@ -21,6 +21,11 @@ from utils.pdf_generator import generate_salary_slip_pdf
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "sidekick-secret-2024")
 
+# Custom route to serve assets (like the logo)
+@app.route('/assets/<path:filename>')
+def serve_assets(filename):
+    return send_file(os.path.join('assets', filename))
+
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
