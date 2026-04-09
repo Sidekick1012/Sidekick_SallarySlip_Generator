@@ -217,6 +217,16 @@ def add_employee_route():
             "transport_allowance":   float(request.form.get("transport_allowance", 0)),
             "medical_allowance":     float(request.form.get("medical_allowance", 0)),
             "other_allowance":       float(request.form.get("other_allowance", 0)),
+            "dearness_allowance":    float(request.form.get("dearness_allowance", 0)),
+            "cola_allowance":        float(request.form.get("cola_allowance", 0)),
+            "utility_allowance":     float(request.form.get("utility_allowance", 0)),
+            "previous_month_allowance": float(request.form.get("previous_month_allowance", 0)),
+            "bonus_allowance":       float(request.form.get("bonus_allowance", 0)),
+            "leave_encashment":      float(request.form.get("leave_encashment", 0)),
+            "overtime":              float(request.form.get("overtime", 0)),
+            "income_tax":            float(request.form.get("income_tax", 0)),
+            "eobi_deduction":        float(request.form.get("eobi_deduction", 0)),
+            "other_deduction":       float(request.form.get("other_deduction", 0)),
             "previous_gross":        float(request.form.get("previous_gross", 0)),
         }
         try:
@@ -251,6 +261,16 @@ def edit_employee(emp_id):
             "transport_allowance": float(request.form.get("transport_allowance", 0)),
             "medical_allowance":   float(request.form.get("medical_allowance", 0)),
             "other_allowance":     float(request.form.get("other_allowance", 0)),
+            "dearness_allowance":  float(request.form.get("dearness_allowance", 0)),
+            "cola_allowance":      float(request.form.get("cola_allowance", 0)),
+            "utility_allowance":   float(request.form.get("utility_allowance", 0)),
+            "previous_month_allowance": float(request.form.get("previous_month_allowance", 0)),
+            "bonus_allowance":     float(request.form.get("bonus_allowance", 0)),
+            "leave_encashment":    float(request.form.get("leave_encashment", 0)),
+            "overtime":            float(request.form.get("overtime", 0)),
+            "income_tax":          float(request.form.get("income_tax", 0)),
+            "eobi_deduction":      float(request.form.get("eobi_deduction", 0)),
+            "other_deduction":     float(request.form.get("other_deduction", 0)),
             "previous_gross":      float(request.form.get("previous_gross", 0)),
         }
         update_employee(emp_id, data)
@@ -372,30 +392,55 @@ def generate_bulk():
         errors = []
 
         for emp in employees:
-            gross = (
-                float(emp["basic_salary"]) +
-                float(emp["house_allowance"]) +
-                float(emp["transport_allowance"]) +
-                float(emp["medical_allowance"]) +
-                float(emp["other_allowance"])
-            )
+            # Gather earnings
+            basic        = float(emp.get("basic_salary", 0))
+            medical      = float(emp.get("medical_allowance", 0))
+            house        = float(emp.get("house_allowance", 0))
+            transport    = float(emp.get("transport_allowance", 0))
+            dearness     = float(emp.get("dearness_allowance", 0))
+            cola         = float(emp.get("cola_allowance", 0))
+            utility      = float(emp.get("utility_allowance", 0))
+            prev_month   = float(emp.get("previous_month_allowance", 0))
+            bonus        = float(emp.get("bonus_allowance", 0))
+            leave_enc    = float(emp.get("leave_encashment", 0))
+            overtime     = float(emp.get("overtime", 0))
+            other_allow  = float(emp.get("other_allowance", 0))
+
+            gross = basic + medical + house + transport + dearness + cola + utility + prev_month + bonus + leave_enc + overtime + other_allow
+
+            # Gather deductions
+            tax          = float(emp.get("income_tax", 0))
+            eobi         = float(emp.get("eobi_deduction", 0))
+            other_ded    = float(emp.get("other_deduction", 0))
+            
+            total_ded = tax + eobi + other_ded
+            net       = gross - total_ded
+
             slip_data = {
                 "employee_id":         emp["id"],
                 "month":               month,
                 "year":                year,
-                "basic_salary":        float(emp["basic_salary"]),
-                "house_allowance":     float(emp["house_allowance"]),
-                "transport_allowance": float(emp["transport_allowance"]),
-                "medical_allowance":   float(emp["medical_allowance"]),
-                "other_allowance":     float(emp["other_allowance"]),
-                "gross_salary":        gross,
-                "eobi_deduction":      0,
-                "income_tax":          0,
-                "other_deduction":     0,
-                "total_deductions":    0,
-                "net_salary":          gross,
-                "working_days":        26,
-                "generated_by":        current_user.email,
+                "basic_salary":             basic,
+                "medical_allowance":        medical,
+                "dearness_allowance":       dearness,
+                "house_allowance":          house,
+                "transport_allowance":      transport,
+                "cola_allowance":           cola,
+                "utility_allowance":        utility,
+                "previous_month_allowance": prev_month,
+                "bonus_allowance":          bonus,
+                "leave_encashment":         leave_enc,
+                "overtime":                 overtime,
+                "other_allowance":          other_allow,
+                "gross_salary":             gross,
+                "income_tax":               tax,
+                "eobi_deduction":           eobi,
+                "unpaid_leaves":            0,
+                "other_deduction":          other_ded,
+                "total_deductions":         total_ded,
+                "net_salary":               net,
+                "working_days":             26,
+                "generated_by":             current_user.email,
             }
             try:
                 pdf_path = generate_salary_slip_pdf(slip_data, emp)

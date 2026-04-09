@@ -222,10 +222,21 @@ async function loadEmployee() {
   const data = await res.json();
 
   document.getElementById('f_basic').value     = data.basic_salary     || 0;
+  document.getElementById('f_medical').value   = data.medical_allowance || 0;
+  document.getElementById('f_dearness').value  = data.dearness_allowance || 0;
   document.getElementById('f_house').value     = data.house_allowance  || 0;
   document.getElementById('f_transport').value = data.transport_allowance || 0;
-  document.getElementById('f_medical').value   = data.medical_allowance || 0;
-  document.getElementById('f_other').value     = data.other_allowance  || 0;
+  document.getElementById('f_cola').value      = data.cola_allowance    || 0;
+  document.getElementById('f_utility').value   = data.utility_allowance || 0;
+  document.getElementById('f_prev_month').value= data.previous_month_allowance || 0;
+  document.getElementById('f_bonus').value     = data.bonus_allowance   || 0;
+  document.getElementById('f_leave_enc').value = data.leave_encashment  || 0;
+  document.getElementById('f_overtime').value  = data.overtime          || 0;
+  document.getElementById('f_other').value     = data.other_allowance   || 0;
+  
+  document.getElementById('f_tax').value       = data.income_tax       || 0;
+  document.getElementById('f_eobi').value      = data.eobi_deduction   || 0;
+  document.getElementById('f_other_ded').value = data.other_deduction  || 0;
 
   updatePreview();
 }

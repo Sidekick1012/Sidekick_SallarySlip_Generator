@@ -101,41 +101,105 @@
         <div class="sk-card-body">
           <div class="section-divider">Earnings</div>
           <div class="row g-3">
-            <div class="col-md-4 col-sm-6">
+            <div class="col-md-3 col-sm-6">
               <label class="form-label">Basic Salary *</label>
               <input type="number" name="basic_salary" id="basic_salary" class="form-control salary-input" 
                      required min="0" step="1"
                      value="{{ emp.basic_salary|int if emp else 0 }}" placeholder="50000">
             </div>
-            <div class="col-md-4 col-sm-6">
-              <label class="form-label">House Allowance</label>
-              <input type="number" name="house_allowance" id="house_allowance" class="form-control salary-input"
-                     min="0" step="1"
-                     value="{{ emp.house_allowance|int if emp else 0 }}" placeholder="0">
-            </div>
-            <div class="col-md-4 col-sm-6">
-              <label class="form-label">Transport Allowance</label>
-              <input type="number" name="transport_allowance" id="transport_allowance" class="form-control salary-input"
-                     min="0" step="1"
-                     value="{{ emp.transport_allowance|int if emp else 0 }}" placeholder="0">
-            </div>
-            <div class="col-md-4 col-sm-6">
+            <div class="col-md-3 col-sm-6">
               <label class="form-label">Medical Allowance</label>
               <input type="number" name="medical_allowance" id="medical_allowance" class="form-control salary-input"
                      min="0" step="1"
                      value="{{ emp.medical_allowance|int if emp else 0 }}" placeholder="0">
             </div>
-            <div class="col-md-4 col-sm-6">
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label">House Allowance</label>
+              <input type="number" name="house_allowance" id="house_allowance" class="form-control salary-input"
+                     min="0" step="1"
+                     value="{{ emp.house_allowance|int if emp else 0 }}" placeholder="0">
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label">Transport Allowance</label>
+              <input type="number" name="transport_allowance" id="transport_allowance" class="form-control salary-input"
+                     min="0" step="1"
+                     value="{{ emp.transport_allowance|int if emp else 0 }}" placeholder="0">
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label">Dearness Allowance</label>
+              <input type="number" name="dearness_allowance" id="dearness_allowance" class="form-control salary-input"
+                     min="0" step="1"
+                     value="{{ emp.dearness_allowance|int if emp else 0 }}" placeholder="0">
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label">COLA</label>
+              <input type="number" name="cola_allowance" id="cola_allowance" class="form-control salary-input"
+                     min="0" step="1"
+                     value="{{ emp.cola_allowance|int if emp else 0 }}" placeholder="0">
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label">Utility Allowance</label>
+              <input type="number" name="utility_allowance" id="utility_allowance" class="form-control salary-input"
+                     min="0" step="1"
+                     value="{{ emp.utility_allowance|int if emp else 0 }}" placeholder="0">
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label">Bonus</label>
+              <input type="number" name="bonus_allowance" id="bonus_allowance" class="form-control salary-input"
+                     min="0" step="1"
+                     value="{{ emp.bonus_allowance|int if emp else 0 }}" placeholder="0">
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label">Leave Encashment</label>
+              <input type="number" name="leave_encashment" id="leave_encashment" class="form-control salary-input"
+                     min="0" step="1"
+                     value="{{ emp.leave_encashment|int if emp else 0 }}" placeholder="0">
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label">Overtime</label>
+              <input type="number" name="overtime" id="overtime" class="form-control salary-input"
+                     min="0" step="1"
+                     value="{{ emp.overtime|int if emp else 0 }}" placeholder="0">
+            </div>
+            <div class="col-md-3 col-sm-6">
               <label class="form-label">Other Allowance</label>
               <input type="number" name="other_allowance" id="other_allowance" class="form-control salary-input"
                      min="0" step="1"
                      value="{{ emp.other_allowance|int if emp else 0 }}" placeholder="0">
             </div>
-            <div class="col-md-4 col-sm-6">
-              <label class="form-label">Previous Gross Monthly</label>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label">Prev. Month Allowance</label>
+              <input type="number" name="previous_month_allowance" id="previous_month_allowance" class="form-control salary-input"
+                     min="0" step="1"
+                     value="{{ emp.previous_month_allowance|int if emp else 0 }}" placeholder="0">
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label">Previous Gross Total</label>
               <input type="number" name="previous_gross" id="previous_gross" class="form-control salary-input"
                      min="0" step="1"
                      value="{{ emp.previous_gross|int if emp else 0 }}" placeholder="0">
+            </div>
+          </div>
+
+          <div class="section-divider mt-4">Deductions</div>
+          <div class="row g-3">
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label">Income Tax</label>
+              <input type="number" name="income_tax" id="income_tax" class="form-control salary-input"
+                     min="0" step="1"
+                     value="{{ emp.income_tax|int if emp else 0 }}" placeholder="0">
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label">EOBI</label>
+              <input type="number" name="eobi_deduction" id="eobi_deduction" class="form-control salary-input"
+                     min="0" step="1"
+                     value="{{ emp.eobi_deduction|int if emp else 0 }}" placeholder="0">
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label">Other Deductions</label>
+              <input type="number" name="other_deduction" id="other_deduction" class="form-control salary-input"
+                     min="0" step="1"
+                     value="{{ emp.other_deduction|int if emp else 0 }}" placeholder="0">
             </div>
           </div>
         </div>
@@ -162,17 +226,25 @@ function fmt(val) {
 
 function updateSummary() {
   const basic     = parseFloat(document.getElementById('basic_salary').value)     || 0;
+  const medical   = parseFloat(document.getElementById('medical_allowance').value)  || 0;
   const house     = parseFloat(document.getElementById('house_allowance').value)   || 0;
   const transport = parseFloat(document.getElementById('transport_allowance').value)|| 0;
-  const medical   = parseFloat(document.getElementById('medical_allowance').value)  || 0;
+  const dearness  = parseFloat(document.getElementById('dearness_allowance').value) || 0;
+  const cola      = parseFloat(document.getElementById('cola_allowance').value)     || 0;
+  const utility   = parseFloat(document.getElementById('utility_allowance').value)  || 0;
+  const bonus     = parseFloat(document.getElementById('bonus_allowance').value)    || 0;
+  const leaveEnc  = parseFloat(document.getElementById('leave_encashment').value)   || 0;
+  const overtime  = parseFloat(document.getElementById('overtime').value)           || 0;
   const other     = parseFloat(document.getElementById('other_allowance').value)    || 0;
-  const gross     = basic + house + transport + medical + other;
+  const prev      = parseFloat(document.getElementById('previous_month_allowance').value) || 0;
+  
+  const gross     = basic + medical + house + transport + dearness + cola + utility + bonus + leaveEnc + overtime + other + prev;
 
   document.getElementById('s_basic').textContent     = fmt(basic);
   document.getElementById('s_house').textContent     = fmt(house);
   document.getElementById('s_transport').textContent = fmt(transport);
   document.getElementById('s_medical').textContent   = fmt(medical);
-  document.getElementById('s_other').textContent     = fmt(other);
+  document.getElementById('s_other').textContent     = fmt(gross - (basic + house + transport + medical));
   document.getElementById('s_gross').textContent     = fmt(gross);
 }
 
