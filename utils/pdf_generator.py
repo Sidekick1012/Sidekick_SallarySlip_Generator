@@ -108,14 +108,15 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
     elements.append(header_table)
     elements.append(Spacer(1, 5*mm))
 
-    # ── Employee Basics (Aligned to Right as per screenshot) ─────
+    # ── Employee Basics (Aligned with Deductions table) ──────────
     emp_details_data = [
         ["", "Name", employee_data.get("name", "-")],
         ["", "Designation", employee_data.get("designation", "-")],
         ["", "Employee ID", employee_data.get("employee_id", "-")],
     ]
     
-    emp_details_table = Table(emp_details_data, colWidths=[80*mm, 35*mm, 65*mm])
+    # Left col is spacer to push the rest to the right (aligned with Deductions header at 95mm)
+    emp_details_table = Table(emp_details_data, colWidths=[95*mm, 35*mm, 50*mm])
     emp_details_table.setStyle(TableStyle([
         ("FONTNAME", (1, 0), (2, -1), "Helvetica"),
         ("FONTSIZE", (0, 0), (-1, -1), 10),
