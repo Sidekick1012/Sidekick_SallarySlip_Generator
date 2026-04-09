@@ -372,14 +372,90 @@ def generate():
             flash(f"Salary slip generated for {emp['name']} — {MONTHS[month]} {year}!", "success")
             return redirect(url_for("view_slips"))
         except Exception as e:
-            flash(f"Error generating slip: {str(e)}", "danger")
+            flash(f"Error generating slip: {e}", "danger")
 
-    return render_template("generate.html",
-                           employees=employees,
-                           months=MONTHS,
-                           current_month=now.month,
-                           current_year=now.year,
-                           years=range(now.year - 2, now.year + 2))
+    return render_template("generate.html", employees=employees, now=now, months=MONTHS)
+
+
+@app.route("/slips/<int:slip_id>/edit", methods=["GET", "POST"])
+@login_required
+@hr_required
+def edit_salary_slip(slip_id):
+    from utils.db import supabase
+    res = supabase.table("salary_slips").select("*, employees(*)").eq("id", slip_id).single().execute()
+    slip = res.data
+    if not slip:
+        flash("Salary slip not found.", "danger")
+        return redirect(url_for("view_slips"))
+
+    employees = get_all_employees()
+    now = datetime.now()
+
+    if request.method == "POST":
+        try:
+            # Gather updated data
+            basic        = float(request.form.get("basic_salary", 0))
+            medical      = float(request.form.get("medical_allowance", 0))
+            dearness     = float(request.form.get("dearness_allowance", 0))
+            house        = float(request.form.get("house_allowance", 0))
+            transport    = float(request.form.get("transport_allowance", 0))
+            cola         = float(request.form.get("cola_allowance", 0))
+            utility      = float(request.form.get("utility_allowance", 0))
+            prev_month   = float(request.form.get("previous_month_allowance", 0))
+            bonus        = float(request.form.get("bonus_allowance", 0))
+            leave_enc    = float(request.form.get("leave_encashment", 0))
+            overtime     = float(request.form.get("overtime", 0))
+            other_allow  = float(request.form.get("other_allowance", 0))
+
+            gross = basic + medical + dearness + house + transport + cola + utility + prev_month + bonus + leave_enc + overtime + other_allow
+
+            tax          = float(request.form.get("income_tax", 0))
+            eobi         = float(request.form.get("eobi_deduction", 0))
+            unpaid       = float(request.form.get("unpaid_leaves", 0))
+            other_ded    = float(request.form.get("other_deduction", 0))
+            
+            total_ded = tax + eobi + unpaid + other_ded
+            net       = gross - total_ded
+
+            updated_data = {
+                "month":               int(request.form.get("month")),
+                "year":                int(request.form.get("year")),
+                "basic_salary":             basic,
+                "medical_allowance":        medical,
+                "dearness_allowance":       dearness,
+                "house_allowance":          house,
+                "transport_allowance":      transport,
+                "cola_allowance":           cola,
+                "utility_allowance":        utility,
+                "previous_month_allowance": prev_month,
+                "bonus_allowance":          bonus,
+                "leave_encashment":         leave_enc,
+                "overtime":                 overtime,
+                "other_allowance":          other_allow,
+                "gross_salary":             gross,
+                "income_tax":               tax,
+                "eobi_deduction":           eobi,
+                "unpaid_leaves":            unpaid,
+                "other_deduction":          other_ded,
+                "total_deductions":         total_ded,
+                "net_salary":               net,
+                "working_days":             int(request.form.get("working_days", 26)),
+            }
+
+            # Update DB
+            supabase.table("salary_slips").update(updated_data).eq("id", slip_id).execute()
+            
+            # Re-generate PDF
+            emp = get_employee_by_id(slip["employee_id"])
+            pdf_path = generate_salary_slip_pdf({**updated_data, "employee_id": slip["employee_id"]}, emp)
+            supabase.table("salary_slips").update({"pdf_path": pdf_path}).eq("id", slip_id).execute()
+
+            flash("Salary slip updated and re-generated successfully!", "success")
+            return redirect(url_for("view_slips"))
+        except Exception as e:
+            flash(f"Error updating slip: {e}", "danger")
+
+    return render_template("generate.html", slip=slip, edit=True, employees=employees, now=now, months=MONTHS)
 
 
 @app.route("/generate/bulk", methods=["GET", "POST"])

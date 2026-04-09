@@ -89,6 +89,10 @@
           </td>
           <td>
             <div style="display:flex; gap:6px;">
+              <a href="{{ url_for('edit_salary_slip', slip_id=slip.id) }}"
+                 class="btn-sm-icon" style="background:rgba(255,193,7,0.1); color:#ffc107;" title="Edit Slip">
+                <i class="bi bi-pencil-fill"></i>
+              </a>
               <a href="{{ url_for('download_slip', slip_id=slip.id) }}"
                  class="btn-sm-icon btn-dl" title="Download PDF">
                 <i class="bi bi-file-earmark-pdf-fill"></i>

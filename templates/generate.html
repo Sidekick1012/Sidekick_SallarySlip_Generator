@@ -1,16 +1,18 @@
 {% extends "base.html" %}
 {% block title %}Generate Slip — Sidekick Payroll{% endblock %}
-{% block page_title %}Generate Salary Slip{% endblock %}
+{% block page_title %}{{ 'Edit Salary Slip' if edit else 'Generate Salary Slip' }}{% endblock %}
 
 {% block content %}
 <div class="page-header">
   <div>
-    <div class="page-heading">Generate Salary Slip</div>
-    <div class="page-sub">Generate individual salary slip for an employee</div>
+    <div class="page-heading">{{ 'Edit Salary Slip' if edit else 'Generate Salary Slip' }}</div>
+    <div class="page-sub">{{ 'Update details for an existing slip' if edit else 'Generate individual salary slip for an employee' }}</div>
   </div>
+  {% if not edit %}
   <a href="{{ url_for('generate_bulk') }}" class="btn-sk-outline">
     <i class="bi bi-stack"></i> Bulk Generate
   </a>
+  {% endif %}
 </div>
 
 <form method="POST">
@@ -26,32 +28,38 @@
           <div class="row g-3">
             <div class="col-12">
               <label class="form-label">Employee *</label>
-              <select name="employee_id" id="employee_id" class="form-select" required onchange="loadEmployee()">
-                <option value="">-- Select Employee --</option>
-                {% for emp in employees %}
-                  <option value="{{ emp.id }}">{{ emp.name }} — {{ emp.employee_id }} ({{ emp.designation }})</option>
-                {% endfor %}
-              </select>
+              {% if edit %}
+                <input type="hidden" name="employee_id" value="{{ slip.employee_id }}">
+                <input type="text" class="form-control" value="{{ slip.employees.name }} — {{ slip.employees.employee_id }}" readonly disabled>
+              {% else %}
+                <select name="employee_id" id="employee_id" class="form-select" required onchange="loadEmployee()">
+                  <option value="">-- Select Employee --</option>
+                  {% for emp in employees %}
+                    <option value="{{ emp.id }}">{{ emp.name }} — {{ emp.employee_id }} ({{ emp.designation }})</option>
+                  {% endfor %}
+                </select>
+              {% endif %}
             </div>
             <div class="col-md-4">
               <label class="form-label">Month *</label>
               <select name="month" class="form-select" required>
                 {% for i in range(1, 13) %}
-                  <option value="{{ i }}" {{ 'selected' if i == current_month else '' }}>{{ months[i] }}</option>
+                  <option value="{{ i }}" {{ 'selected' if i == (slip.month if edit else current_month) else '' }}>{{ months[i] }}</option>
                 {% endfor %}
               </select>
             </div>
             <div class="col-md-4">
               <label class="form-label">Year *</label>
               <select name="year" class="form-select" required>
-                {% for y in years %}
-                  <option value="{{ y }}" {{ 'selected' if y == current_year else '' }}>{{ y }}</option>
+                {% set years_list = years if years else range((slip.year-2 if edit else now.year-2), (slip.year+3 if edit else now.year+3)) %}
+                {% for y in years_list %}
+                  <option value="{{ y }}" {{ 'selected' if y == (slip.year if edit else now.year) else '' }}>{{ y }}</option>
                 {% endfor %}
               </select>
             </div>
             <div class="col-md-4">
               <label class="form-label">Working Days</label>
-              <input type="number" name="working_days" class="form-control" value="26" min="1" max="31">
+              <input type="number" name="working_days" class="form-control" value="{{ slip.working_days if edit else '26' }}" min="1" max="31">
             </div>
           </div>
         </div>
@@ -66,51 +74,51 @@
           <div class="row g-3">
             <div class="col-md-4">
               <label class="form-label">Basic Salary</label>
-              <input type="number" name="basic_salary" id="f_basic" class="form-control slip-input" min="0" step="1" value="0">
+              <input type="number" name="basic_salary" id="f_basic" class="form-control slip-input" min="0" step="1" value="{{ slip.basic_salary if edit else 0 }}">
             </div>
             <div class="col-md-4">
               <label class="form-label">Medical Allowance</label>
-              <input type="number" name="medical_allowance" id="f_medical" class="form-control slip-input" min="0" step="1" value="0">
+              <input type="number" name="medical_allowance" id="f_medical" class="form-control slip-input" min="0" step="1" value="{{ slip.medical_allowance if edit else 0 }}">
             </div>
             <div class="col-md-4">
               <label class="form-label">Dearness Allowance</label>
-              <input type="number" name="dearness_allowance" id="f_dearness" class="form-control slip-input" min="0" step="1" value="0">
+              <input type="number" name="dearness_allowance" id="f_dearness" class="form-control slip-input" min="0" step="1" value="{{ slip.dearness_allowance if edit else 0 }}">
             </div>
             <div class="col-md-4">
               <label class="form-label">House Allowance</label>
-              <input type="number" name="house_allowance" id="f_house" class="form-control slip-input" min="0" step="1" value="0">
+              <input type="number" name="house_allowance" id="f_house" class="form-control slip-input" min="0" step="1" value="{{ slip.house_allowance if edit else 0 }}">
             </div>
             <div class="col-md-4">
               <label class="form-label">Transport Allowance</label>
-              <input type="number" name="transport_allowance" id="f_transport" class="form-control slip-input" min="0" step="1" value="0">
+              <input type="number" name="transport_allowance" id="f_transport" class="form-control slip-input" min="0" step="1" value="{{ slip.transport_allowance if edit else 0 }}">
             </div>
             <div class="col-md-4">
               <label class="form-label">COLA</label>
-              <input type="number" name="cola_allowance" id="f_cola" class="form-control slip-input" min="0" step="1" value="0">
+              <input type="number" name="cola_allowance" id="f_cola" class="form-control slip-input" min="0" step="1" value="{{ slip.cola_allowance if edit else 0 }}">
             </div>
             <div class="col-md-4">
               <label class="form-label">Utility Allowance</label>
-              <input type="number" name="utility_allowance" id="f_utility" class="form-control slip-input" min="0" step="1" value="0">
+              <input type="number" name="utility_allowance" id="f_utility" class="form-control slip-input" min="0" step="1" value="{{ slip.utility_allowance if edit else 0 }}">
             </div>
             <div class="col-md-4">
               <label class="form-label">Prev. Month Allowance</label>
-              <input type="number" name="previous_month_allowance" id="f_prev_month" class="form-control slip-input" min="0" step="1" value="0">
+              <input type="number" name="previous_month_allowance" id="f_prev_month" class="form-control slip-input" min="0" step="1" value="{{ slip.previous_month_allowance if edit else 0 }}">
             </div>
             <div class="col-md-4">
               <label class="form-label">Bonus</label>
-              <input type="number" name="bonus_allowance" id="f_bonus" class="form-control slip-input" min="0" step="1" value="0">
+              <input type="number" name="bonus_allowance" id="f_bonus" class="form-control slip-input" min="0" step="1" value="{{ slip.bonus_allowance if edit else 0 }}">
             </div>
             <div class="col-md-4">
               <label class="form-label">Leave Encashment</label>
-              <input type="number" name="leave_encashment" id="f_leave_enc" class="form-control slip-input" min="0" step="1" value="0">
+              <input type="number" name="leave_encashment" id="f_leave_enc" class="form-control slip-input" min="0" step="1" value="{{ slip.leave_encashment if edit else 0 }}">
             </div>
             <div class="col-md-4">
               <label class="form-label">Overtime</label>
-              <input type="number" name="overtime" id="f_overtime" class="form-control slip-input" min="0" step="1" value="0">
+              <input type="number" name="overtime" id="f_overtime" class="form-control slip-input" min="0" step="1" value="{{ slip.overtime if edit else 0 }}">
             </div>
             <div class="col-md-4">
               <label class="form-label">Other Allowance</label>
-              <input type="number" name="other_allowance" id="f_other" class="form-control slip-input" min="0" step="1" value="0">
+              <input type="number" name="other_allowance" id="f_other" class="form-control slip-input" min="0" step="1" value="{{ slip.other_allowance if edit else 0 }}">
             </div>
           </div>
         </div>
@@ -125,19 +133,19 @@
           <div class="row g-3">
             <div class="col-md-3">
               <label class="form-label">Income Tax</label>
-              <input type="number" name="income_tax" id="f_tax" class="form-control slip-input" min="0" step="1" value="0">
+              <input type="number" name="income_tax" id="f_tax" class="form-control slip-input" min="0" step="1" value="{{ slip.income_tax if edit else 0 }}">
             </div>
             <div class="col-md-3">
               <label class="form-label">EOBI</label>
-              <input type="number" name="eobi_deduction" id="f_eobi" class="form-control slip-input" min="0" step="1" value="0">
+              <input type="number" name="eobi_deduction" id="f_eobi" class="form-control slip-input" min="0" step="1" value="{{ slip.eobi_deduction if edit else 0 }}">
             </div>
             <div class="col-md-3">
               <label class="form-label">Unpaid Leaves</label>
-              <input type="number" name="unpaid_leaves" id="f_unpaid" class="form-control slip-input" min="0" step="1" value="0">
+              <input type="number" name="unpaid_leaves" id="f_unpaid" class="form-control slip-input" min="0" step="1" value="{{ slip.unpaid_leaves if edit else 0 }}">
             </div>
             <div class="col-md-3">
               <label class="form-label">Other Deductions</label>
-              <input type="number" name="other_deduction" id="f_other_ded" class="form-control slip-input" min="0" step="1" value="0">
+              <input type="number" name="other_deduction" id="f_other_ded" class="form-control slip-input" min="0" step="1" value="{{ slip.other_deduction if edit else 0 }}">
             </div>
           </div>
         </div>
@@ -169,7 +177,8 @@
           </div>
 
           <button type="submit" class="btn-sk w-100">
-            <i class="bi bi-file-earmark-pdf-fill"></i> Generate PDF Slip
+            <i class="bi {{ 'bi-check-circle-fill' if edit else 'bi-file-earmark-pdf-fill' }}"></i> 
+            {{ 'Update & Re-generate PDF' if edit else 'Generate PDF Slip' }}
           </button>
         </div>
       </div>
@@ -180,6 +189,10 @@
 
 {% block extra_js %}
 <script>
+window.onload = function() {
+  updatePreview();
+};
+
 function fmt(v) { return 'PKR ' + parseInt(v||0).toLocaleString(); }
 
 function updatePreview() {
