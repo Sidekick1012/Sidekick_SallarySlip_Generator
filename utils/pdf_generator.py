@@ -92,15 +92,15 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
     else:
         logo_img = Paragraph("<b>DACI</b>", ParagraphStyle("logo", fontSize=24, textColor=COMPANY_GREEN))
 
-    addr_text = "Engineering Services (Pvt) Ltd<br/><br/>Office No. 02, 2nd Floor,<br/>Al-Asghar Plaza, Blue Area,<br/>Islamabad"
+    addr_text = "Engineering Services (Pvt) Ltd<br/>Office No. 02, 2nd Floor,<br/>Al-Asghar Plaza, Blue Area,<br/>Islamabad"
     addr_para = Paragraph(addr_text, ParagraphStyle("addr", fontSize=9, leading=11, textColor=TEXT_BLACK))
 
-    pay_slip_para = Paragraph("PAY SLIP", ParagraphStyle("ps", fontSize=14, textColor=colors.gray, alignment=TA_RIGHT))
+    pay_slip_para = Paragraph("PAY SLIP", ParagraphStyle("ps", fontSize=11, textColor=colors.gray, alignment=TA_RIGHT))
 
     header_table = Table([
-        [logo_img, ""],
-        [addr_para, pay_slip_para]
-    ], colWidths=[100*mm, 80*mm])
+        [logo_img, pay_slip_para],
+        [addr_para, ""]
+    ], colWidths=[110*mm, 70*mm])
     header_table.setStyle(TableStyle([
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 2*mm),
@@ -108,17 +108,16 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
     elements.append(header_table)
     elements.append(Spacer(1, 5*mm))
 
-    # ── Employee Basics (Right Side Layout) ──────────────────────
+    # ── Employee Basics (Aligned to Right as per screenshot) ─────
     emp_details_data = [
         ["", "Name", employee_data.get("name", "-")],
         ["", "Designation", employee_data.get("designation", "-")],
         ["", "Employee ID", employee_data.get("employee_id", "-")],
     ]
     
-    emp_details_table = Table(emp_details_data, colWidths=[100*mm, 30*mm, 50*mm])
+    emp_details_table = Table(emp_details_data, colWidths=[80*mm, 35*mm, 65*mm])
     emp_details_table.setStyle(TableStyle([
-        ("FONTNAME", (1, 0), (1, -1), "Helvetica"),
-        ("FONTNAME", (2, 0), (2, -1), "Helvetica"),
+        ("FONTNAME", (1, 0), (2, -1), "Helvetica"),
         ("FONTSIZE", (0, 0), (-1, -1), 10),
         ("ALIGN", (1, 0), (1, -1), "LEFT"),
         ("ALIGN", (2, 0), (2, -1), "LEFT"),
