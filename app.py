@@ -460,6 +460,19 @@ def edit_salary_slip(slip_id):
     return render_template("generate.html", slip=slip, edit=True, employees=employees, now=now, months=MONTHS)
 
 
+@app.route("/slips/<int:slip_id>/delete", methods=["POST"])
+@login_required
+@hr_required
+def delete_salary_slip(slip_id):
+    from utils.db import supabase
+    try:
+        supabase.table("salary_slips").delete().eq("id", slip_id).execute()
+        flash("Salary slip deleted successfully.", "info")
+    except Exception as e:
+        flash(f"Error deleting slip: {e}", "danger")
+    return redirect(url_for("view_slips"))
+
+
 @app.route("/generate/bulk", methods=["GET", "POST"])
 @login_required
 @hr_required

@@ -93,6 +93,14 @@
                  class="btn-sm-icon" style="background:rgba(255,193,7,0.1); color:#ffc107;" title="Edit Slip">
                 <i class="bi bi-pencil-fill"></i>
               </a>
+              <form method="POST" action="{{ url_for('delete_salary_slip', slip_id=slip.id) }}"
+                    style="display:inline;"
+                    onsubmit="return confirm('Kya aap waqai yeh salary slip delete karna chahte hain?')">
+                <button type="submit" class="btn-sm-icon" 
+                        style="background:rgba(220,53,69,0.1); color:var(--danger);" title="Delete Slip">
+                  <i class="bi bi-trash-fill"></i>
+                </button>
+              </form>
               <a href="{{ url_for('download_slip', slip_id=slip.id) }}"
                  class="btn-sm-icon btn-dl" title="Download PDF">
                 <i class="bi bi-file-earmark-pdf-fill"></i>
