@@ -88,11 +88,11 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
         logo_path = os.path.join("static", "img", "logo.png")
 
     if os.path.exists(logo_path):
-        logo_img = Image(logo_path, width=35*mm, height=14*mm)
+        logo_img = Image(logo_path, width=42*mm, height=11*mm)
     else:
         logo_img = Paragraph("<b>DACI</b>", ParagraphStyle("logo", fontSize=24, textColor=COMPANY_GREEN))
 
-    addr_text = "Engineering Services (Pvt) Ltd<br/>Office No. 02, 2nd Floor,<br/>Al-Asghar Plaza, Blue Area,<br/>Islamabad"
+    addr_text = "Engineering Services (Pvt) Ltd<br/><br/>Office No. 02, 2nd Floor,<br/>Al-Asghar Plaza, Blue Area,<br/>Islamabad"
     addr_para = Paragraph(addr_text, ParagraphStyle("addr", fontSize=9, leading=11, textColor=TEXT_BLACK))
 
     pay_slip_para = Paragraph("PAY SLIP", ParagraphStyle("ps", fontSize=11, textColor=colors.gray, alignment=TA_RIGHT))
