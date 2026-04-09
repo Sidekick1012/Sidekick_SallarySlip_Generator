@@ -147,86 +147,30 @@ def forgot_password():
         
     if request.method == "POST":
         email = request.form.get("email", "").strip()
-        user = get_user_by_email(email)
-        
-        if user:
-            token = s.dumps(email, salt="password-reset-salt")
-            link = url_for("reset_password", token=token, _external=True)
-            
-            try:
-                msg = Message(
-                    subject="Password Reset Request | Sidekick",
-                    recipients=[email]
-                )
-                msg.html = f"""
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <div style="background: #0a1f2b; padding: 24px; border-radius: 12px 12px 0 0; text-align: center;">
-                        <h1 style="color: #00c2cb; margin: 0; font-size: 24px; letter-spacing: 3px;">SIDEKICK</h1>
-                    </div>
-                    <div style="background: #f8fafc; padding: 32px; border-radius: 0 0 12px 12px; border: 1px solid #dde6ed;">
-                        <p style="font-size: 16px; color: #1a2a35;">Hello,</p>
-                        <p style="color: #4a6070; line-height: 1.6;">
-                            We received a request to reset your password. Click the link below to set a new password:
-                        </p>
-                        <div style="text-align: center; margin: 30px 0;">
-                            <a href="{link}" style="background: #2c3e50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold;">Reset Password</a>
-                        </div>
-                        <p style="color: #4a6070; font-size: 13px; line-height: 1.6;">
-                            If you didn't request this, you can safely ignore this email. This link will expire in 1 hour.
-                        </p>
-                    </div>
-                </div>
-                """
-                mail.send(msg)
-                flash("Password reset link has been sent to your email.", "info")
-            except Exception as e:
-                flash(f"Failed to send email. Error: {e}", "danger")
-        else:
-            # We don't want to expose whether an email is registered or not for security reasons
-            flash("If the email exists in our system, a password reset link has been sent.", "info")
-            
-        return redirect(url_for("login"))
-        
-    return render_template("forgot_password.html")
-
-
-@app.route("/reset-password/<token>", methods=["GET", "POST"])
-def reset_password(token):
-    if current_user.is_authenticated:
-        return redirect(url_for("dashboard"))
-        
-    try:
-        # Link expires in 3600 seconds (1 hour)
-        email = s.loads(token, salt="password-reset-salt", max_age=3600)
-    except SignatureExpired:
-        flash("The password reset link has expired.", "danger")
-        return redirect(url_for("forgot_password"))
-    except BadTimeSignature:
-        flash("Invalid password reset token.", "danger")
-        return redirect(url_for("forgot_password"))
-        
-    if request.method == "POST":
+        secret_code = request.form.get("secret_code", "").strip()
         password = request.form.get("password")
         confirm_password = request.form.get("confirm_password")
         
+        if secret_code != "sdk1012":
+            flash("Invalid Secret Code! Password reset failed.", "danger")
+            return redirect(url_for("forgot_password"))
+            
         if password != confirm_password:
             flash("Passwords do not match.", "danger")
-            return redirect(url_for("reset_password", token=token))
+            return redirect(url_for("forgot_password"))
             
-        # Update user's password
         user = get_user_by_email(email)
         if user:
             from utils.db import supabase
             hashed = bcrypt.generate_password_hash(password).decode("utf-8")
             supabase.table("users").update({"password_hash": hashed}).eq("email", email).execute()
-            flash("Your password has been securely updated. You can now log in.", "success")
+            flash("Your password has been securely reset. You can now log in.", "success")
             return redirect(url_for("login"))
         else:
-            flash("User not found.", "danger")
+            flash("Email not found in the system.", "danger")
             return redirect(url_for("forgot_password"))
-            
-    return render_template("reset_password.html", token=token)
-
+        
+    return render_template("forgot_password.html")
 
 # ── Dashboard ─────────────────────────────────────────────────────
 
