@@ -359,6 +359,7 @@ def generate():
             "net_salary":          net,
             "working_days":        working_days,
             "generated_by":        current_user.email,
+            "generated_at":        datetime.now().isoformat(),
         }
 
         try:
@@ -440,6 +441,7 @@ def edit_salary_slip(slip_id):
                 "total_deductions":         total_ded,
                 "net_salary":               net,
                 "working_days":             int(request.form.get("working_days", 26)),
+                "generated_at":             datetime.now().isoformat(),
             }
 
             # Update DB
