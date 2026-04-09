@@ -98,7 +98,7 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
     pay_slip_para = Paragraph("PAY SLIP", ParagraphStyle("ps", fontSize=11, textColor=colors.gray, alignment=TA_RIGHT))
 
     header_table = Table([
-        [logo_img, pay_slip_para],
+        [logo_img, Paragraph("PAY SLIP", ParagraphStyle("ps", fontSize=14, fontName="Helvetica-Bold", textColor=COMPANY_GREEN, alignment=TA_RIGHT))],
         [addr_para, ""]
     ], colWidths=[110*mm, 70*mm])
     header_table.setStyle(TableStyle([
@@ -106,7 +106,7 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
         ("BOTTOMPADDING", (0, 0), (-1, -1), 2*mm),
     ]))
     elements.append(header_table)
-    elements.append(Spacer(1, 5*mm))
+    elements.append(Spacer(1, 8*mm))
 
     # ── Employee Basics (Aligned with Deductions table) ──────────
     emp_details_data = [
@@ -119,13 +119,14 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
     emp_details_table = Table(emp_details_data, colWidths=[95*mm, 35*mm, 50*mm])
     emp_details_table.setStyle(TableStyle([
         ("FONTNAME", (1, 0), (2, -1), "Helvetica"),
-        ("FONTSIZE", (0, 0), (-1, -1), 10),
+        ("FONTSIZE", (0, 0), (-1, -1), 10), # Set font size 10
+        ("TEXTCOLOR", (1, 0), (1, -1), COMPANY_GREEN), # Label colors green as per "upr jo green"
         ("ALIGN", (1, 0), (1, -1), "LEFT"),
         ("ALIGN", (2, 0), (2, -1), "LEFT"),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 1*mm),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 1.5*mm),
     ]))
     elements.append(emp_details_table)
-    elements.append(Spacer(1, 4*mm))
+    elements.append(Spacer(1, 6*mm))
 
     # ── Earnings & Deductions Headers ────────────────────────────
     # Green headers for Salary and Deductions
