@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS employees (
     transport_allowance DECIMAL(12, 2) DEFAULT 0,
     medical_allowance DECIMAL(12, 2) DEFAULT 0,
     other_allowance DECIMAL(12, 2) DEFAULT 0,
+    previous_gross DECIMAL(12, 2) DEFAULT 0,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT NOW()
 );
@@ -42,6 +43,8 @@ CREATE TABLE IF NOT EXISTS salary_slips (
     transport_allowance DECIMAL(12, 2) DEFAULT 0,
     medical_allowance DECIMAL(12, 2) DEFAULT 0,
     other_allowance DECIMAL(12, 2) DEFAULT 0,
+    overtime DECIMAL(12, 2) DEFAULT 0,
+    medical_exemption DECIMAL(12, 2) DEFAULT 0,
     gross_salary DECIMAL(12, 2) NOT NULL,
     eobi_deduction DECIMAL(12, 2) DEFAULT 0,
     income_tax DECIMAL(12, 2) DEFAULT 0,

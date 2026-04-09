@@ -17,8 +17,8 @@
   <div class="sidebar-brand">
     <div class="brand-icon"><i class="bi bi-briefcase-fill"></i></div>
     <div>
-      <div class="brand-name">DACI</div>
-      <div class="brand-sub">Payroll Management</div>
+      <div class="brand-name">SIDEKICK</div>
+      <div class="brand-sub">Payroll System</div>
     </div>
   </div>
 
@@ -39,6 +39,9 @@
     {% endif %}
     <a href="{{ url_for('view_slips') }}" class="nav-link {% if request.endpoint == 'view_slips' %}active{% endif %}">
       <i class="bi bi-archive-fill"></i> View Slips
+    </a>
+    <a href="{{ url_for('payroll_summary') }}" class="nav-link {% if request.endpoint == 'payroll_summary' %}active{% endif %}">
+      <i class="bi bi-file-earmark-bar-graph-fill"></i> Payroll Report
     </a>
     {% if current_user.role == 'admin' %}
     <div class="nav-divider">ADMIN</div>

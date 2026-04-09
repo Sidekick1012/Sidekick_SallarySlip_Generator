@@ -84,6 +84,14 @@
               <label class="form-label">Other Allowance</label>
               <input type="number" name="other_allowance" id="f_other" class="form-control slip-input" min="0" step="1" value="0">
             </div>
+            <div class="col-md-6">
+              <label class="form-label">Overtime</label>
+              <input type="number" name="overtime" id="f_overtime" class="form-control slip-input" min="0" step="1" value="0">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Medical Exemption</label>
+              <input type="number" name="medical_exemption" id="f_medical_ex" class="form-control slip-input" min="0" step="1" value="0">
+            </div>
           </div>
         </div>
       </div>
@@ -159,11 +167,13 @@ function updatePreview() {
   const transport = parseFloat(document.getElementById('f_transport').value) || 0;
   const medical   = parseFloat(document.getElementById('f_medical').value)   || 0;
   const other     = parseFloat(document.getElementById('f_other').value)     || 0;
+  const overtime  = parseFloat(document.getElementById('f_overtime').value)  || 0;
+  const medEx     = parseFloat(document.getElementById('f_medical_ex').value)|| 0;
   const eobi      = parseFloat(document.getElementById('f_eobi').value)      || 0;
   const tax       = parseFloat(document.getElementById('f_tax').value)       || 0;
   const otherDed  = parseFloat(document.getElementById('f_other_ded').value) || 0;
 
-  const gross = basic + house + transport + medical + other;
+  const gross = basic + house + transport + medical + other + overtime;
   const ded   = eobi + tax + otherDed;
   const net   = gross - ded;
 

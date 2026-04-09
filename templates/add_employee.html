@@ -131,6 +131,12 @@
                      min="0" step="1"
                      value="{{ emp.other_allowance|int if emp else 0 }}" placeholder="0">
             </div>
+            <div class="col-md-4 col-sm-6">
+              <label class="form-label">Previous Gross Monthly</label>
+              <input type="number" name="previous_gross" id="previous_gross" class="form-control salary-input"
+                     min="0" step="1"
+                     value="{{ emp.previous_gross|int if emp else 0 }}" placeholder="0">
+            </div>
           </div>
         </div>
       </div>

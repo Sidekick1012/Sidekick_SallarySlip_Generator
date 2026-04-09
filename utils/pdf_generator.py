@@ -157,7 +157,7 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
         ("Previous Month Allowance", 0),
         ("Bonus", 0),
         ("Leave Encashment", 0),
-        ("Overtime", 0),
+        ("Overtime", slip_data.get("overtime", 0)),
     ]
     
     # Combine some existing "other_allowance" into "Dearness Allowance" or similar if needed?
