@@ -601,7 +601,7 @@ def generate_bulk():
                            months=MONTHS,
                            current_month=now.month,
                            current_year=now.year,
-                           years=range(now.year - 2, now.year + 2))
+                           years=range(2023, 2041))
 
 
 # ── View & Download ───────────────────────────────────────────────
@@ -619,7 +619,7 @@ def view_slips():
                            months=MONTHS,
                            current_month=month or now.month,
                            current_year=year or now.year,
-                           years=range(now.year - 2, now.year + 2))
+                           years=range(2023, 2041))
 
 
 @app.route("/payroll")
@@ -643,7 +643,7 @@ def payroll_summary():
                            months=MONTHS,
                            current_month=month,
                            current_year=year,
-                           years=range(2023, datetime.now().year + 2))
+                           years=range(2023, 2041))
 
 
 @app.route("/payroll/export/excel")

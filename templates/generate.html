@@ -52,7 +52,7 @@
             <div class="col-md-4">
               <label class="form-label">Year *</label>
               <select name="year" class="form-select" required>
-                {% set years_list = years if years else range((slip.year-2 if edit else now.year-2), (slip.year+3 if edit else now.year+3)) %}
+                {% set years_list = years if years else range(2023, 2041) %}
                 {% for y in years_list %}
                   <option value="{{ y }}" {{ 'selected' if y == (slip.year if edit else now.year) else '' }}>{{ y }}</option>
                 {% endfor %}
