@@ -567,6 +567,33 @@ def generate_bulk():
                            years=range(now.year - 2, now.year + 2))
 
 
+@app.route("/test-mail-connection")
+def test_mail_connection():
+    import smtplib
+    results = []
+    
+    # Test 587
+    results.append("Testing Port 587 (TLS)...")
+    try:
+        server = smtplib.SMTP("smtp.gmail.com", 587, timeout=15)
+        server.starttls()
+        server.quit()
+        results.append("✅ Port 587 SUCCESS!")
+    except Exception as e:
+        results.append(f"❌ Port 587 FAILED: {str(e)}")
+
+    # Test 465
+    results.append("\nTesting Port 465 (SSL)...")
+    try:
+        server = smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=15)
+        server.quit()
+        results.append("✅ Port 465 SUCCESS!")
+    except Exception as e:
+        results.append(f"❌ Port 465 FAILED: {str(e)}")
+
+    return "<pre>" + "\n".join(results) + "</pre>"
+
+
 # ── View & Download ───────────────────────────────────────────────
 
 @app.route("/slips")
