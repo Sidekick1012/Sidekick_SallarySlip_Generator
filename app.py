@@ -311,7 +311,10 @@ def edit_employee(emp_id):
 @login_required
 @hr_required
 def delete_employee_route(emp_id):
+    emp = get_employee_by_id(emp_id)
+    name = emp['name'] if emp else 'Unknown'
     delete_employee(emp_id)
+    log_activity(current_user.email, "Delete Employee", f"Removed employee: {name} (ID: {emp_id})")
     flash("Employee removed.", "info")
     return redirect(url_for("employees"))
 
@@ -472,7 +475,8 @@ def edit_salary_slip(slip_id):
             emp = get_employee_by_id(slip["employee_id"])
             pdf_path = generate_salary_slip_pdf({**updated_data, "employee_id": slip["employee_id"]}, emp)
             supabase.table("salary_slips").update({"pdf_path": pdf_path}).eq("id", slip_id).execute()
-
+            
+            log_activity(current_user.email, "Edit Slip", f"Updated salary slip for {emp['name']} ({MONTHS[updated_data['month']]} {updated_data['year']})")
             flash("Salary slip updated and re-generated successfully!", "success")
             return redirect(url_for("view_slips"))
         except Exception as e:
@@ -487,7 +491,17 @@ def edit_salary_slip(slip_id):
 def delete_salary_slip(slip_id):
     from utils.db import supabase
     try:
+        # Get details before delete for logging
+        res = supabase.table("salary_slips").select("month, year, employees(name)").eq("id", slip_id).single().execute()
+        details = ""
+        if res.data:
+            details = f"Deleted slip for {res.data['employees']['name']} ({MONTHS[res.data['month']]} {res.data['year']})"
+            
         supabase.table("salary_slips").delete().eq("id", slip_id).execute()
+        
+        if details:
+            log_activity(current_user.email, "Delete Slip", details)
+            
         flash("Salary slip deleted successfully.", "info")
     except Exception as e:
         flash(f"Error deleting slip: {e}", "danger")
@@ -867,6 +881,7 @@ def add_user():
         else:
             hashed = bcrypt.generate_password_hash(password).decode("utf-8")
             create_user(email, hashed, role)
+            log_activity(current_user.email, "Add User", f"Created new user: {email} with role: {role}")
             flash(f"✅ User {email} ({role}) successfully add ho gaya!", "success")
             return redirect(url_for("manage_users"))
 
@@ -881,7 +896,12 @@ def delete_user(user_id):
         flash("Aap apna khud ka account delete nahi kar sakte!", "danger")
         return redirect(url_for("manage_users"))
     from utils.db import supabase
+    # Get user email before deleting
+    user_res = supabase.table("users").select("email").eq("id", user_id).single().execute()
+    target_email = user_res.data['email'] if user_res.data else "Unknown"
+    
     supabase.table("users").delete().eq("id", user_id).execute()
+    log_activity(current_user.email, "Delete User", f"Deleted user account: {target_email}")
     flash("User delete ho gaya.", "info")
     return redirect(url_for("manage_users"))
 
@@ -895,7 +915,12 @@ def change_role(user_id):
         return redirect(url_for("manage_users"))
     new_role = request.form.get("role")
     from utils.db import supabase
+    # Get user email before updating
+    user_res = supabase.table("users").select("email").eq("id", user_id).single().execute()
+    target_email = user_res.data['email'] if user_res.data else "Unknown"
+    
     supabase.table("users").update({"role": new_role}).eq("id", user_id).execute()
+    log_activity(current_user.email, "Change Role", f"Changed role of {target_email} to {new_role}")
     flash(f"Role successfully update ho gaya!", "success")
     return redirect(url_for("manage_users"))
 
