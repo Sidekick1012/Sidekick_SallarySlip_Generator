@@ -18,7 +18,8 @@ load_dotenv()
 from utils.db import (
     get_all_employees, get_employee_by_id, add_employee,
     update_employee, delete_employee, save_salary_slip,
-    get_salary_slips, get_slip_by_id, get_user_by_email, create_user
+    get_salary_slips, get_slip_by_id, get_user_by_email, 
+    create_user, log_activity
 )
 from utils.pdf_generator import generate_salary_slip_pdf
 
@@ -124,6 +125,7 @@ def login():
         if user_data and bcrypt.check_password_hash(user_data["password_hash"], password):
             user = User(user_data)
             login_user(user, remember=True)
+            log_activity(email, "Login", "User logged into the system")
             flash("Welcome back!", "success")
             return redirect(url_for("dashboard"))
         else:
@@ -248,6 +250,7 @@ def add_employee_route():
         }
         try:
             add_employee(data)
+            log_activity(current_user.email, "Add Employee", f"Added employee: {data['name']} ({data['employee_id']})")
             flash(f"Employee {data['name']} added successfully!", "success")
             return redirect(url_for("employees"))
         except Exception as e:
@@ -291,6 +294,7 @@ def edit_employee(emp_id):
             "previous_gross":      float(request.form.get("previous_gross", 0)),
         }
         update_employee(emp_id, data)
+        log_activity(current_user.email, "Edit Employee", f"Updated details for employee: {data['name']}")
         flash("Employee updated!", "success")
         return redirect(url_for("employees"))
 
@@ -381,7 +385,7 @@ def generate():
 
             # Save to DB
             saved = save_salary_slip(slip_data)
-
+            log_activity(current_user.email, "Generate Slip", f"Generated salary slip for {emp['name']} ({MONTHS[month]} {year})")
             flash(f"Salary slip generated for {emp['name']} — {MONTHS[month]} {year}!", "success")
             return redirect(url_for("view_slips"))
         except Exception as e:
@@ -724,6 +728,7 @@ def send_slip_email(slip_id):
         response = requests.post("https://api.brevo.com/v3/smtp/email", json=payload, headers=headers)
         
         if response.status_code in [201, 202, 200]:
+            log_activity(current_user.email, "Send Email", f"Sent salary slip email to {emp_data['name']}")
             flash(f"✅ Salary slip successfully sent to {emp_data['name']} ({emp_email}) via Brevo!", "success")
         else:
             raise Exception(f"Brevo API Error: {response.text}")
@@ -738,6 +743,7 @@ def send_slip_email(slip_id):
 
 
 @app.route("/slips/send-bulk-email", methods=["POST"])
+# ... [rest of the function] ... same logic but with logging inside
 @login_required
 @hr_required
 def send_bulk_emails():

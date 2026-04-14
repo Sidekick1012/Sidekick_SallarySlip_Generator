@@ -73,3 +73,17 @@ def create_user(email, password_hash, role="hr"):
         "role": role
     }).execute()
     return res.data
+
+
+def log_activity(user_email, action, details=None):
+    from datetime import datetime
+    try:
+        data = {
+            "user_email": user_email,
+            "action": action,
+            "details": details,
+            "timestamp": datetime.now().isoformat()
+        }
+        supabase.table("activity_logs").insert(data).execute()
+    except Exception as e:
+        print(f"Error logging activity: {e}")
