@@ -667,13 +667,10 @@ def send_slip_email(slip_id):
         flash(f"⚠️ {emp_data['name']} ka email address saved nahi hai. Pehle employee edit karke email add karo.", "warning")
         return redirect(url_for("view_slips"))
 
-    # Send Manual Email
+    # Send via Brevo API (Works on Railway Port 443)
     try:
-        import smtplib
-        from email.mime.multipart import MIMEMultipart
-        from email.mime.text import MIMEText
-        from email.mime.base import MIMEBase
-        from email import encoders
+        import requests
+        import base64
 
         pdf_path = slip.get("pdf_path")
         if not pdf_path or not os.path.exists(pdf_path):
@@ -682,61 +679,60 @@ def send_slip_email(slip_id):
         month_name = MONTHS[slip["month"]]
         year       = slip["year"]
 
-        # Create message
-        message = MIMEMultipart()
-        message["From"] = f"Sidekick Payroll <{app.config['MAIL_USERNAME']}>"
-        message["To"] = emp_email
-        message["Subject"] = f"Salary Slip — {month_name} {year} | Sidekick"
+        # Read PDF and encode to base64
+        with open(pdf_path, "rb") as f:
+            pdf_content = base64.b64encode(f.read()).decode("utf-8")
 
-        html_body = f"""
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="background: #0a1f2b; padding: 24px; border-radius: 12px 12px 0 0; text-align: center;">
-                <h1 style="color: #00c2cb; margin: 0; font-size: 24px; letter-spacing: 3px;">SIDEKICK</h1>
-                <p style="color: rgba(255,255,255,0.6); margin: 4px 0 0; font-size: 13px;">Payroll Management System</p>
-            </div>
-            <div style="background: #f8fafc; padding: 32px; border-radius: 0 0 12px 12px; border: 1px solid #dde6ed;">
-                <p style="font-size: 16px; color: #1a2a35;">Dear <strong>{emp_data['name']}</strong>,</p>
-                <p style="color: #4a6070; line-height: 1.6;">
-                    Please find attached your salary slip for <strong>{month_name} {year}</strong>.
-                </p>
-                <div style="background: #0a1f2b; border-radius: 10px; padding: 16px 20px; margin: 20px 0; display: inline-block;">
-                    <span style="color: rgba(255,255,255,0.6); font-size: 13px;">Net Salary</span><br>
-                    <span style="color: #00c2cb; font-size: 22px; font-weight: 800;">PKR {"{:,.0f}".format(slip['net_salary'])}</span>
+        api_key = os.getenv("BREVO_API_KEY")
+        if not api_key:
+            raise Exception("BREVO_API_KEY is missing in settings.")
+
+        payload = {
+            "sender": {"name": "Sidekick Payroll", "email": os.getenv("MAIL_EMAIL")},
+            "to": [{"email": emp_email, "name": emp_data["name"]}],
+            "subject": f"Salary Slip — {month_name} {year} | Sidekick",
+            "htmlContent": f"""
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 12px; overflow: hidden;">
+                    <div style="background: #0a1f2b; padding: 24px; text-align: center;">
+                        <h1 style="color: #00c2cb; margin: 0; font-size: 24px; letter-spacing: 3px;">SIDEKICK</h1>
+                    </div>
+                    <div style="padding: 32px; background: #fff;">
+                        <p>Dear <strong>{emp_data['name']}</strong>,</p>
+                        <p>Please find attached your salary slip for <strong>{month_name} {year}</strong>.</p>
+                        <div style="background: #f8fafc; border-radius: 10px; padding: 20px; margin: 20px 0; border: 1px solid #eef2f6;">
+                            <span style="color: #64748b; font-size: 13px;">Net Salary</span><br>
+                            <span style="color: #0a1f2b; font-size: 24px; font-weight: 800;">PKR {"{:,.0f}".format(slip['net_salary'])}</span>
+                        </div>
+                        <p style="color: #64748b; font-size: 13px;">This is an automated email. Please do not reply.</p>
+                    </div>
                 </div>
-                <hr style="border: none; border-top: 1px solid #dde6ed; margin: 24px 0;">
-                <p style="color: #9aacb8; font-size: 12px; text-align: center; margin: 0;">This is an automated email from Sidekick Payroll System.</p>
-            </div>
-        </div>
-        """
-        message.attach(MIMEText(html_body, "html"))
+            """,
+            "attachment": [
+                {
+                    "content": pdf_content,
+                    "name": f"SalarySlip_{emp_data['name'].replace(' ', '_')}_{month_name}_{year}.pdf"
+                }
+            ]
+        }
 
-        # Attach PDF
-        safe_filename = "".join([c if c.isalnum() or c in (" ", ".", "_", "-") else "_" for c in emp_data["name"]])
-        filename = f"SalarySlip_{safe_filename.replace(' ', '_')}_{month_name}_{year}.pdf"
+        headers = {
+            "accept": "application/json",
+            "content-type": "application/json",
+            "api-key": api_key
+        }
+
+        response = requests.post("https://api.brevo.com/v3/smtp/email", json=payload, headers=headers)
         
-        with open(pdf_path, "rb") as attachment:
-            part = MIMEBase("application", "octet-stream")
-            part.set_payload(attachment.read())
-            encoders.encode_base64(part)
-            part.add_header("Content-Disposition", f"attachment; filename= {filename}")
-            message.attach(part)
-
-        # Connect and Send
-        print(f"DEBUG: Attempting to connect to Gmail via Port 587 for {emp_email}...")
-        server = smtplib.SMTP("smtp.gmail.com", 587, timeout=30)
-        server.starttls()
-        server.login(app.config["MAIL_USERNAME"], app.config["MAIL_PASSWORD"])
-        server.send_message(message)
-        server.quit()
-
-        flash(f"✅ Salary slip successfully sent to {emp_data['name']} ({emp_email})!", "success")
+        if response.status_code in [201, 202, 200]:
+            flash(f"✅ Salary slip successfully sent to {emp_data['name']} ({emp_email}) via Brevo!", "success")
+        else:
+            raise Exception(f"Brevo API Error: {response.text}")
 
     except Exception as e:
         import traceback
-        error_msg = str(e)
-        print(f"CRITICAL EMAIL ERROR: {error_msg}")
+        print(f"CRITICAL EMAIL ERROR: {str(e)}")
         print(traceback.format_exc())
-        flash(f"❌ Email error: {error_msg}. Check if Port 587 is blocked on your server.", "danger")
+        flash(f"❌ Email error: {str(e)}", "danger")
 
     return redirect(url_for("view_slips"))
 
