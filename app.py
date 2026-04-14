@@ -662,8 +662,14 @@ def send_slip_email(slip_id):
         flash(f"⚠️ {emp_data['name']} ka email address saved nahi hai. Pehle employee edit karke email add karo.", "warning")
         return redirect(url_for("view_slips"))
 
-    # Generate PDF
+    # Send Manual Email
     try:
+        import smtplib
+        from email.mime.multipart import MIMEMultipart
+        from email.mime.text import MIMEText
+        from email.mime.base import MIMEBase
+        from email import encoders
+
         pdf_path = slip.get("pdf_path")
         if not pdf_path or not os.path.exists(pdf_path):
             pdf_path = generate_salary_slip_pdf(slip, emp_data)
@@ -671,11 +677,13 @@ def send_slip_email(slip_id):
         month_name = MONTHS[slip["month"]]
         year       = slip["year"]
 
-        msg = Message(
-            subject=f"Salary Slip — {month_name} {year} | Sidekick",
-            recipients=[emp_email]
-        )
-        msg.html = f"""
+        # Create message
+        message = MIMEMultipart()
+        message["From"] = f"Sidekick Payroll <{app.config['MAIL_USERNAME']}>"
+        message["To"] = emp_email
+        message["Subject"] = f"Salary Slip — {month_name} {year} | Sidekick"
+
+        html_body = f"""
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <div style="background: #0a1f2b; padding: 24px; border-radius: 12px 12px 0 0; text-align: center;">
                 <h1 style="color: #00c2cb; margin: 0; font-size: 24px; letter-spacing: 3px;">SIDEKICK</h1>
@@ -690,28 +698,32 @@ def send_slip_email(slip_id):
                     <span style="color: rgba(255,255,255,0.6); font-size: 13px;">Net Salary</span><br>
                     <span style="color: #00c2cb; font-size: 22px; font-weight: 800;">PKR {"{:,.0f}".format(slip['net_salary'])}</span>
                 </div>
-                <p style="color: #4a6070; font-size: 13px; line-height: 1.6;">
-                    If you have any questions regarding your salary, please contact HR.
-                </p>
                 <hr style="border: none; border-top: 1px solid #dde6ed; margin: 24px 0;">
-                <p style="color: #9aacb8; font-size: 12px; text-align: center; margin: 0;">
-                    This is an automated email from Sidekick Payroll System.<br>
-                    Please do not reply to this email.
-                </p>
+                <p style="color: #9aacb8; font-size: 12px; text-align: center; margin: 0;">This is an automated email from Sidekick Payroll System.</p>
             </div>
         </div>
         """
+        message.attach(MIMEText(html_body, "html"))
 
         # Attach PDF
         safe_filename = "".join([c if c.isalnum() or c in (" ", ".", "_", "-") else "_" for c in emp_data["name"]])
-        with open(pdf_path, "rb") as f:
-            msg.attach(
-                filename=f"SalarySlip_{safe_filename.replace(' ', '_')}_{month_name}_{year}.pdf",
-                content_type="application/pdf",
-                data=f.read()
-            )
+        filename = f"SalarySlip_{safe_filename.replace(' ', '_')}_{month_name}_{year}.pdf"
+        
+        with open(pdf_path, "rb") as attachment:
+            part = MIMEBase("application", "octet-stream")
+            part.set_payload(attachment.read())
+            encoders.encode_base64(part)
+            part.add_header("Content-Disposition", f"attachment; filename= {filename}")
+            message.attach(part)
 
-        mail.send(msg)
+        # Connect and Send
+        print(f"DEBUG: Attempting to connect to Gmail via Port 587 for {emp_email}...")
+        server = smtplib.SMTP("smtp.gmail.com", 587, timeout=30)
+        server.starttls()
+        server.login(app.config["MAIL_USERNAME"], app.config["MAIL_PASSWORD"])
+        server.send_message(message)
+        server.quit()
+
         flash(f"✅ Salary slip successfully sent to {emp_data['name']} ({emp_email})!", "success")
 
     except Exception as e:
@@ -719,14 +731,7 @@ def send_slip_email(slip_id):
         error_msg = str(e)
         print(f"CRITICAL EMAIL ERROR: {error_msg}")
         print(traceback.format_exc())
-        
-        hint = ""
-        if "Bad credentials" in error_msg or "Authentication failed" in error_msg:
-            hint = " (Check your Gmail App Password in .env)"
-        elif "connection" in error_msg.lower():
-            hint = " (Internet or Firewall issue)"
-            
-        flash(f"❌ Email error: {error_msg}{hint}", "danger")
+        flash(f"❌ Email error: {error_msg}. Check if Port 587 is blocked on your server.", "danger")
 
     return redirect(url_for("view_slips"))
 
