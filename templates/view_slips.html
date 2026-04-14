@@ -41,6 +41,7 @@
 </div>
 
 <form id="bulkActionForm" method="POST" action="{{ url_for('send_bulk_emails') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <div class="sk-card">
     {% if slips %}
     <div id="bulkActionBar" class="sk-card-body d-none" style="background:rgba(0,194,203,0.05); border-bottom:1px solid rgba(0,194,203,0.1); padding:10px 24px;">
@@ -112,6 +113,7 @@
                 <form method="POST" action="{{ url_for('delete_salary_slip', slip_id=slip.id) }}"
                       style="display:inline;"
                       onsubmit="return confirm('Kya aap waqai yeh salary slip delete karna chahte hain?')">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit" class="btn-sm-icon" 
                           style="background:rgba(220,53,69,0.1); color:var(--danger);" title="Delete Slip">
                     <i class="bi bi-trash-fill"></i>
@@ -181,6 +183,10 @@ document.addEventListener('DOMContentLoaded', function() {
 function sendSingleEmail(slipId) {
     if (confirm('Iss employee ko email bhej dein?')) {
         const form = document.getElementById('singleEmailForm');
+        const csrf = document.createElement('input');
+        csrf.type = 'hidden'; csrf.name = 'csrf_token';
+        csrf.value = '{{ csrf_token() }}';
+        form.appendChild(csrf);
         form.action = `/slips/${slipId}/send-email`;
         form.submit();
     }

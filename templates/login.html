@@ -493,6 +493,11 @@ function submitLogin(e) {
   pf.type = 'hidden'; pf.name = 'password';
   pf.value = document.getElementById('sk-pw').value;
 
+  const cf = document.createElement('input');
+  cf.type = 'hidden'; cf.name = 'csrf_token';
+  cf.value = '{{ csrf_token() }}';
+  
+  form.appendChild(cf);
   form.appendChild(ef);
   form.appendChild(pf);
   document.body.appendChild(form);

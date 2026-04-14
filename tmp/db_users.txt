@@ -1,4 +1,0 @@
-ID: 2, Email: mahamishtiaq72@gmail.com, Role: hr, Password Hash: $2b$12$13FHGbx92fhhGqZbyizpzOvAxQzixoPp57MhE1TL.pyLWDkzcnque
-ID: 3, Email: aqibwalayat05@gmail.com, Role: viewer, Password Hash: $2b$12$4MLAStuKaQqw/9MmDMEYvOylThaxIJqW53xViNvp4crFFytbSLJJO
-ID: 1, Email: aqib@sidekick.pk, Role: admin, Password Hash: $2b$12$8QzYwJ8sYJ0l0rRz6lHk3eR1k6bK1lK2dYz0Gv1Xy3Q0VZ8xG7W6K
-ID: 4, Email: newadmin@sidekick.pk, Role: admin, Password Hash: $2b$12$wH8KqF8m9J7YfK1ZpQvE3eOa8Lx1u9GvZc7dYkR5pQmN8sT6bX2yW

@@ -101,6 +101,7 @@
             {% if user.id != current_user.id %}
             <form method="POST" action="{{ url_for('change_role', user_id=user.id) }}"
                   style="display:flex; gap:6px; align-items:center;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <select name="role" class="form-select" style="width:120px; font-size:13px; padding:6px 10px;">
                 <option value="admin"  {{ 'selected' if user.role == 'admin' }}>Admin</option>
                 <option value="hr"     {{ 'selected' if user.role == 'hr' }}>HR</option>
@@ -120,6 +121,7 @@
             {% if user.id != current_user.id %}
             <form method="POST" action="{{ url_for('delete_user', user_id=user.id) }}"
                   onsubmit="return confirm('{{ user.email }} ko delete karna chahte ho?')">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button type="submit" class="btn-sm-icon btn-delete" title="Delete User">
                 <i class="bi bi-trash-fill"></i>
               </button>

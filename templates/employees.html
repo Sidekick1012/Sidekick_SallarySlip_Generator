@@ -108,6 +108,10 @@ document.getElementById('searchInput').addEventListener('input', function() {
 function confirmDelete(empId, name) {
   if (confirm(`Remove ${name} from the system? Their data will be archived.`)) {
     const form = document.getElementById('deleteForm');
+    const csrf = document.createElement('input');
+    csrf.type = 'hidden'; csrf.name = 'csrf_token';
+    csrf.value = '{{ csrf_token() }}';
+    form.appendChild(csrf);
     form.action = `/employees/${empId}/delete`;
     form.submit();
   }

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}500 - Server Error | Sidekick{% endblock %}
+{% block content %}
+<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 70vh; text-align: center; font-family: 'DM Sans', sans-serif;">
+    <div style="font-size: 120px; font-weight: 800; color: #ff4d4d; line-height: 1; margin-bottom: 20px; opacity: 0.1; position: absolute; z-index: -1;">500</div>
+    <h1 style="color: var(--sk-navy); font-family: 'DM Serif Display', serif; font-size: 48px; margin-bottom: 16px;">Kuch Galat Ho Gaya!</h1>
+    <p style="color: var(--muted); font-size: 18px; max-width: 500px; margin-bottom: 32px;">Peeche se system mein koi technical masla aa gaya hai. Hamaari team ise theek karne ki koshish kar rahi hai.</p>
+    <div style="display: flex; gap: 16px;">
+        <a href="{{ url_for('dashboard') }}" class="btn-sk" style="padding: 12px 32px;">
+            <i class="bi bi-house-door" style="margin-right: 8px;"></i> Dashboard
+        </a>
+        <button onclick="window.location.reload()" class="btn-sk-outline" style="padding: 12px 32px;">
+            <i class="bi bi-arrow-clockwise" style="margin-right: 8px;"></i> Try Again
+        </button>
+    </div>
+</div>
+{% endblock %}
