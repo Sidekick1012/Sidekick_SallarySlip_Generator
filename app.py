@@ -609,16 +609,17 @@ def generate_bulk():
 @app.route("/slips")
 @login_required
 def view_slips():
-    month = request.args.get("month", type=int)
-    year  = request.args.get("year",  type=int)
     now   = datetime.now()
+    # Default to current month/year if not explicitly provided in URL
+    month = request.args.get("month", default=now.month, type=int)
+    year  = request.args.get("year",  default=now.year,  type=int)
 
     slips = get_salary_slips(month=month, year=year)
     return render_template("view_slips.html",
                            slips=slips,
                            months=MONTHS,
-                           current_month=month or now.month,
-                           current_year=year or now.year,
+                           current_month=month,
+                           current_year=year,
                            years=range(2023, 2041))
 
 
