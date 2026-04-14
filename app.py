@@ -25,6 +25,11 @@ from utils.pdf_generator import generate_salary_slip_pdf
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "sidekick-secret-2024")
 
+@app.route("/test-mail-connection")
+def test_mail_connection():
+    import smtplib
+    return "Diagnostic route is active. If you see this, the app is running!"
+
 # Custom route to serve assets (like the logo)
 @app.route('/assets/<path:filename>')
 def serve_assets(filename):
@@ -565,33 +570,6 @@ def generate_bulk():
                            current_month=now.month,
                            current_year=now.year,
                            years=range(now.year - 2, now.year + 2))
-
-
-@app.route("/test-mail-connection")
-def test_mail_connection():
-    import smtplib
-    results = []
-    
-    # Test 587
-    results.append("Testing Port 587 (TLS)...")
-    try:
-        server = smtplib.SMTP("smtp.gmail.com", 587, timeout=15)
-        server.starttls()
-        server.quit()
-        results.append("✅ Port 587 SUCCESS!")
-    except Exception as e:
-        results.append(f"❌ Port 587 FAILED: {str(e)}")
-
-    # Test 465
-    results.append("\nTesting Port 465 (SSL)...")
-    try:
-        server = smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=15)
-        server.quit()
-        results.append("✅ Port 465 SUCCESS!")
-    except Exception as e:
-        results.append(f"❌ Port 465 FAILED: {str(e)}")
-
-    return "<pre>" + "\n".join(results) + "</pre>"
 
 
 # ── View & Download ───────────────────────────────────────────────
