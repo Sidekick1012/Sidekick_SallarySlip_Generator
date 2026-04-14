@@ -76,6 +76,14 @@ def generate_payroll_excel(slips, month, year):
             else:
                 cell.alignment = center_align if j <= 2 else Alignment(horizontal="left")
 
+    # Add Totals Row
+    total_row_num = ws.max_row + 1
+    ws.cell(row=total_row_num, column=3, value="TOTALS").font = Font(bold=True)
+    ws.cell(row=total_row_num, column=12, value=sum(s.get('gross_salary', 0) for s in slips)).font = Font(bold=True)
+    ws.cell(row=total_row_num, column=16, value=sum(s.get('net_salary', 0) for s in slips)).font = Font(bold=True)
+    ws.cell(row=total_row_num, column=12).number_format = '#,##0'
+    ws.cell(row=total_row_num, column=16).number_format = '#,##0'
+
     # Auto-adjust column width
     for column in ws.columns:
         max_length = 0
