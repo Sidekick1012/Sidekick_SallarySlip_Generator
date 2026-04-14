@@ -737,6 +737,72 @@ def send_slip_email(slip_id):
     return redirect(url_for("view_slips"))
 
 
+@app.route("/slips/send-bulk-email", methods=["POST"])
+@login_required
+@hr_required
+def send_bulk_emails():
+    slip_ids = request.form.getlist("slip_ids")
+    if not slip_ids:
+        flash("Koi slip select nahi ki gayi.", "warning")
+        return redirect(url_for("view_slips"))
+
+    import requests
+    import base64
+    import time
+    from utils.pdf_generator import generate_salary_slip_pdf
+
+    api_key = os.getenv("BREVO_API_KEY")
+    sender_email = os.getenv("MAIL_EMAIL")
+    
+    success_count = 0
+    fail_count = 0
+
+    for slip_id in slip_ids:
+        try:
+            slip = get_slip_by_id(int(slip_id))
+            if not slip: continue
+
+            emp_data = slip["employees"]
+            emp_email = emp_data.get("email")
+            if not emp_email:
+                fail_count += 1
+                continue
+
+            pdf_path = slip.get("pdf_path")
+            if not pdf_path or not os.path.exists(pdf_path):
+                pdf_path = generate_salary_slip_pdf(slip, emp_data)
+
+            month_name = MONTHS[slip["month"]]
+            year       = slip["year"]
+
+            with open(pdf_path, "rb") as f:
+                pdf_content = base64.b64encode(f.read()).decode("utf-8")
+
+            payload = {
+                "sender": {"name": "Sidekick Payroll", "email": sender_email},
+                "to": [{"email": emp_email, "name": emp_data["name"]}],
+                "subject": f"Salary Slip — {month_name} {year} | Sidekick",
+                "htmlContent": f"Dear {emp_data['name']}, please find your salary slip for {month_name} {year} attached.",
+                "attachment": [{"content": pdf_content, "name": f"SalarySlip_{month_name}_{year}.pdf"}]
+            }
+
+            headers = {"accept": "application/json", "content-type": "application/json", "api-key": api_key}
+            requests.post("https://api.brevo.com/v3/smtp/email", json=payload, headers=headers)
+            success_count += 1
+            time.sleep(0.1)  # Minimal rate limit safety
+
+        except Exception as e:
+            print(f"Bulk Send Error for {slip_id}: {str(e)}")
+            fail_count += 1
+
+    if success_count > 0:
+        flash(f"✅ {success_count} slips successfully emailed!", "success")
+    if fail_count > 0:
+        flash(f"❌ {fail_count} emails failed to send.", "danger")
+
+    return redirect(url_for("view_slips"))
+
+
 # ── User Management (Admin Only) ──────────────────────────────────
 
 @app.route("/users")

@@ -40,95 +40,150 @@
   </div>
 </div>
 
-<div class="sk-card">
-  {% if slips %}
-  <div class="table-responsive">
-    <table class="sk-table">
-      <thead>
-        <tr>
-          <th>Employee</th>
-          <th>Period</th>
-          <th>Gross Salary</th>
-          <th>Deductions</th>
-          <th>Net Salary</th>
-          <th>Generated</th>
-          <th>Download</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for slip in slips %}
-        <tr>
-          <td>
-            <div style="display:flex; align-items:center; gap:10px;">
-              <div class="emp-avatar" style="margin:0;">{{ slip.employees.name[0] }}</div>
-              <div>
-                <strong>{{ slip.employees.name }}</strong><br>
-                <small style="color:var(--muted);">{{ slip.employees.employee_id }}</small>
+<form id="bulkActionForm" method="POST" action="{{ url_for('send_bulk_emails') }}">
+  <div class="sk-card">
+    {% if slips %}
+    <div id="bulkActionBar" class="sk-card-body d-none" style="background:rgba(0,194,203,0.05); border-bottom:1px solid rgba(0,194,203,0.1); padding:10px 24px;">
+      <div class="d-flex align-items-center justify-content-between">
+        <span id="selectedCountText" style="font-weight:600; color:var(--accent);">0 slips selected</span>
+        <button type="submit" class="btn-sk" style="padding:6px 16px; font-size:13px;" onclick="return confirm('Sabhi selected employees ko emails bhej dein?')">
+          <i class="bi bi-send-fill"></i> Send Selected Emails
+        </button>
+      </div>
+    </div>
+    
+    <div class="table-responsive">
+      <table class="sk-table">
+        <thead>
+          <tr>
+            <th style="width:40px;">
+              <input type="checkbox" id="selectAllSlips" class="form-check-input" style="cursor:pointer;">
+            </th>
+            <th>Employee</th>
+            <th>Period</th>
+            <th>Gross Salary</th>
+            <th>Deductions</th>
+            <th>Net Salary</th>
+            <th>Generated</th>
+            <th>Download</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for slip in slips %}
+          <tr>
+            <td>
+              <input type="checkbox" name="slip_ids" value="{{ slip.id }}" class="slip-checkbox form-check-input" style="cursor:pointer;">
+            </td>
+            <td>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div class="emp-avatar" style="margin:0;">{{ slip.employees.name[0] }}</div>
+                <div>
+                  <strong>{{ slip.employees.name }}</strong><br>
+                  <small style="color:var(--muted);">{{ slip.employees.employee_id }}</small>
+                </div>
               </div>
-            </div>
-          </td>
-          <td>
-            <strong>{{ months[slip.month] }}</strong><br>
-            <small style="color:var(--muted);">{{ slip.year }}</small>
-          </td>
-          <td>PKR {{ "{:,.0f}".format(slip.gross_salary) }}</td>
-          <td>
-            <span style="color:var(--danger);">
-              PKR {{ "{:,.0f}".format(slip.total_deductions) }}
-            </span>
-          </td>
-          <td>
-            <strong style="color:var(--accent); font-size:15px;">
-              PKR {{ "{:,.0f}".format(slip.net_salary) }}
-            </strong>
-          </td>
-          <td>
-            <small style="color:var(--muted);">
-              {{ slip.generated_at[:10] if slip.generated_at else '-' }}
-            </small>
-          </td>
-          <td>
-            <div style="display:flex; gap:6px;">
-              <a href="{{ url_for('edit_salary_slip', slip_id=slip.id) }}"
-                 class="btn-sm-icon" style="background:rgba(255,193,7,0.1); color:#ffc107;" title="Edit Slip">
-                <i class="bi bi-pencil-fill"></i>
-              </a>
-              <form method="POST" action="{{ url_for('delete_salary_slip', slip_id=slip.id) }}"
-                    style="display:inline;"
-                    onsubmit="return confirm('Kya aap waqai yeh salary slip delete karna chahte hain?')">
-                <button type="submit" class="btn-sm-icon" 
-                        style="background:rgba(220,53,69,0.1); color:var(--danger);" title="Delete Slip">
-                  <i class="bi bi-trash-fill"></i>
-                </button>
-              </form>
-              <a href="{{ url_for('download_slip', slip_id=slip.id) }}"
-                 class="btn-sm-icon btn-dl" title="Download PDF">
-                <i class="bi bi-file-earmark-pdf-fill"></i>
-              </a>
-              <form method="POST" action="{{ url_for('send_slip_email', slip_id=slip.id) }}"
-                    style="display:inline;"
-                    onsubmit="return confirm('{{ slip.employees.name }} ko email bhejein?')">
-                <button type="submit" class="btn-sm-icon"
-                        style="background:rgba(0,194,203,0.1); color:var(--accent);"
-                        title="Email Bhejo {% if slip.employees.email %}({{ slip.employees.email }}){% else %}(email nahi hai){% endif %}">
+            </td>
+            <td>
+              <strong>{{ months[slip.month] }}</strong><br>
+              <small style="color:var(--muted);">{{ slip.year }}</small>
+            </td>
+            <td>PKR {{ "{:,.0f}".format(slip.gross_salary) }}</td>
+            <td>
+              <span style="color:var(--danger);">
+                PKR {{ "{:,.0f}".format(slip.total_deductions) }}
+              </span>
+            </td>
+            <td>
+              <strong style="color:var(--accent); font-size:15px;">
+                PKR {{ "{:,.0f}".format(slip.net_salary) }}
+              </strong>
+            </td>
+            <td>
+              <small style="color:var(--muted);">
+                {{ slip.generated_at[:10] if slip.generated_at else '-' }}
+              </small>
+            </td>
+            <td>
+              <div style="display:flex; gap:6px;">
+                <a href="{{ url_for('edit_salary_slip', slip_id=slip.id) }}"
+                   class="btn-sm-icon" style="background:rgba(255,193,7,0.1); color:#ffc107;" title="Edit Slip">
+                  <i class="bi bi-pencil-fill"></i>
+                </a>
+                <form method="POST" action="{{ url_for('delete_salary_slip', slip_id=slip.id) }}"
+                      style="display:inline;"
+                      onsubmit="return confirm('Kya aap waqai yeh salary slip delete karna chahte hain?')">
+                  <button type="submit" class="btn-sm-icon" 
+                          style="background:rgba(220,53,69,0.1); color:var(--danger);" title="Delete Slip">
+                    <i class="bi bi-trash-fill"></i>
+                  </button>
+                </form>
+                <a href="{{ url_for('download_slip', slip_id=slip.id) }}"
+                   class="btn-sm-icon btn-dl" title="Download PDF">
+                  <i class="bi bi-file-earmark-pdf-fill"></i>
+                </a>
+                <button type="button" class="btn-sm-icon"
+                          style="background:rgba(0,194,203,0.1); color:var(--accent);"
+                          onclick="sendSingleEmail({{ slip.id }})"
+                          title="Email Bhejo {% if slip.employees.email %}({{ slip.employees.email }}){% else %}(email nahi hai){% endif %}">
                   <i class="bi bi-envelope-fill"></i>
                 </button>
-              </form>
-            </div>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="sk-card-body text-center py-5">
+      <i class="bi bi-file-earmark-x" style="font-size:48px; color:var(--muted);"></i>
+      <p style="color:var(--muted); margin-top:12px;">No salary slips found for this period.</p>
+      <a href="{{ url_for('generate') }}" class="btn-sk mt-2">
+        <i class="bi bi-plus-lg"></i> Generate Slip
+      </a>
+    </div>
+    {% endif %}
   </div>
-  {% else %}
-  <div class="sk-card-body text-center py-5">
-    <i class="bi bi-file-earmark-x" style="font-size:48px; color:var(--muted);"></i>
-    <p style="color:var(--muted); margin-top:12px;">No salary slips found for this period.</p>
-    <a href="{{ url_for('generate') }}" class="btn-sk mt-2">
-      <i class="bi bi-plus-lg"></i> Generate Slip
-    </a>
-  </div>
-  {% endif %}
-</div>
+</form>
+
+<!-- Hidden form for single email sending (to avoid nested forms issue) -->
+<form id="singleEmailForm" method="POST" action="" style="display:none;"></form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAll = document.getElementById('selectAllSlips');
+    const checkboxes = document.querySelectorAll('.slip-checkbox');
+    const bulkBar = document.getElementById('bulkActionBar');
+    const countText = document.getElementById('selectedCountText');
+
+    function updateBulkBar() {
+        const checkedCount = document.querySelectorAll('.slip-checkbox:checked').length;
+        if (checkedCount > 0) {
+            bulkBar.classList.remove('d-none');
+            countText.textContent = `${checkedCount} slip(s) selected`;
+        } else {
+            bulkBar.classList.add('d-none');
+        }
+    }
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            checkboxes.forEach(cb => cb.checked = selectAll.checked);
+            updateBulkBar();
+        });
+    }
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', updateBulkBar);
+    });
+});
+
+function sendSingleEmail(slipId) {
+    if (confirm('Iss employee ko email bhej dein?')) {
+        const form = document.getElementById('singleEmailForm');
+        form.action = `/slips/${slipId}/send-email`;
+        form.submit();
+    }
+}
+</script>
 {% endblock %}
