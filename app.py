@@ -802,11 +802,22 @@ def send_bulk_emails():
             fail_count += 1
 
     if success_count > 0:
+        log_activity(current_user.email, "Bulk Send Email", f"Successfully sent {success_count} emails in bulk")
         flash(f"✅ {success_count} slips successfully emailed!", "success")
     if fail_count > 0:
         flash(f"❌ {fail_count} emails failed to send.", "danger")
 
     return redirect(url_for("view_slips"))
+
+
+@app.route("/logs")
+@login_required
+@admin_required
+def view_logs():
+    from utils.db import supabase
+    res = supabase.table("activity_logs").select("*").order("timestamp", desc=True).limit(200).execute()
+    logs = res.data or []
+    return render_template("activity_logs.html", logs=logs)
 
 
 # ── User Management (Admin Only) ──────────────────────────────────
