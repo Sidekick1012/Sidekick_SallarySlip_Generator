@@ -494,6 +494,29 @@ def delete_salary_slip(slip_id):
     return redirect(url_for("view_slips"))
 
 
+@app.route("/slips/delete-bulk", methods=["POST"])
+@login_required
+@hr_required
+def delete_bulk_slips():
+    slip_ids = request.form.getlist("slip_ids")
+    if not slip_ids:
+        flash("Koi slip select nahi ki gayi.", "warning")
+        return redirect(url_for("view_slips"))
+
+    from utils.db import supabase
+    try:
+        # Delete multiple records
+        for s_id in slip_ids:
+            supabase.table("salary_slips").delete().eq("id", int(s_id)).execute()
+
+        log_activity(current_user.email, "Bulk Delete", f"Deleted {len(slip_ids)} salary slips")
+        flash(f"Successfully deleted {len(slip_ids)} salary slips.", "info")
+    except Exception as e:
+        flash(f"Error during bulk deletion: {e}", "danger")
+
+    return redirect(url_for("view_slips"))
+
+
 @app.route("/generate/bulk", methods=["GET", "POST"])
 @login_required
 @hr_required

@@ -47,9 +47,14 @@
     <div id="bulkActionBar" class="sk-card-body d-none" style="background:rgba(0,194,203,0.05); border-bottom:1px solid rgba(0,194,203,0.1); padding:10px 24px;">
       <div class="d-flex align-items-center justify-content-between">
         <span id="selectedCountText" style="font-weight:600; color:var(--accent);">0 slips selected</span>
-        <button type="submit" class="btn-sk" style="padding:6px 16px; font-size:13px;" onclick="return confirm('Sabhi selected employees ko emails bhej dein?')">
-          <i class="bi bi-send-fill"></i> Send Selected Emails
-        </button>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn-sk" style="padding:6px 16px; font-size:13px;" onclick="submitBulkAction('email')">
+            <i class="bi bi-send-fill"></i> Send Selected Emails
+          </button>
+          <button type="button" class="btn-sk" style="padding:6px 16px; font-size:13px; background:var(--danger); border-color:var(--danger);" onclick="submitBulkAction('delete')">
+            <i class="bi bi-trash-fill"></i> Delete Selected
+          </button>
+        </div>
       </div>
     </div>
     
@@ -179,6 +184,21 @@ document.addEventListener('DOMContentLoaded', function() {
         cb.addEventListener('change', updateBulkBar);
     });
 });
+
+function submitBulkAction(action) {
+    const form = document.getElementById('bulkActionForm');
+    if (action === 'email') {
+        if (confirm('Sabhi selected employees ko emails bhej dein?')) {
+            form.action = "{{ url_for('send_bulk_emails') }}";
+            form.submit();
+        }
+    } else if (action === 'delete') {
+        if (confirm('Kya aap waqai sabhi selected salary slips delete karna chahte hain? Yeh amal wapis nahi liya ja sakta.')) {
+            form.action = "{{ url_for('delete_bulk_slips') }}";
+            form.submit();
+        }
+    }
+}
 
 function sendSingleEmail(slipId) {
     if (confirm('Iss employee ko email bhej dein?')) {
