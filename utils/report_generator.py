@@ -111,7 +111,7 @@ def generate_payroll_pdf(slips, month, year):
     title_style = styles['Heading1']
     title_style.alignment = 1 # Center
     
-    elements.append(Paragraph(f"SIDEKICK PAYROLL MASTER SHEET", title_style))
+    elements.append(Paragraph(f"DACI PAYROLL MASTER SHEET", title_style))
     elements.append(Paragraph(f"Period: {MONTHS[month]} {year}", styles['Normal']))
     elements.append(Spacer(1, 12))
     

@@ -55,7 +55,7 @@ app.config["MAIL_USERNAME"] = os.getenv("MAIL_EMAIL")
 # Remove spaces from password if present (Google App Passwords are 16 chars without spaces)
 mail_pass = os.getenv("MAIL_PASSWORD", "")
 app.config["MAIL_PASSWORD"] = mail_pass.replace(" ", "")
-app.config["MAIL_DEFAULT_SENDER"] = (os.getenv("SENDER_NAME", "Sidekick Payroll"), os.getenv("MAIL_EMAIL"))
+app.config["MAIL_DEFAULT_SENDER"] = (os.getenv("SENDER_NAME", "DACI Payroll"), os.getenv("MAIL_EMAIL"))
 mail = Mail(app)
 
 s = URLSafeTimedSerializer(app.secret_key)
@@ -153,7 +153,7 @@ def setup():
     if os.getenv("DISABLE_SETUP", "false").lower() == "true":
         return "Setup is disabled.", 403
 
-    admin_email = os.getenv("ADMIN_EMAIL", "admin@sidekick.com")
+    admin_email = os.getenv("ADMIN_EMAIL", "admin@daci.com")
     admin_pass  = os.getenv("ADMIN_PASSWORD", "Admin@123")
 
     existing = get_user_by_email(admin_email)
@@ -757,9 +757,9 @@ def send_slip_email(slip_id):
 
         month_name = MONTHS[slip["month"]]
         payload = {
-            "sender": {"name": "Sidekick Payroll", "email": os.getenv("MAIL_EMAIL")},
+            "sender": {"name": "DACI Payroll", "email": os.getenv("MAIL_EMAIL")},
             "to": [{"email": emp_email, "name": emp_data["name"]}],
-            "subject": f"Salary Slip — {month_name} {slip['year']} | Sidekick",
+            "subject": f"Salary Slip — {month_name} {slip['year']} | DACI",
             "htmlContent": f"Dear {emp_data['name']}, please find your salary slip for {month_name} {slip['year']} attached.",
             "attachment": [{"content": pdf_content, "name": f"SalarySlip_{month_name}_{slip['year']}.pdf"}]
         }

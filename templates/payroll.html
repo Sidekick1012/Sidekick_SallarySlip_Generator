@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Payroll Summary — Sidekick Payroll{% endblock %}
+{% block title %}Payroll Summary — DACI Payroll{% endblock %}
 {% block page_title %}Payroll Summary{% endblock %}
 
 {% block content %}
@@ -37,10 +37,23 @@
   .text-center { text-align: center !important; }
   
   @media print {
-    .sidebar, .topbar, .btn-sk, .sk-card-header, form { display: none !important; }
+    @page {
+      size: landscape;
+      margin: 10mm;
+    }
+    .sidebar, .topbar, .btn-sk, .btn-sk-outline, .sk-card-header, form, .page-sub { display: none !important; }
     .main-content { margin-left: 0 !important; padding: 0 !important; }
-    .sheet-container { box-shadow: none; padding: 0; }
-    .master-sheet { font-size: 9px; }
+    .sheet-container { box-shadow: none; padding: 0; overflow: visible !important; }
+    .master-sheet { 
+      font-size: 8px; 
+      width: 100% !important;
+      table-layout: auto;
+    }
+    .master-sheet th, .master-sheet td {
+      padding: 2px 4px !important;
+    }
+    .page-header { margin-bottom: 10px !important; }
+    .page-heading { font-size: 18px !important; margin: 0 !important; }
   }
 </style>
 
