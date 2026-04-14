@@ -34,14 +34,14 @@ login_manager.login_message_category = "warning"
 
 # Mail config
 app.config["MAIL_SERVER"]   = "smtp.gmail.com"
-app.config["MAIL_PORT"]     = 465
-app.config["MAIL_USE_TLS"]  = False
-app.config["MAIL_USE_SSL"]  = True
+app.config["MAIL_PORT"]     = 587
+app.config["MAIL_USE_TLS"]  = True
+app.config["MAIL_USE_SSL"]  = False
 app.config["MAIL_USERNAME"] = os.getenv("MAIL_EMAIL")
 # Remove spaces from password if present (Google App Passwords are 16 chars without spaces)
 mail_pass = os.getenv("MAIL_PASSWORD", "")
 app.config["MAIL_PASSWORD"] = mail_pass.replace(" ", "")
-app.config["MAIL_DEFAULT_SENDER"] = os.getenv("MAIL_EMAIL")
+app.config["MAIL_DEFAULT_SENDER"] = (os.getenv("SENDER_NAME", "Sidekick Payroll"), os.getenv("MAIL_EMAIL"))
 mail = Mail(app)
 
 s = URLSafeTimedSerializer(app.secret_key)
@@ -699,9 +699,10 @@ def send_slip_email(slip_id):
         """
 
         # Attach PDF
+        safe_filename = "".join([c if c.isalnum() or c in (" ", ".", "_", "-") else "_" for c in emp_data["name"]])
         with open(pdf_path, "rb") as f:
             msg.attach(
-                filename=f"SalarySlip_{emp_data['name'].replace(' ', '_')}_{month_name}_{year}.pdf",
+                filename=f"SalarySlip_{safe_filename.replace(' ', '_')}_{month_name}_{year}.pdf",
                 content_type="application/pdf",
                 data=f.read()
             )
@@ -711,9 +712,17 @@ def send_slip_email(slip_id):
 
     except Exception as e:
         import traceback
-        print(f"CRITICAL EMAIL ERROR: {str(e)}")
+        error_msg = str(e)
+        print(f"CRITICAL EMAIL ERROR: {error_msg}")
         print(traceback.format_exc())
-        flash(f"❌ Email error: {str(e)}", "danger")
+        
+        hint = ""
+        if "Bad credentials" in error_msg or "Authentication failed" in error_msg:
+            hint = " (Check your Gmail App Password in .env)"
+        elif "connection" in error_msg.lower():
+            hint = " (Internet or Firewall issue)"
+            
+        flash(f"❌ Email error: {error_msg}{hint}", "danger")
 
     return redirect(url_for("view_slips"))
 
