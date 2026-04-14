@@ -646,6 +646,35 @@ def payroll_summary():
                            years=range(2023, datetime.now().year + 2))
 
 
+@app.route("/payroll/export/excel")
+@login_required
+def export_payroll_excel():
+    month = request.args.get("month", default=datetime.now().month, type=int)
+    year  = request.args.get("year",  default=datetime.now().year,  type=int)
+    slips = get_salary_slips(month=month, year=year)
+
+    from utils.report_generator import generate_payroll_excel
+    output = generate_payroll_excel(slips, month, year)
+
+    filename = f"Payroll_Report_{MONTHS[month]}_{year}.xlsx"
+    return send_file(output, as_attachment=True, download_name=filename,
+                     mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+
+@app.route("/payroll/export/pdf")
+@login_required
+def export_payroll_pdf():
+    month = request.args.get("month", default=datetime.now().month, type=int)
+    year  = request.args.get("year",  default=datetime.now().year,  type=int)
+    slips = get_salary_slips(month=month, year=year)
+
+    from utils.report_generator import generate_payroll_pdf
+    output = generate_payroll_pdf(slips, month, year)
+
+    filename = f"Payroll_Report_{MONTHS[month]}_{year}.pdf"
+    return send_file(output, as_attachment=True, download_name=filename, mimetype="application/pdf")
+
+
 @app.route("/slips/<int:slip_id>/download")
 @login_required
 def download_slip(slip_id):
