@@ -139,12 +139,6 @@
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
 <script>
-  // Initialize Theme as early as possible
-  (function() {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-  })();
-
   // Pass current datetime to template
   const now = new Date();
   document.querySelectorAll('.badge-month').forEach(el => {

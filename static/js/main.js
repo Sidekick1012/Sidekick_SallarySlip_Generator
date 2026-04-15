@@ -136,11 +136,14 @@ function setBtnLoading(btn, isLoading, text = 'Processing...') {
 
 // Initialize on Load
 document.addEventListener('DOMContentLoaded', function() {
-  // Check for success flash messages containing "Email" or "Salary"
-  document.querySelectorAll('.alert-success').forEach(a => {
+  // Check for success/info flash messages that should trigger celebration
+  document.querySelectorAll('.alert-success, .alert-info').forEach(a => {
     const txt = a.textContent.toLowerCase();
-    if (txt.includes('email') || txt.includes('sent') || txt.includes('success')) {
-      triggerCelebration();
+    const triggerWords = ['email', 'sent', 'success', 'generated', 'initiated', 'started'];
+    
+    if (triggerWords.some(word => txt.includes(word))) {
+      // Small delay to ensure page is visually ready
+      setTimeout(triggerCelebration, 300);
     }
   });
 
@@ -149,6 +152,6 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
       const bsAlert = bootstrap.Alert.getOrCreateInstance(a);
       if (bsAlert) bsAlert.close();
-    }, 4000);
+    }, 5000);
   });
 });
