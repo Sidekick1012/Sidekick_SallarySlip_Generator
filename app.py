@@ -64,6 +64,44 @@ MONTHS = ["", "January", "February", "March", "April", "May", "June",
           "July", "August", "September", "October", "November", "December"]
 
 
+def build_email_html(emp_name, month_name, year):
+    """Returns a professional HTML email body with system-generated disclaimer."""
+    return f"""
+<div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;background:#f5f5f5;padding:20px;border-radius:12px;">
+  <div style="background:linear-gradient(135deg,#00C2CB,#0097A7);padding:28px 24px;border-radius:10px 10px 0 0;text-align:center;">
+    <h1 style="color:white;margin:0;font-size:24px;font-weight:700;letter-spacing:1px;">DACI Payroll</h1>
+    <p style="color:rgba(255,255,255,0.8);margin:6px 0 0;font-size:13px;">Automated Salary Notification</p>
+  </div>
+  <div style="background:white;padding:32px 28px;border-radius:0 0 10px 10px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">
+    <p style="font-size:16px;color:#333;margin:0 0 16px;">Dear <strong>{emp_name}</strong>,</p>
+    <p style="color:#555;line-height:1.7;margin:0 0 16px;">
+      Your salary slip for <strong style="color:#00C2CB;">{month_name} {year}</strong> has been generated
+      and is attached to this email as a PDF document.
+    </p>
+    <p style="color:#555;line-height:1.7;margin:0 0 24px;">
+      Please review it carefully. If you have any queries regarding your salary details,
+      kindly contact the HR department directly.
+    </p>
+    <div style="background:#f8f9fa;border-left:4px solid #00C2CB;padding:14px 18px;border-radius:0 8px 8px 0;margin-bottom:24px;">
+      <p style="margin:0;font-size:13px;color:#666;">
+        <strong>&#128206; Attachment:</strong> SalarySlip_{month_name}_{year}.pdf
+      </p>
+    </div>
+    <hr style="border:none;border-top:1px solid #eee;margin:24px 0;">
+    <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:14px 18px;margin-bottom:16px;">
+      <p style="margin:0;font-size:12px;color:#795548;text-align:center;">
+        &#9888;&#65039; <strong>This is a system-generated email. Please do not reply to this email.</strong><br>
+        For any queries, please reach out to the HR department directly.
+      </p>
+    </div>
+    <p style="font-size:11px;color:#bbb;text-align:center;margin:0;">
+      &copy; {year} DACI Payroll System &middot; Confidential &middot; All rights reserved
+    </p>
+  </div>
+</div>
+"""
+
+
 class User(UserMixin):
     def __init__(self, data):
         self.id = data["id"]
@@ -796,7 +834,7 @@ def send_slip_email(slip_id):
             "sender": {"name": "DACI Payroll", "email": os.getenv("MAIL_EMAIL")},
             "to": [{"email": emp_email, "name": emp_data["name"]}],
             "subject": f"Salary Slip — {month_name} {slip['year']} | DACI",
-            "htmlContent": f"Dear {emp_data['name']}, please find your salary slip for {month_name} {slip['year']} attached.",
+            "htmlContent": build_email_html(emp_data["name"], month_name, slip["year"]),
             "attachment": [{"content": pdf_content, "name": f"SalarySlip_{month_name}_{slip['year']}.pdf"}]
         }
         headers = {"accept": "application/json", "content-type": "application/json", "api-key": api_key}
@@ -833,12 +871,13 @@ def bulk_email_thread(app_context, slip_ids, api_key, sender_email):
                 with open(pdf_path, "rb") as f:
                     content = base64.b64encode(f.read()).decode("utf-8")
                 
+                month_name = MONTHS[slip['month']]
                 payload = {
-                    "sender": {"name": "Sidekick Payroll", "email": sender_email},
+                    "sender": {"name": "DACI Payroll", "email": sender_email},
                     "to": [{"email": emp["email"], "name": emp["name"]}],
-                    "subject": f"Salary Slip — {MONTHS[slip['month']]} {slip['year']}",
-                    "htmlContent": f"Hello {emp['name']}, your salary slip is attached.",
-                    "attachment": [{"content": content, "name": f"SalarySlip_{slip['month']}_{slip['year']}.pdf"}]
+                    "subject": f"Salary Slip — {month_name} {slip['year']} | DACI",
+                    "htmlContent": build_email_html(emp["name"], month_name, slip["year"]),
+                    "attachment": [{"content": content, "name": f"SalarySlip_{month_name}_{slip['year']}.pdf"}]
                 }
                 headers = {"accept": "application/json", "api-key": api_key, "content-type": "application/json"}
                 requests.post("https://api.brevo.com/v3/smtp/email", json=payload, headers=headers)
@@ -864,6 +903,245 @@ def send_bulk_emails():
     
     flash(f"Bulk email process initiated for {len(slip_ids)} slips. Yeh process background mein chalta rahega.", "success")
     return redirect(url_for("view_slips"))
+
+
+# ── Excel Bulk Upload ────────────────────────────────────────────
+
+@app.route("/generate/excel-template")
+@login_required
+def download_excel_template():
+    """Download a pre-filled Excel template for bulk salary upload."""
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    import io
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Salary Upload Template"
+
+    headers = [
+        "Employee_ID", "Basic_Salary", "House_Allowance", "Transport_Allowance",
+        "Medical_Allowance", "Other_Allowance", "Dearness_Allowance", "COLA_Allowance",
+        "Utility_Allowance", "Previous_Month_Allowance", "Bonus_Allowance",
+        "Leave_Encashment", "Overtime", "Income_Tax", "EOBI_Deduction",
+        "Unpaid_Leaves", "Other_Deduction", "Working_Days"
+    ]
+
+    thin = Border(
+        left=Side(style='thin'), right=Side(style='thin'),
+        top=Side(style='thin'), bottom=Side(style='thin')
+    )
+    ws.append(headers)
+    header_fill = PatternFill(start_color="00C2CB", end_color="00C2CB", fill_type="solid")
+    for cell in ws[1]:
+        cell.font = Font(bold=True, color="FFFFFF")
+        cell.fill = header_fill
+        cell.alignment = Alignment(horizontal="center")
+        cell.border = thin
+        ws.column_dimensions[cell.column_letter].width = 24
+
+    # Pre-fill with existing employees' default data
+    all_emps = get_all_employees()
+    for emp in all_emps:
+        ws.append([
+            emp.get("employee_id", ""),
+            emp.get("basic_salary", 0),
+            emp.get("house_allowance", 0),
+            emp.get("transport_allowance", 0),
+            emp.get("medical_allowance", 0),
+            emp.get("other_allowance", 0),
+            emp.get("dearness_allowance", 0),
+            emp.get("cola_allowance", 0),
+            emp.get("utility_allowance", 0),
+            emp.get("previous_month_allowance", 0),
+            emp.get("bonus_allowance", 0),
+            emp.get("leave_encashment", 0),
+            emp.get("overtime", 0),
+            emp.get("income_tax", 0),
+            emp.get("eobi_deduction", 0),
+            0,   # Unpaid_Leaves
+            emp.get("other_deduction", 0),
+            26,  # Working_Days
+        ])
+        for cell in ws[ws.max_row]:
+            cell.border = thin
+
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+    return send_file(
+        output, as_attachment=True,
+        download_name="DACI_Salary_Upload_Template.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+
+@app.route("/generate/excel-upload", methods=["GET", "POST"])
+@login_required
+@hr_required
+def generate_from_excel():
+    """Upload an Excel file to bulk-generate salary slips."""
+    employees = get_all_employees()
+    now = datetime.now()
+
+    if request.method == "POST":
+        if "excel_file" not in request.files:
+            flash("Koi file select nahi ki gayi.", "warning")
+            return redirect(request.url)
+
+        file = request.files["excel_file"]
+        if not file or file.filename == "":
+            flash("Koi file select nahi ki gayi.", "warning")
+            return redirect(request.url)
+
+        if not (file.filename.endswith(".xlsx") or file.filename.endswith(".xls")):
+            flash("Sirf Excel (.xlsx / .xls) files allowed hain.", "danger")
+            return redirect(request.url)
+
+        try:
+            import tempfile
+            from openpyxl import load_workbook
+
+            # Save to temp file and read
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as tmp:
+                file.save(tmp.name)
+                tmp_path = tmp.name
+
+            wb = load_workbook(tmp_path, data_only=True)
+            ws = wb.active
+
+            # Parse header row → normalise keys
+            headers = [
+                str(cell.value).strip().lower().replace(" ", "_") if cell.value else ""
+                for cell in ws[1]
+            ]
+
+            # Employee lookup maps
+            emp_by_id   = {str(e["employee_id"]).strip(): e for e in employees}
+            emp_by_name = {e["name"].strip().lower(): e  for e in employees}
+
+            # Month/Year from form (override all rows)
+            month_override = request.form.get("month", type=int)
+            year_override  = request.form.get("year",  type=int)
+
+            success_count = 0
+            error_list    = []
+
+            def _f(d, key, fallback=0.0):
+                try: return float(d.get(key) or fallback)
+                except: return float(fallback)
+
+            def _i(d, key, fallback=0):
+                try: return int(d.get(key) or fallback)
+                except: return int(fallback)
+
+            for row_idx, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
+                if not any(v for v in row if v is not None):
+                    continue  # skip blank rows
+
+                rd = {headers[i]: row[i] for i in range(min(len(headers), len(row)))}
+
+                # Resolve employee
+                emp = None
+                eid = rd.get("employee_id")
+                if eid:
+                    emp = emp_by_id.get(str(eid).strip())
+                if not emp:
+                    nm = rd.get("name") or rd.get("employee_name", "")
+                    if nm:
+                        emp = emp_by_name.get(str(nm).strip().lower())
+
+                if not emp:
+                    error_list.append(f"Row {row_idx}: Employee '{eid}' not found — skipped.")
+                    continue
+
+                month = month_override or _i(rd, "month", now.month)
+                year  = year_override  or _i(rd, "year",  now.year)
+
+                basic      = _f(rd, "basic_salary",             emp.get("basic_salary", 0))
+                medical    = _f(rd, "medical_allowance",        emp.get("medical_allowance", 0))
+                house      = _f(rd, "house_allowance",          emp.get("house_allowance", 0))
+                transport  = _f(rd, "transport_allowance",      emp.get("transport_allowance", 0))
+                dearness   = _f(rd, "dearness_allowance",       emp.get("dearness_allowance", 0))
+                cola       = _f(rd, "cola_allowance",           emp.get("cola_allowance", 0))
+                utility    = _f(rd, "utility_allowance",        emp.get("utility_allowance", 0))
+                prev_month = _f(rd, "previous_month_allowance", emp.get("previous_month_allowance", 0))
+                bonus      = _f(rd, "bonus_allowance",          emp.get("bonus_allowance", 0))
+                leave_enc  = _f(rd, "leave_encashment",         emp.get("leave_encashment", 0))
+                overtime   = _f(rd, "overtime",                 emp.get("overtime", 0))
+                other_all  = _f(rd, "other_allowance",          emp.get("other_allowance", 0))
+
+                gross = basic + medical + house + transport + dearness + cola + utility + prev_month + bonus + leave_enc + overtime + other_all
+
+                tax       = _f(rd, "income_tax",      emp.get("income_tax", 0))
+                eobi      = _f(rd, "eobi_deduction",  emp.get("eobi_deduction", 0))
+                unpaid    = _f(rd, "unpaid_leaves",   0)
+                other_ded = _f(rd, "other_deduction", emp.get("other_deduction", 0))
+                total_ded = tax + eobi + unpaid + other_ded
+                net       = gross - total_ded
+                w_days    = _i(rd, "working_days", 26)
+
+                slip_data = {
+                    "employee_id":              emp["id"],
+                    "month":                    month,
+                    "year":                     year,
+                    "basic_salary":             basic,
+                    "medical_allowance":        medical,
+                    "dearness_allowance":       dearness,
+                    "house_allowance":          house,
+                    "transport_allowance":      transport,
+                    "cola_allowance":           cola,
+                    "utility_allowance":        utility,
+                    "previous_month_allowance": prev_month,
+                    "bonus_allowance":          bonus,
+                    "leave_encashment":         leave_enc,
+                    "overtime":                 overtime,
+                    "other_allowance":          other_all,
+                    "gross_salary":             gross,
+                    "income_tax":               tax,
+                    "eobi_deduction":           eobi,
+                    "unpaid_leaves":            unpaid,
+                    "other_deduction":          other_ded,
+                    "total_deductions":         total_ded,
+                    "net_salary":               net,
+                    "working_days":             w_days,
+                    "generated_by":             current_user.email,
+                    "generated_at":             datetime.now().isoformat(),
+                }
+
+                try:
+                    pdf_path = generate_salary_slip_pdf(slip_data, emp)
+                    slip_data["pdf_path"] = pdf_path
+                    save_salary_slip(slip_data)
+                    success_count += 1
+                except Exception as ex:
+                    error_list.append(f"Row {row_idx} ({emp['name']}): {str(ex)}")
+
+            # Cleanup temp
+            try: os.unlink(tmp_path)
+            except: pass
+
+            if success_count:
+                log_activity(current_user.email, "Excel Upload",
+                             f"Generated {success_count} slips via Excel for {MONTHS[month_override or now.month]} {year_override or now.year}")
+                flash(f"✅ {success_count} salary slip(s) successfully generated from Excel!", "success")
+            if error_list:
+                flash(f"⚠️ {len(error_list)} row(s) skipped: " + " | ".join(error_list[:5]), "warning")
+
+            return redirect(url_for("view_slips"))
+
+        except Exception as e:
+            flash(f"❌ Excel parsing error: {str(e)}", "danger")
+            return redirect(request.url)
+
+    return render_template(
+        "excel_upload.html",
+        employees=employees,
+        months=MONTHS,
+        current_month=now.month,
+        current_year=now.year,
+        years=range(2023, 2041)
+    )
 
 
 @app.route("/logs")

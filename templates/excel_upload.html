@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+{% block title %}Excel Bulk Upload — DACI Payroll{% endblock %}
+{% block page_title %}Excel Bulk Upload{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-heading">Excel Bulk Upload</div>
+    <div class="page-sub">Upload an Excel file to generate salary slips for all employees at once</div>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('download_excel_template') }}" class="btn-sk-outline" id="btn-download-template">
+      <i class="bi bi-file-earmark-arrow-down"></i> Download Template
+    </a>
+    <a href="{{ url_for('generate_bulk') }}" class="btn-sk-outline">
+      <i class="bi bi-stack"></i> Regular Bulk
+    </a>
+  </div>
+</div>
+
+<div class="row g-4">
+
+  <!-- ── Upload Card ─────────────────────────────────────────── -->
+  <div class="col-lg-7">
+    <div class="sk-card">
+      <div class="sk-card-header">
+        <div class="sk-card-title">
+          <i class="bi bi-file-earmark-excel-fill" style="color:#1D6F42;"></i>
+          Upload Salary Data
+        </div>
+      </div>
+      <div class="sk-card-body">
+        <form method="POST" enctype="multipart/form-data" id="excel-upload-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <!-- Drag & Drop Zone -->
+          <div id="drop-zone"
+               style="border:2px dashed var(--border); border-radius:14px; padding:40px 20px;
+                      text-align:center; cursor:pointer; transition:all .25s; margin-bottom:20px;
+                      background:var(--bg-secondary);"
+               onclick="document.getElementById('excel_file').click()"
+               ondragover="event.preventDefault(); this.style.borderColor='var(--accent)';"
+               ondragleave="this.style.borderColor='var(--border)';"
+               ondrop="handleDrop(event)">
+            <div id="drop-icon" style="font-size:48px; color:var(--accent); margin-bottom:12px;">
+              <i class="bi bi-file-earmark-excel"></i>
+            </div>
+            <div id="drop-text" style="font-size:15px; font-weight:600; color:var(--text-primary); margin-bottom:6px;">
+              Drag & drop your Excel file here
+            </div>
+            <div style="font-size:13px; color:var(--muted);">or click to browse • .xlsx / .xls only</div>
+            <div id="file-name-display" style="margin-top:14px; font-size:13px; color:var(--accent); font-weight:600; display:none;"></div>
+            <input type="file" name="excel_file" id="excel_file" accept=".xlsx,.xls"
+                   style="display:none;" onchange="handleFileSelect(this)">
+          </div>
+
+          <!-- Period Override -->
+          <div style="background:var(--bg-secondary); border-radius:10px; padding:16px; margin-bottom:20px;">
+            <div style="font-size:13px; font-weight:700; color:var(--text-primary); margin-bottom:12px;">
+              <i class="bi bi-calendar3" style="color:var(--accent);"></i>
+              Salary Period Override
+              <span style="font-size:11px; font-weight:400; color:var(--muted); margin-left:6px;">
+                (overrides month/year columns in Excel)
+              </span>
+            </div>
+            <div class="row g-3">
+              <div class="col-6">
+                <label class="form-label">Month</label>
+                <select name="month" class="form-select">
+                  {% for i in range(1, 13) %}
+                    <option value="{{ i }}" {{ 'selected' if i == current_month else '' }}>{{ months[i] }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-6">
+                <label class="form-label">Year</label>
+                <select name="year" class="form-select">
+                  {% for y in years %}
+                    <option value="{{ y }}" {{ 'selected' if y == current_year else '' }}>{{ y }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Info Box -->
+          <div style="background:#e8f5e9; border:1px solid #a5d6a7; border-radius:10px;
+                      padding:14px 16px; margin-bottom:20px;">
+            <div style="font-size:13px; font-weight:700; color:#2e7d32; margin-bottom:6px;">
+              <i class="bi bi-info-circle-fill"></i> How It Works
+            </div>
+            <ul style="font-size:12px; color:#388e3c; margin:0; padding-left:18px; line-height:1.9;">
+              <li>Download the template — it's pre-filled with your employees' default salaries.</li>
+              <li>Edit any values (allowances, deductions, overtime, etc.) as needed.</li>
+              <li>Upload the filled file — slips are generated in seconds.</li>
+              <li><strong>Employee_ID</strong> column is mandatory to match records.</li>
+            </ul>
+          </div>
+
+          <button type="submit" class="btn-sk w-100" style="font-size:15px; padding:14px;" id="upload-btn">
+            <i class="bi bi-lightning-charge-fill"></i>
+            Generate All Slips from Excel
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Right Panel ─────────────────────────────────────────── -->
+  <div class="col-lg-5 d-flex flex-column gap-4">
+
+    <!-- Template Info Card -->
+    <div class="sk-card">
+      <div class="sk-card-header">
+        <div class="sk-card-title">
+          <i class="bi bi-table" style="color:var(--accent);"></i> Expected Columns
+        </div>
+      </div>
+      <div class="sk-card-body" style="padding:12px 16px;">
+        <div style="display:flex; flex-wrap:wrap; gap:6px;">
+          {% set cols = [
+            "Employee_ID","Basic_Salary","House_Allowance","Transport_Allowance",
+            "Medical_Allowance","Other_Allowance","Dearness_Allowance","COLA_Allowance",
+            "Utility_Allowance","Previous_Month_Allowance","Bonus_Allowance",
+            "Leave_Encashment","Overtime","Income_Tax","EOBI_Deduction",
+            "Unpaid_Leaves","Other_Deduction","Working_Days"
+          ] %}
+          {% for col in cols %}
+          <span style="background:var(--bg-secondary); color:var(--accent); border:1px solid var(--border);
+                       border-radius:6px; font-size:11px; font-weight:600; padding:3px 8px;">
+            {{ col }}
+          </span>
+          {% endfor %}
+        </div>
+        <div style="margin-top:12px; font-size:12px; color:var(--muted);">
+          <i class="bi bi-asterisk" style="color:#e53935; font-size:10px;"></i>
+          <strong>Employee_ID</strong> is required. All other columns fallback to employee profile defaults if omitted.
+        </div>
+      </div>
+    </div>
+
+    <!-- Employees Preview Card -->
+    <div class="sk-card" style="flex:1;">
+      <div class="sk-card-header">
+        <div class="sk-card-title">
+          <i class="bi bi-people-fill" style="color:var(--accent);"></i>
+          Employees ({{ employees|length }})
+        </div>
+      </div>
+      <div style="max-height:320px; overflow-y:auto;">
+        <table class="sk-table">
+          <thead>
+            <tr><th>ID</th><th>Name</th><th>Default Gross</th></tr>
+          </thead>
+          <tbody>
+            {% for emp in employees %}
+            <tr>
+              <td style="font-family:monospace; font-size:12px; color:var(--muted);">
+                {{ emp.employee_id }}
+              </td>
+              <td>
+                <div style="display:flex; align-items:center; gap:7px;">
+                  <div class="emp-avatar" style="margin:0; width:26px; height:26px; font-size:10px;">
+                    {{ emp.name[0] }}
+                  </div>
+                  <div>
+                    <strong style="font-size:12px;">{{ emp.name }}</strong><br>
+                    <small style="color:var(--muted); font-size:11px;">{{ emp.designation }}</small>
+                  </div>
+                </div>
+              </td>
+              <td style="font-size:12px; font-weight:700; color:var(--accent);">
+                PKR {{ "{:,.0f}".format(
+                  emp.basic_salary + emp.house_allowance + emp.transport_allowance +
+                  emp.medical_allowance + emp.other_allowance
+                ) }}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Drag & Drop handlers
+  function handleDrop(e) {
+    e.preventDefault();
+    const files = e.dataTransfer.files;
+    if (files.length > 0) setFile(files[0]);
+    document.getElementById('drop-zone').style.borderColor = 'var(--border)';
+  }
+
+  function handleFileSelect(input) {
+    if (input.files.length > 0) setFile(input.files[0]);
+  }
+
+  function setFile(file) {
+    const allowed = ['.xlsx', '.xls'];
+    const ext = '.' + file.name.split('.').pop().toLowerCase();
+    if (!allowed.includes(ext)) {
+      alert('Sirf .xlsx ya .xls files upload kar sakte hain.');
+      return;
+    }
+    // Show file name
+    const display = document.getElementById('file-name-display');
+    display.style.display = 'block';
+    display.innerHTML = `<i class="bi bi-check-circle-fill" style="color:#4CAF50;"></i> ${file.name}`;
+
+    document.getElementById('drop-zone').style.borderColor = 'var(--accent)';
+    document.getElementById('drop-icon').innerHTML = '<i class="bi bi-check-circle-fill" style="color:#4CAF50;"></i>';
+    document.getElementById('drop-text').textContent = 'File ready to upload';
+
+    // Set file to hidden input
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    document.getElementById('excel_file').files = dt.files;
+  }
+
+  // Show loader on submit
+  document.getElementById('excel-upload-form').addEventListener('submit', function(e) {
+    const fi = document.getElementById('excel_file');
+    if (!fi.files || fi.files.length === 0) {
+      e.preventDefault();
+      alert('Pehle Excel file select karein!');
+      return;
+    }
+    document.getElementById('upload-btn').innerHTML =
+      '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Processing…';
+    document.getElementById('upload-btn').disabled = true;
+  });
+</script>
+{% endblock %}

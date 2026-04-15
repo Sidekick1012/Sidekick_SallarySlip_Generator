@@ -46,6 +46,9 @@
     <a href="{{ url_for('generate_bulk') }}" class="nav-link {% if request.endpoint == 'generate_bulk' %}active{% endif %}">
       <i class="bi bi-stack"></i> Bulk Generate
     </a>
+    <a href="{{ url_for('generate_from_excel') }}" class="nav-link {% if request.endpoint == 'generate_from_excel' %}active{% endif %}">
+      <i class="bi bi-file-earmark-excel-fill"></i> Excel Upload
+    </a>
     {% endif %}
     <a href="{{ url_for('view_slips') }}" class="nav-link {% if request.endpoint == 'view_slips' %}active{% endif %}">
       <i class="bi bi-archive-fill"></i> View Slips
