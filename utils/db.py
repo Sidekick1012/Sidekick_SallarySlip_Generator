@@ -12,19 +12,6 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# Ensure 'slips' bucket exists for PDF storage
-def init_storage():
-    try:
-        # Check if bucket exists, if not, create it
-        buckets = supabase.storage.list_buckets()
-        if not any(b.name == 'slips' for b in buckets):
-            supabase.storage.create_bucket('slips', options={"public": False})
-            print("Created 'slips' storage bucket.")
-    except Exception as e:
-        print(f"Storage Init Warning: {e} (Bucket might already exist or permission denied)")
-
-init_storage()
-
 
 def get_all_employees():
     try:
