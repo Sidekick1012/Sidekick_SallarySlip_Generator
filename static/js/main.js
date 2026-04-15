@@ -12,12 +12,7 @@ document.addEventListener('click', function(e) {
   }
 });
 
-// Dark Mode Logic
-function initTheme() {
-  const savedTheme = localStorage.getItem('theme') || 'light';
-  document.documentElement.setAttribute('data-theme', savedTheme);
-}
-
+// Theme Toggle
 function toggleTheme() {
   const currentTheme = document.documentElement.getAttribute('data-theme');
   const newTheme = currentTheme === 'light' ? 'dark' : 'light';
@@ -26,6 +21,30 @@ function toggleTheme() {
   localStorage.setItem('theme', newTheme);
   
   showToast(`Switched to ${newTheme} mode`, 'info');
+}
+
+// Confetti Celebration
+function triggerCelebration() {
+  const duration = 3 * 1000;
+  const animationEnd = Date.now() + duration;
+  const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 10000 };
+
+  function randomInRange(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+
+  const interval = setInterval(function() {
+    const timeLeft = animationEnd - Date.now();
+
+    if (timeLeft <= 0) {
+      return clearInterval(interval);
+    }
+
+    const particleCount = 50 * (timeLeft / duration);
+    // since particles fall down, start a bit higher than random
+    confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+    confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+  }, 250);
 }
 
 // Toast Notifications
@@ -87,7 +106,6 @@ function initTableSearch(inputId, tableId) {
       }
     });
 
-    // Handle empty state within table if no results found
     const tbody = table.querySelector('tbody');
     let noResultsRow = tbody.querySelector('.no-results-row');
     
@@ -95,12 +113,7 @@ function initTableSearch(inputId, tableId) {
       if (!noResultsRow) {
         noResultsRow = document.createElement('tr');
         noResultsRow.className = 'no-results-row';
-        noResultsRow.innerHTML = `
-          <td colspan="100%" class="text-center py-4">
-            <i class="bi bi-search" style="font-size: 24px; color: var(--muted); opacity: 0.5;"></i>
-            <p class="mt-2 mb-0" style="color: var(--muted); font-size: 13px;">No matching records found</p>
-          </td>
-        `;
+        noResultsRow.innerHTML = `<td colspan="100%" class="text-center py-4"><i class="bi bi-search" style="font-size: 24px; color: var(--muted); opacity: 0.5;"></i><p class="mt-2 mb-0" style="color: var(--muted); font-size: 13px;">No matching records found</p></td>`;
         tbody.appendChild(noResultsRow);
       }
     } else if (noResultsRow) {
@@ -123,12 +136,16 @@ function setBtnLoading(btn, isLoading, text = 'Processing...') {
 
 // Initialize on Load
 document.addEventListener('DOMContentLoaded', function() {
-  initTheme();
-  
-  // Auto-dismiss standard alerts and convert to toasts if preferred
+  // Check for success flash messages containing "Email" or "Salary"
+  document.querySelectorAll('.alert-success').forEach(a => {
+    const txt = a.textContent.toLowerCase();
+    if (txt.includes('email') || txt.includes('sent') || txt.includes('success')) {
+      triggerCelebration();
+    }
+  });
+
+  // Auto-dismiss standard alerts
   document.querySelectorAll('.alert').forEach(a => {
-    // We can keep standard alerts or auto-convert them. 
-    // For now, just keep the auto-dismiss.
     setTimeout(() => {
       const bsAlert = bootstrap.Alert.getOrCreateInstance(a);
       if (bsAlert) bsAlert.close();
