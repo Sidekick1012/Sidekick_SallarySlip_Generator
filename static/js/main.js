@@ -25,13 +25,16 @@ function toggleTheme() {
 
 // Confetti Celebration
 function triggerCelebration() {
-  const duration = 3 * 1000;
+  const duration = 4 * 1000;
   const animationEnd = Date.now() + duration;
-  const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 10000 };
+  const defaults = { startVelocity: 45, spread: 360, ticks: 100, zIndex: 10000 };
 
   function randomInRange(min, max) {
     return Math.random() * (max - min) + min;
   }
+
+  // Initial big burst
+  confetti({ ...defaults, particleCount: 150, origin: { x: 0.5, y: 0.7 } });
 
   const interval = setInterval(function() {
     const timeLeft = animationEnd - Date.now();
@@ -40,12 +43,19 @@ function triggerCelebration() {
       return clearInterval(interval);
     }
 
-    const particleCount = 50 * (timeLeft / duration);
-    // since particles fall down, start a bit higher than random
+    const particleCount = 100 * (timeLeft / duration);
+    
+    // Side bursts
     confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
     confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
-  }, 250);
+    
+    // Random middle bursts
+    if (Math.random() > 0.5) {
+      confetti({ ...defaults, particleCount: particleCount * 0.5, origin: { x: randomInRange(0.4, 0.6), y: Math.random() - 0.2 } });
+    }
+  }, 150);
 }
+
 
 // Toast Notifications
 function showToast(message, type = 'success') {
