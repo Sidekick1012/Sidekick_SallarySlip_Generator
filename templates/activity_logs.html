@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Activity Logs — Sidekick Payroll{% endblock %}
+{% block title %}Activity Logs — DACI Payroll{% endblock %}
 {% block page_title %}System Activity Logs{% endblock %}
 
 {% block content %}
@@ -15,38 +15,48 @@
     <table class="sk-table">
       <thead>
         <tr>
-          <th style="width: 200px;">Timestamp</th>
-          <th style="width: 250px;">User</th>
-          <th style="width: 180px;">Action</th>
+          <th style="width: 180px;">Date</th>
+          <th style="width: 120px;">Time</th>
+          <th style="width: 230px;">User</th>
+          <th style="width: 160px;">Action</th>
           <th>Details</th>
         </tr>
       </thead>
       <tbody>
         {% for log in logs %}
+        {% set ts = log.timestamp | string %}
+        {% set date_part = ts[:10] %}
+        {% set time_part = ts[11:19] if ts | length > 10 else '—' %}
         <tr>
           <td>
-            <div style="font-size: 13px; font-weight: 600;">{{ log.timestamp[:10] }}</div>
-            <div style="font-size: 12px; color: var(--muted);">{{ log.timestamp[11:19] }}</div>
+            <div style="font-size: 13px; font-weight: 600; color: var(--text);">
+              {{ date_part }}
+            </div>
+          </td>
+          <td>
+            <div style="font-size: 13px; font-weight: 500; color: var(--muted); font-family: monospace;">
+              {{ time_part }}
+            </div>
           </td>
           <td>
             <div class="d-flex align-items-center gap-2">
               <div class="emp-avatar" style="width: 30px; height: 30px; font-size: 12px;">{{ log.user_email[0]|upper }}</div>
-              <span style="font-size: 14px;">{{ log.user_email }}</span>
+              <span style="font-size: 13px;">{{ log.user_email }}</span>
             </div>
           </td>
           <td>
-            <span class="badge {% if 'Email' in log.action %}bg-info{% elif 'Delete' in log.action %}bg-danger{% elif 'Edit' in log.action or 'Update' in log.action %}bg-warning text-dark{% else %}bg-success{% endif %}" style="font-weight: 500; font-size: 12px;">
+            <span class="badge {% if 'Email' in log.action %}bg-info{% elif 'Delete' in log.action %}bg-danger{% elif 'Edit' in log.action or 'Update' in log.action %}bg-warning text-dark{% elif 'Error' in log.action %}bg-danger{% else %}bg-success{% endif %}" style="font-weight: 500; font-size: 12px;">
               {{ log.action }}
             </span>
           </td>
           <td style="font-size: 13px; color: var(--muted);">
-            {{ log.details or '-' }}
+            {{ log.details or '—' }}
           </td>
         </tr>
         {% endfor %}
         {% if not logs %}
         <tr>
-          <td colspan="4" class="text-center py-5">
+          <td colspan="5" class="text-center py-5">
             <i class="bi bi-clock-history" style="font-size: 40px; color: var(--muted);"></i>
             <p class="mt-3" style="color: var(--muted);">No activity logs found yet.</p>
           </td>
@@ -57,3 +67,4 @@
   </div>
 </div>
 {% endblock %}
+

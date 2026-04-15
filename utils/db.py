@@ -119,13 +119,15 @@ def create_user(email, password_hash, role="hr"):
 
 
 def log_activity(user_email, action, details=None):
-    from datetime import datetime
+    from datetime import datetime, timezone, timedelta
     try:
+        PKT = timezone(timedelta(hours=5))  # Pakistan Standard Time UTC+5
+        now_pkt = datetime.now(PKT)
         data = {
             "user_email": user_email,
             "action": action,
             "details": details,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": now_pkt.strftime("%Y-%m-%dT%H:%M:%S")  # Clean ISO format without offset
         }
         supabase.table("activity_logs").insert(data).execute()
     except Exception as e:
