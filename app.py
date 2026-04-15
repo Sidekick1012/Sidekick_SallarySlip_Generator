@@ -95,7 +95,7 @@ def build_email_html(emp_name, month_name, year):
       </p>
     </div>
     <p style="font-size:11px;color:#bbb;text-align:center;margin:0;">
-      &copy; {year} DACI Payroll System &middot; Confidential &middot; All rights reserved
+      &copy; {year} Sidekick Payroll System &middot; Confidential &middot; All rights reserved
     </p>
   </div>
 </div>
