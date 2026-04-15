@@ -206,11 +206,32 @@ def dashboard():
     now = datetime.now()
     recent_slips = get_salary_slips(month=now.month, year=now.year)
 
+    # Fetch 6 months history for chart
+    chart_labels = []
+    chart_data = []
+    
+    for i in range(5, -1, -1):
+        m = now.month - i
+        y = now.year
+        if m <= 0:
+            m += 12
+            y -= 1
+        
+        month_name = MONTHS[m]
+        chart_labels.append(f"{month_name} {y}")
+        
+        # Get total net for that month
+        m_slips = get_salary_slips(month=m, year=y)
+        total_net = sum(s["net_salary"] for s in m_slips) if m_slips else 0
+        chart_data.append(total_net)
+
     stats = {
         "total_employees": len(employees),
         "slips_this_month": len(recent_slips),
         "current_month": MONTHS[now.month],
         "current_year": now.year,
+        "chart_labels": chart_labels,
+        "chart_data": chart_data
     }
     return render_template("dashboard.html", stats=stats, recent_slips=recent_slips[:5], months=MONTHS)
 

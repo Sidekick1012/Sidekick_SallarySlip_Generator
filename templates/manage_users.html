@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Manage Users — Sidekick Payroll{% endblock %}
+{% block title %}Manage Users — DACI Payroll{% endblock %}
 {% block page_title %}Manage Users{% endblock %}
 
 {% block content %}
 <div class="page-header">
   <div>
     <div class="page-heading">User Management</div>
-    <div class="page-sub">{{ users|length }} registered users</div>
+    <div class="page-sub">{{ users|length }} registered users in the system</div>
   </div>
   <a href="{{ url_for('add_user') }}" class="btn-sk">
     <i class="bi bi-person-plus-fill"></i> Add User
@@ -17,7 +17,7 @@
 <div class="row g-3 mb-4">
   <div class="col-md-4">
     <div class="stat-card">
-      <div class="stat-icon" style="background:rgba(0,194,203,0.12); color:var(--accent);">
+      <div class="stat-icon teal">
         <i class="bi bi-shield-fill-check"></i>
       </div>
       <div>
@@ -28,7 +28,7 @@
   </div>
   <div class="col-md-4">
     <div class="stat-card">
-      <div class="stat-icon" style="background:rgba(27,102,86,0.12); color:#1b6656;">
+      <div class="stat-icon green">
         <i class="bi bi-person-badge-fill"></i>
       </div>
       <div>
@@ -39,12 +39,12 @@
   </div>
   <div class="col-md-4">
     <div class="stat-card">
-      <div class="stat-icon" style="background:rgba(123,176,107,0.12); color:#7bb06b;">
+      <div class="stat-icon dark">
         <i class="bi bi-eye-fill"></i>
       </div>
       <div>
         <div class="stat-label">Viewer</div>
-        <div style="font-size:12px; color:var(--muted); margin-top:2px;">Sirf dekh sakta hai, edit nahi</div>
+        <div style="font-size:12px; color:var(--muted); margin-top:2px;">Read-only access to records</div>
       </div>
     </div>
   </div>
@@ -54,11 +54,15 @@
   <div class="sk-card-header">
     <div class="sk-card-title">
       <i class="bi bi-people-fill" style="color:var(--accent);"></i>
-      All Users
+      All System Users
+    </div>
+    <div class="table-search">
+      <i class="bi bi-search"></i>
+      <input type="text" id="userSearch" placeholder="Search by email or role...">
     </div>
   </div>
   <div class="table-responsive">
-    <table class="sk-table">
+    <table class="sk-table" id="userTable">
       <thead>
         <tr>
           <th>User</th>
@@ -109,7 +113,7 @@
               </select>
               <button type="submit" class="btn-sm-icon"
                       style="background:rgba(27,102,86,0.12); color:#1b6656;"
-                      title="Role Update Karo">
+                      title="Update Role" onclick="this.disabled=true; this.form.submit();">
                 <i class="bi bi-check-lg"></i>
               </button>
             </form>
@@ -136,4 +140,12 @@
     </table>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    initTableSearch('userSearch', 'userTable');
+});
+</script>
 {% endblock %}
