@@ -12,6 +12,19 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+# Ensure 'slips' bucket exists for PDF storage
+def init_storage():
+    try:
+        # Check if bucket exists, if not, create it
+        buckets = supabase.storage.list_buckets()
+        if not any(b.name == 'slips' for b in buckets):
+            supabase.storage.create_bucket('slips', options={"public": False})
+            print("Created 'slips' storage bucket.")
+    except Exception as e:
+        print(f"Storage Init Warning: {e} (Bucket might already exist or permission denied)")
+
+init_storage()
+
 
 def get_all_employees():
     try:
@@ -132,4 +145,42 @@ def log_activity(user_email, action, details=None):
         supabase.table("activity_logs").insert(data).execute()
     except Exception as e:
         print(f"Activity Log Error: {e}")
+
+
+# ── Storage Helpers ─────────────────────────────────────────────
+
+def upload_pdf_to_supabase(local_file_path, storage_path):
+    """Uploads a local file to Supabase storage 'slips' bucket."""
+    try:
+        with open(local_file_path, "rb") as f:
+            # Overwrite if exists (upsert)
+            res = supabase.storage.from_("slips").upload(
+                path=storage_path,
+                file=f,
+                file_options={"content-type": "application/pdf", "x-upsert": "true"}
+            )
+        return res
+    except Exception as e:
+        print(f"Storage Upload Error: {e}")
+        return None
+
+
+def get_pdf_download_url(storage_path):
+    """Gets a signed URL for secure download (expires in 1 hour)."""
+    try:
+        # Signed URL is safer than public for payroll data
+        res = supabase.storage.from_("slips").create_signed_url(storage_path, 3600)
+        return res.get("signedURL")
+    except Exception as e:
+        print(f"Storage Signed URL Error: {e}")
+        return None
+
+def download_pdf_from_supabase(storage_path):
+    """Downloads the file content directly from Supabase."""
+    try:
+        res = supabase.storage.from_("slips").download(storage_path)
+        return res
+    except Exception as e:
+        print(f"Storage Download Error: {e}")
+        return None
 

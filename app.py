@@ -14,7 +14,7 @@ from utils.db import (
     supabase, get_all_employees, get_employee_by_id, add_employee,
     update_employee, delete_employee, save_salary_slip,
     get_salary_slips, get_slip_by_id, get_user_by_email, 
-    create_user, log_activity
+    create_user, log_activity, upload_pdf_to_supabase, download_pdf_from_supabase
 )
 from utils.pdf_generator import generate_salary_slip_pdf
 
@@ -100,6 +100,34 @@ def build_email_html(emp_name, month_name, year):
   </div>
 </div>
 """
+
+
+def generate_and_upload_slip(slip_data, emp):
+    """Generates PDF locally, uploads to Supabase Storage, and cleans up local file."""
+    try:
+        # 1. Generate locally
+        local_path = generate_salary_slip_pdf(slip_data, emp)
+        if not os.path.exists(local_path):
+            raise Exception("PDF generation failed.")
+
+        # 2. Upload to Supabase Storage (Path: EMP_ID/filename.pdf)
+        filename = os.path.basename(local_path)
+        storage_path = f"{emp.get('employee_id', 'EMP')}/{filename}"
+        
+        upload_res = upload_pdf_to_supabase(local_path, storage_path)
+        
+        # 3. If upload success, remove local file to save space
+        if upload_res:
+            try:
+                os.remove(local_path)
+            except:
+                pass
+            return storage_path
+        
+        return local_path # Fallback to local if upload failed
+    except Exception as e:
+        print(f"Generate & Upload Error: {e}")
+        return None
 
 
 class User(UserMixin):
@@ -447,8 +475,8 @@ def generate():
         }
 
         try:
-            # Generate PDF
-            pdf_path = generate_salary_slip_pdf(slip_data, emp)
+            # Generate & Upload
+            pdf_path = generate_and_upload_slip(slip_data, emp)
             slip_data["pdf_path"] = pdf_path
 
             # Save to DB
@@ -530,9 +558,9 @@ def edit_salary_slip(slip_id):
             # Update DB
             supabase.table("salary_slips").update(updated_data).eq("id", slip_id).execute()
             
-            # Re-generate PDF
+            # Re-generate & Upload
             emp = get_employee_by_id(slip["employee_id"])
-            pdf_path = generate_salary_slip_pdf({**updated_data, "employee_id": slip["employee_id"]}, emp)
+            pdf_path = generate_and_upload_slip({**updated_data, "employee_id": slip["employee_id"]}, emp)
             supabase.table("salary_slips").update({"pdf_path": pdf_path}).eq("id", slip_id).execute()
             
             log_activity(current_user.email, "Edit Slip", f"Updated salary slip for {emp['name']} ({MONTHS[updated_data['month']]} {updated_data['year']})")
@@ -656,7 +684,7 @@ def generate_bulk():
                 "generated_by":             current_user.email,
             }
             try:
-                pdf_path = generate_salary_slip_pdf(slip_data, emp)
+                pdf_path = generate_and_upload_slip(slip_data, emp)
                 slip_data["pdf_path"] = pdf_path
                 save_salary_slip(slip_data)
                 success_count += 1
@@ -758,20 +786,32 @@ def download_slip(slip_id):
         return redirect(url_for("view_slips"))
 
     pdf_path = slip.get("pdf_path")
+    emp_name = slip["employees"]["name"].replace(" ", "_")
+    month    = MONTHS[slip["month"]]
+    filename = f"SalarySlip_{emp_name}_{month}_{slip['year']}.pdf"
+
+    # 1. Try local first (legacy or temporary)
     if pdf_path and os.path.exists(pdf_path):
-        emp_name = slip["employees"]["name"].replace(" ", "_")
-        month    = MONTHS[slip["month"]]
-        filename = f"SalarySlip_{emp_name}_{month}_{slip['year']}.pdf"
         return send_file(pdf_path, as_attachment=True, download_name=filename)
 
-    # Regenerate if file missing
+    # 2. Try Supabase Storage
+    if pdf_path:
+        content = download_pdf_from_supabase(pdf_path)
+        if content:
+            return send_file(io.BytesIO(content), as_attachment=True, download_name=filename, mimetype="application/pdf")
+
+    # 3. Regenerate & Upload if missing
     try:
         emp_data = slip["employees"]
-        pdf_path = generate_salary_slip_pdf(slip, emp_data)
-        return send_file(pdf_path, as_attachment=True,
-                         download_name=f"SalarySlip_{emp_data['name']}_{slip['month']}_{slip['year']}.pdf")
+        new_path = generate_and_upload_slip(slip, emp_data)
+        if new_path:
+            supabase.table("salary_slips").update({"pdf_path": new_path}).eq("id", slip_id).execute()
+            content = download_pdf_from_supabase(new_path)
+            return send_file(io.BytesIO(content), as_attachment=True, download_name=filename, mimetype="application/pdf")
+        else:
+            raise Exception("Failed to re-generate PDF")
     except Exception as e:
-        flash(f"Could not generate PDF: {str(e)}", "danger")
+        flash(f"Could not retrieve PDF: {str(e)}", "danger")
         return redirect(url_for("view_slips"))
 
 
@@ -818,11 +858,25 @@ def send_slip_email(slip_id):
     try:
         import base64
         pdf_path = slip.get("pdf_path")
-        if not pdf_path or not os.path.exists(pdf_path):
-            pdf_path = generate_salary_slip_pdf(slip, emp_data)
+        pdf_content_bytes = None
 
-        with open(pdf_path, "rb") as f:
-            pdf_content = base64.b64encode(f.read()).decode("utf-8")
+        if pdf_path and os.path.exists(pdf_path):
+            with open(pdf_path, "rb") as f:
+                pdf_content_bytes = f.read()
+        elif pdf_path:
+            pdf_content_bytes = download_pdf_from_supabase(pdf_path)
+
+        if not pdf_content_bytes:
+            # Re-generate & Upload
+            new_path = generate_and_upload_slip(slip, emp_data)
+            supabase.table("salary_slips").update({"pdf_path": new_path}).eq("id", slip_id).execute()
+            pdf_content_bytes = download_pdf_from_supabase(new_path)
+
+        if not pdf_content_bytes:
+            flash("PDF taiyar nahi ho saka.", "danger")
+            return redirect(url_for("view_slips"))
+
+        pdf_content = base64.b64encode(pdf_content_bytes).decode("utf-8")
 
         api_key = os.getenv("BREVO_API_KEY")
         if not api_key:
@@ -865,11 +919,25 @@ def bulk_email_thread(app_context, slip_ids, api_key, sender_email):
                 if not emp.get("email"): continue
                 
                 pdf_path = slip.get("pdf_path")
-                if not pdf_path or not os.path.exists(pdf_path):
-                    pdf_path = generate_salary_slip_pdf(slip, emp)
-                
-                with open(pdf_path, "rb") as f:
-                    content = base64.b64encode(f.read()).decode("utf-8")
+                pdf_content_bytes = None
+
+                if pdf_path and os.path.exists(pdf_path):
+                    with open(pdf_path, "rb") as f:
+                        pdf_content_bytes = f.read()
+                elif pdf_path:
+                    pdf_content_bytes = download_pdf_from_supabase(pdf_path)
+
+                if not pdf_content_bytes:
+                    # Re-generate & Upload
+                    pdf_path = generate_and_upload_slip(slip, emp)
+                    if pdf_path:
+                        supabase.table("salary_slips").update({"pdf_path": pdf_path}).eq("id", int(s_id)).execute()
+                        pdf_content_bytes = download_pdf_from_supabase(pdf_path)
+
+                if not pdf_content_bytes:
+                    continue
+
+                content = base64.b64encode(pdf_content_bytes).decode("utf-8")
                 
                 month_name = MONTHS[slip['month']]
                 payload = {
@@ -1110,7 +1178,7 @@ def generate_from_excel():
                 }
 
                 try:
-                    pdf_path = generate_salary_slip_pdf(slip_data, emp)
+                    pdf_path = generate_and_upload_slip(slip_data, emp)
                     slip_data["pdf_path"] = pdf_path
                     save_salary_slip(slip_data)
                     success_count += 1
