@@ -145,15 +145,17 @@ body {
   flex-direction: column;
   align-items: center;
   padding: 40px 18px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .sidebar-brand img {
-  filter: brightness(1) contrast(1.2); /* Keep logo white against our dark image sidebar */
+  filter: brightness(1) contrast(1.2);
   transition: all 0.3s ease;
-}
-
-[data-theme="dark"] .sidebar-brand img {
-  filter: brightness(1);
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 
