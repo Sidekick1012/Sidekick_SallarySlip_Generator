@@ -203,16 +203,18 @@
     animation: fadeUp .5s .05s ease both;
   }
 
-  .form-heading { margin-bottom: 36px; }
+  .form-heading { margin-bottom: 40px; text-align: center; }
   .form-heading h2 {
     font-family: 'DM Serif Display', serif;
-    font-size: 30px;
+    font-size: 36px;
     color: var(--navy);
-    margin-bottom: 6px;
+    margin-bottom: 8px;
+    letter-spacing: -1px;
   }
   .form-heading p {
-    font-size: 13px;
-    color: var(--sky);
+    font-size: 15px;
+    color: var(--teal);
+    font-weight: 500;
   }
 
   /* alerts */
@@ -230,15 +232,17 @@
     display: flex;
     align-items: center;
     background: var(--white);
-    border: 1.5px solid var(--mist);
-    border-radius: 14px;
-    transition: border-color .25s, box-shadow .25s;
+    border: 1.5px solid #edf2f7;
+    border-radius: 18px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     overflow: hidden;
     position: relative;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
   }
   .field-inner:focus-within {
     border-color: var(--teal);
-    box-shadow: 0 0 0 3px rgba(27, 102, 86, 0.1);
+    box-shadow: 0 10px 25px rgba(27, 102, 86, 0.08), 0 0 0 4px rgba(27, 102, 86, 0.05);
+    transform: translateY(-1px);
   }
 
   .field-icon {
@@ -301,22 +305,22 @@
   /* ── SUBMIT ── */
   .btn-submit {
     width: 100%;
-    padding: 15px;
+    padding: 18px;
     border: none;
-    border-radius: 14px;
-    background: var(--navy);
+    border-radius: 18px;
+    background: linear-gradient(135deg, var(--navy), var(--teal));
     color: var(--white);
     font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 16px;
+    font-weight: 700;
     letter-spacing: .5px;
     cursor: pointer;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    margin-top: 28px;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    margin-top: 32px;
     position: relative;
     overflow: hidden;
-    transition: transform .2s, box-shadow .2s;
-    box-shadow: 0 6px 20px rgba(26,43,60,.2);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 12px 30px rgba(29, 67, 84, 0.25);
   }
   .btn-submit::before {
     content: '';
@@ -405,10 +409,6 @@
     <div class="login-form-wrap">
 
       <div class="form-heading">
-        <!-- Small logo for the form side -->
-        <img src="/assets/logo/Logo@200-white.png" alt="DACI Logo" 
-             style="max-width: 160px; height: auto; margin-bottom: 20px; filter: brightness(0);" 
-             onerror="this.style.display='none';">
         <h2>Welcome back</h2>
         <p>Sign in to your account to continue</p>
       </div>
