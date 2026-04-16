@@ -133,7 +133,7 @@ body {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(15, 23, 42, 0.85); /* Solid high-end emerald/navy overlay */
+  background: rgba(15, 23, 42, 0.6); /* Restored prominent visibility */
   z-index: 0;
 }
 
@@ -144,7 +144,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 40px 18px;
+  padding: 16px 18px 30px; /* Reduced top padding to move logo up */
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
