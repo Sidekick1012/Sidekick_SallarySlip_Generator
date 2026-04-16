@@ -107,8 +107,8 @@ def generate_and_upload_slip(slip_data, emp):
     try:
         # 1. Generate locally
         local_path = generate_salary_slip_pdf(slip_data, emp)
-        if not os.path.exists(local_path):
-            raise Exception("PDF generation failed.")
+        if not local_path or not os.path.exists(local_path):
+            raise Exception("PDF generation failed locally.")
 
         # 2. Upload to Supabase Storage (Path: EMP_ID/filename.pdf)
         filename = os.path.basename(local_path)
@@ -123,8 +123,12 @@ def generate_and_upload_slip(slip_data, emp):
             except:
                 pass
             return storage_path
-        
-        return local_path # Fallback to local if upload failed
+        else:
+            print(f"⚠️ Warning: Upload to Supabase failed for {storage_path}. File remains at {local_path}")
+            # Still return the storage_path so DB reflects where it SHOULD be
+            # The download route will attempt to re-generate/re-upload if missing from storage
+            return storage_path
+
     except Exception as e:
         print(f"Generate & Upload Error: {e}")
         return None

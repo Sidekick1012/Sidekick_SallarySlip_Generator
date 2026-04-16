@@ -144,16 +144,23 @@ def log_activity(user_email, action, details=None):
 def upload_pdf_to_supabase(local_file_path, storage_path):
     """Uploads a local file to Supabase storage 'slips' bucket."""
     try:
+        if not supabase:
+            print("Storage Error: Supabase client not initialized")
+            return None
+
         with open(local_file_path, "rb") as f:
-            # Overwrite if exists (upsert)
+            # Standard options for supabase-py v2+
             res = supabase.storage.from_("slips").upload(
                 path=storage_path,
                 file=f,
-                file_options={"content-type": "application/pdf", "x-upsert": "true"}
+                file_options={
+                    "content-type": "application/pdf",
+                    "upsert": True
+                }
             )
         return res
     except Exception as e:
-        print(f"Storage Upload Error: {e}")
+        print(f"Storage Upload Error (Path: {storage_path}): {e}")
         return None
 
 
@@ -170,9 +177,13 @@ def get_pdf_download_url(storage_path):
 def download_pdf_from_supabase(storage_path):
     """Downloads the file content directly from Supabase."""
     try:
-        res = supabase.storage.from_("slips").download(storage_path)
+        if not supabase:
+            return None
+        # Ensure path doesn't have leading slash if bucket name is provided separately
+        clean_path = storage_path.lstrip("/")
+        res = supabase.storage.from_("slips").download(clean_path)
         return res
     except Exception as e:
-        print(f"Storage Download Error: {e}")
+        print(f"Storage Download Error (Path: {storage_path}): {e}")
         return None
 
