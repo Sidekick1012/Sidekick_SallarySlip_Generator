@@ -47,7 +47,7 @@
   --sidebar-brand:    #ffffff;
   --sidebar-active-bg: rgba(16, 185, 129, 0.2);
   --sidebar-hover-bg:  rgba(255, 255, 255, 0.05);
-  --sidebar-shadow:   10px 0 40px rgba(0,0,0,0.25);
+  --sidebar-shadow:   none; /* Removed shadow bleed */
 }
 
 /* ══ Dark Mode ══════════════════════════════ */
@@ -133,7 +133,7 @@ body {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(29, 67, 84, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
+  background: linear-gradient(180deg, rgba(29, 67, 84, 0.88) 0%, rgba(15, 23, 42, 0.92) 100%);
   z-index: 0;
 }
 
@@ -149,12 +149,12 @@ body {
 }
 
 .sidebar-brand img {
-  filter: brightness(0.1) contrast(1.5); /* Make white logo dark for light mode */
-  transition: filter 0.3s ease;
+  filter: brightness(1) contrast(1.2); /* Keep logo white against our dark image sidebar */
+  transition: all 0.3s ease;
 }
 
 [data-theme="dark"] .sidebar-brand img {
-  filter: brightness(1); /* Reset for dark mode */
+  filter: brightness(1);
 }
 
 
