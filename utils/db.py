@@ -155,7 +155,7 @@ def upload_pdf_to_supabase(local_file_path, storage_path):
                 file=f,
                 file_options={
                     "content-type": "application/pdf",
-                    "upsert": True
+                    "upsert": "true"
                 }
             )
         return res
