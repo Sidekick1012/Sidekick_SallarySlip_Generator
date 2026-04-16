@@ -133,7 +133,7 @@ body {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(29, 67, 84, 0.55) 0%, rgba(15, 23, 42, 0.65) 100%);
+  background: rgba(15, 23, 42, 0.85); /* Solid high-end emerald/navy overlay */
   z-index: 0;
 }
 
@@ -151,7 +151,8 @@ body {
 }
 
 .sidebar-brand img {
-  filter: brightness(1) contrast(1.2);
+  filter: brightness(1) contrast(1.1);
+  mix-blend-mode: lighten; /* Removes any dark borders/boxes baked into the image logo */
   transition: all 0.3s ease;
   background: transparent !important;
   border: none !important;
