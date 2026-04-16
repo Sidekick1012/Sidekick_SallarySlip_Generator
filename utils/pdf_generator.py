@@ -39,7 +39,9 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
     emp_id   = employee_data.get("employee_id", "EMP")
     month    = slip_data.get("month", 1)
     year     = slip_data.get("year", 2024)
-    filename = f"salary_slip_{emp_id}_{year}_{month:02d}.pdf"
+    emp_name = employee_data.get("name", "Employee").replace(" ", "_")
+    month_name = MONTHS[month]
+    filename = f"SalarySlip_{emp_name}_{month_name}_{year}.pdf"
     filepath = os.path.join(output_dir, filename)
 
     doc = SimpleDocTemplate(
