@@ -23,7 +23,7 @@ def test_upload():
                 file=f,
                 file_options={"content-type": "text/plain", "upsert": "true"}
             )
-        print(f"Upload Result: {res}")
+        print(f"✅ Upload Success! Result: {res}")
     except Exception as e:
         print(f"Upload Error: {e}")
 
