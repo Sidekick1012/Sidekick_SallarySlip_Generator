@@ -28,7 +28,8 @@
   /* ── LEFT PANEL ── */
   .login-panel-left {
     width: 45%;
-    background: var(--navy);
+    background: url('/static/img/login_bg.png') no-repeat center center;
+    background-size: cover;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -37,37 +38,15 @@
     overflow: hidden;
   }
 
-  /* animated background blobs */
-  .blob {
+  .login-panel-left::before {
+    content: '';
     position: absolute;
-    border-radius: 50%;
-    filter: blur(70px);
-    opacity: .5;
-    animation: blobDrift linear infinite alternate;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(29, 67, 84, 0.85) 0%, rgba(27, 102, 86, 0.75) 100%);
+    z-index: 0;
   }
-  .blob-1 {
-    width: 360px; height: 360px;
-    background: radial-gradient(circle, rgba(61,122,138,.55), transparent 70%);
-    top: -100px; right: -80px;
-    animation-duration: 14s;
-  }
-  .blob-2 {
-    width: 240px; height: 240px;
-    background: radial-gradient(circle, rgba(109,136,152,.35), transparent 70%);
-    bottom: -60px; left: -40px;
-    animation-duration: 18s;
-    animation-direction: alternate-reverse;
-  }
-  .blob-3 {
-    width: 160px; height: 160px;
-    background: radial-gradient(circle, rgba(61,122,138,.25), transparent 70%);
-    top: 50%; left: 40%;
-    animation-duration: 22s;
-  }
-  @keyframes blobDrift {
-    from { transform: translate(0, 0) scale(1); }
-    to   { transform: translate(20px, 15px) scale(1.08); }
-  }
+
+
 
   /* dot grid */
   .left-grid {
@@ -377,11 +356,7 @@
 
   <!-- LEFT -->
   <div class="login-panel-left">
-    <div class="left-grid"></div>
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-    <div class="blob blob-3"></div>
-    <div class="left-accent-line"></div>
+
 
     <div class="brand-lockup">
       <div class="brand-logo" style="margin-bottom: 20px;">
