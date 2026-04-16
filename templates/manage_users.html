@@ -78,7 +78,7 @@
           <td>
             <div style="display:flex; align-items:center; gap:10px;">
               <div class="emp-avatar" style="margin:0;
-                {% if user.role == 'admin' %}background: linear-gradient(135deg, #0a1f2b, #00c2cb);{% elif user.role == 'hr' %}background: linear-gradient(135deg, #1b6656, #7bb06b);{% else %}background: linear-gradient(135deg, #1d4354, #7bb06b);{% endif %}">
+                {% if user.role == 'admin' %}background: linear-gradient(135deg, #1d4354, #1b6656);{% elif user.role == 'hr' %}background: linear-gradient(135deg, #1b6656, #7bb06b);{% else %}background: linear-gradient(135deg, #1d4354, #7bb06b);{% endif %}">
                 {{ user.email[0]|upper }}
               </div>
               <div>

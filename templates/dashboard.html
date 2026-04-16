@@ -183,8 +183,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Gradient for chart
     const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-    gradient.addColorStop(0, 'rgba(0, 194, 203, 0.4)');
-    gradient.addColorStop(1, 'rgba(0, 194, 203, 0.0)');
+    gradient.addColorStop(0, 'rgba(27, 102, 86, 0.4)');
+    gradient.addColorStop(1, 'rgba(27, 102, 86, 0.0)');
 
     new Chart(ctx, {
         type: 'line',
@@ -193,13 +193,13 @@ document.addEventListener('DOMContentLoaded', function() {
             datasets: [{
                 label: 'Total Net Payroll',
                 data: {{ stats.chart_data|tojson }},
-                borderColor: '#00c2cb',
+                borderColor: '#1b6656',
                 backgroundColor: gradient,
                 borderWidth: 3,
                 fill: true,
                 tension: 0.4,
                 pointRadius: 4,
-                pointBackgroundColor: '#00c2cb',
+                pointBackgroundColor: '#1b6656',
                 pointBorderColor: '#fff',
                 pointBorderWidth: 2,
                 pointHoverRadius: 6
