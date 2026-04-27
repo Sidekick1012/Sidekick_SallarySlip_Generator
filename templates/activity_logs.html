@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Activity Logs — Sidekick Payroll{% endblock %}
+{% block page_title %}System Activity Logs{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-heading">Activity Logs</div>
+    <div class="page-sub">Latest 200 system actions</div>
+  </div>
+</div>
+
+<div class="sk-card">
+  <div class="sk-card-header">
+    <div class="sk-card-title">
+      <i class="bi bi-clock-history" style="color:var(--accent);"></i>
+      Action Logs History
+    </div>
+    <div class="table-search">
+      <i class="bi bi-search"></i>
+      <input type="text" id="logSearch" placeholder="Search by user or action...">
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="sk-table" id="logTable">
+      <thead>
+        <tr>
+          <th style="width: 140px;">Date</th>
+          <th style="width: 100px;">Time</th>
+          <th style="width: 220px;">User</th>
+          <th style="width: 150px;">Action</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        {% set ts = log.timestamp | string %}
+        {% set date_part = ts[:10] %}
+        {% set time_part = ts[11:19] if ts | length > 10 else '—' %}
+        <tr>
+          <td>
+            <div style="font-size: 13px; font-weight: 600; color: var(--text);">
+              {{ date_part }}
+            </div>
+          </td>
+          <td>
+            <div style="font-size: 13px; font-weight: 500; color: var(--muted); font-family: monospace;">
+              {{ time_part }}
+            </div>
+          </td>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <div class="emp-avatar" style="width: 30px; height: 30px; font-size: 12px;">{{ log.user_email[0]|upper }}</div>
+              <span style="font-size: 13px;">{{ log.user_email }}</span>
+            </div>
+          </td>
+          <td>
+            <span class="badge {% if 'Email' in log.action %}bg-info{% elif 'Delete' in log.action %}bg-danger{% elif 'Edit' in log.action or 'Update' in log.action %}bg-warning text-dark{% elif 'Error' in log.action %}bg-danger{% else %}bg-success{% endif %}" style="font-weight: 500; font-size: 12px;">
+              {{ log.action }}
+            </span>
+          </td>
+          <td style="font-size: 13px; color: var(--muted);">
+            {{ log.details or '—' }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  
+  {% if not logs %}
+  <div class="empty-state">
+    <div class="empty-state-icon"><i class="bi bi-clock-history"></i></div>
+    <div class="empty-state-title">No logs yet</div>
+    <div class="empty-state-desc">System actions will appear here once they occur.</div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    initTableSearch('logSearch', 'logTable');
+});
+</script>
+{% endblock %}
+

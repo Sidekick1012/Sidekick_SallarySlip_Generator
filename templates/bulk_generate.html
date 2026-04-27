@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Bulk Generate — Sidekick Payroll{% endblock %}
+{% block page_title %}Bulk Generate{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-heading">Bulk Generate</div>
+    <div class="page-sub">Generate salary slips for all {{ employees|length }} employees at once</div>
+  </div>
+  <a href="{{ url_for('generate') }}" class="btn-sk-outline">
+    <i class="bi bi-person-fill"></i> Single Slip
+  </a>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="sk-card">
+      <div class="sk-card-header">
+        <div class="sk-card-title"><i class="bi bi-stack" style="color:var(--accent);"></i> Bulk Generation Settings</div>
+      </div>
+      <div class="sk-card-body">
+        <form method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="row g-3 mb-4">
+            <div class="col-6">
+              <label class="form-label">Month *</label>
+              <select name="month" class="form-select" required>
+                {% for i in range(1, 13) %}
+                  <option value="{{ i }}" {{ 'selected' if i == current_month else '' }}>{{ months[i] }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Year *</label>
+              <select name="year" class="form-select" required>
+                {% for y in years %}
+                  <option value="{{ y }}" {{ 'selected' if y == current_year else '' }}>{{ y }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div style="background:#fff8e1; border:1px solid #ffe082; border-radius:10px; padding:14px; margin-bottom:20px;">
+            <div style="font-size:13px; font-weight:700; color:#f57f17; margin-bottom:6px;">
+              <i class="bi bi-info-circle-fill"></i> Note
+            </div>
+            <div style="font-size:13px; color:#795548;">
+              Bulk generation uses each employee's default salary from their profile. 
+              Deductions (EOBI, Tax) will be set to 0 — edit individually if needed.
+            </div>
+          </div>
+
+          <button type="submit" class="btn-sk w-100" style="font-size:15px; padding:14px;">
+            <i class="bi bi-lightning-charge-fill"></i>
+            Generate All {{ employees|length }} Salary Slips
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="sk-card">
+      <div class="sk-card-header">
+        <div class="sk-card-title"><i class="bi bi-people-fill" style="color:var(--accent);"></i> Employees to Process</div>
+      </div>
+      <div style="max-height:350px; overflow-y:auto;">
+        <table class="sk-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Gross Salary</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for emp in employees %}
+            <tr>
+              <td>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <div class="emp-avatar" style="margin:0; width:28px; height:28px; font-size:11px;">{{ emp.name[0] }}</div>
+                  <div>
+                    <strong style="font-size:13px;">{{ emp.name }}</strong><br>
+                    <small style="color:var(--muted);">{{ emp.designation }}</small>
+                  </div>
+                </div>
+              </td>
+              <td style="font-size:13px; font-weight:700; color:var(--accent);">
+                PKR {{ "{:,.0f}".format(
+                  emp.basic_salary + emp.house_allowance + emp.transport_allowance +
+                  emp.medical_allowance + emp.other_allowance
+                ) }}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

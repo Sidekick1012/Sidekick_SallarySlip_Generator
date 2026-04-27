@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Payroll Summary — Sidekick Payroll{% endblock %}
+{% block page_title %}Payroll Summary{% endblock %}
+
+{% block content %}
+<style>
+  .sheet-container {
+    background: white;
+    padding: 20px;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    overflow-x: auto;
+  }
+  .master-sheet {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 11px;
+    color: #333;
+    border: 1px solid #000;
+  }
+  .master-sheet th, .master-sheet td {
+    border: 1px solid #000;
+    padding: 4px 6px;
+    text-align: left;
+    white-space: nowrap;
+  }
+  .master-sheet thead th {
+    background: #f8f9fa;
+    text-align: center;
+    font-weight: 700;
+  }
+  .header-group { background: #fff !important; font-size: 12px; }
+  .col-sr { width: 40px; text-align: center !important; }
+  .col-amt { text-align: right !important; width: 90px; }
+  .bg-yellow { background-color: #ffff00 !important; }
+  .text-center { text-align: center !important; }
+  
+  @media print {
+    @page {
+      size: landscape;
+      margin: 10mm;
+    }
+    .sidebar, .topbar, .btn-sk, .btn-sk-outline, .sk-card-header, form, .page-sub { display: none !important; }
+    .main-content { margin-left: 0 !important; padding: 0 !important; }
+    .sheet-container { box-shadow: none; padding: 0; overflow: visible !important; }
+    .master-sheet { 
+      font-size: 8px; 
+      width: 100% !important;
+      table-layout: auto;
+    }
+    .master-sheet th, .master-sheet td {
+      padding: 2px 4px !important;
+    }
+    .page-header { margin-bottom: 10px !important; }
+    .page-heading { font-size: 18px !important; margin: 0 !important; }
+  }
+</style>
+
+<div class="page-header mb-4">
+  <div>
+    <div class="page-heading">Payroll Master Sheet</div>
+    <div class="page-sub">Design matching original spreadsheet</div>
+  </div>
+  <div class="d-flex gap-2">
+    <form method="GET" class="d-flex gap-2">
+      <select name="month" class="form-select form-select-sm w-auto">
+        {% for i in range(1, 13) %}
+          <option value="{{ i }}" {{ 'selected' if i == current_month else '' }}>{{ months[i] }}</option>
+        {% endfor %}
+      </select>
+      <select name="year" class="form-select form-select-sm w-auto">
+        {% for y in years %}
+          <option value="{{ y }}" {{ 'selected' if y == current_year else '' }}>{{ y }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn-sk">Load</button>
+    </form>
+    <a href="{{ url_for('export_payroll_excel', month=current_month, year=current_year) }}" class="btn-sk-outline" style="color: #1d6f42; border-color: #1d6f42;">
+      <i class="bi bi-file-earmark-excel-fill"></i> Excel
+    </a>
+    <a href="{{ url_for('export_payroll_pdf', month=current_month, year=current_year) }}" class="btn-sk-outline" style="color: #dc3545; border-color: #dc3545;">
+      <i class="bi bi-file-earmark-pdf-fill"></i> PDF
+    </a>
+    <button onclick="window.print()" class="btn-sk-outline"><i class="bi bi-printer"></i> Print</button>
+  </div>
+</div>
+
+<div class="sheet-container">
+  <table class="master-sheet">
+    <thead>
+      <tr class="header-group">
+        <th colspan="4">General</th>
+        <th colspan="6">Salary</th>
+      </tr>
+      <tr>
+        <th class="col-sr">Sr. No</th>
+        <th>Employee ID</th>
+        <th>Name</th>
+        <th>Designation</th>
+        <th class="col-amt">Previous Gross Monthly</th>
+        <th class="col-amt">Accom. (**)</th>
+        <th class="col-amt">Travel (**)</th>
+        <th class="col-amt">Overtime</th>
+        <th class="col-amt">Exempt Medical</th>
+        <th class="col-amt">Salary Payable</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for slip in slips %}
+      <tr>
+        <td class="text-center">{{ loop.index }}</td>
+        <td>{{ slip.employees.employee_id }}</td>
+        <td>{{ slip.employees.name }}</td>
+        <td>{{ slip.employees.designation }}</td>
+        <td class="col-amt">{{ "{:,.0f}".format(slip.employees.previous_gross or 0) }}</td>
+        <td class="col-amt">{{ "{:,.0f}".format(slip.house_allowance) }}</td>
+        <td class="col-amt">{{ "{:,.0f}".format(slip.transport_allowance) }}</td>
+        <td class="col-amt">{{ "{:,.0f}".format(slip.overtime or 0) }}</td>
+        <td class="col-amt">{{ "{:,.0f}".format(slip.medical_exemption or 0) }}</td>
+        <td class="col-amt fw-bold">{{ "{:,.0f}".format(slip.net_salary) }}</td>
+      </tr>
+      {% endfor %}
+      {% if not slips %}
+      <tr>
+        <td colspan="10" class="text-center py-4" style="font-style: italic; color: #999;">No records found for this month. Generate slips first.</td>
+      </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

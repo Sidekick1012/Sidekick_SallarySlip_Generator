@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}Sidekick Payroll{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+  <link rel="icon" type="image/png" href="/sidekick_logo_icon_1777284435622.png">
+  
+  <script>
+    // Critical: Initialize Theme in HEAD to prevent light mode flash
+    (function() {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    })();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+
+{% if current_user.is_authenticated %}
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-logo">
+      <img src="/assets/logo/Logo@200-white.png" alt="Sidekick Logo" style="max-width: 180px; height: auto;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+      <div style="display:none;">
+        <div class="brand-name">Sidekick</div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+      <i class="bi bi-grid-fill"></i> Dashboard
+    </a>
+    <a href="{{ url_for('employees') }}" class="nav-link {% if 'employee' in request.endpoint %}active{% endif %}">
+      <i class="bi bi-people-fill"></i> Employees
+    </a>
+    {% if current_user.role != 'viewer' %}
+    <a href="{{ url_for('generate') }}" class="nav-link {% if request.endpoint == 'generate' %}active{% endif %}">
+      <i class="bi bi-file-earmark-text-fill"></i> Generate Slip
+    </a>
+    <a href="{{ url_for('generate_bulk') }}" class="nav-link {% if request.endpoint == 'generate_bulk' %}active{% endif %}">
+      <i class="bi bi-stack"></i> Bulk Generate
+    </a>
+    <a href="{{ url_for('generate_from_excel') }}" class="nav-link {% if request.endpoint == 'generate_from_excel' %}active{% endif %}">
+      <i class="bi bi-file-earmark-excel-fill"></i> Excel Upload
+    </a>
+    {% endif %}
+    <a href="{{ url_for('view_slips') }}" class="nav-link {% if request.endpoint == 'view_slips' %}active{% endif %}">
+      <i class="bi bi-archive-fill"></i> View Slips
+    </a>
+    <a href="{{ url_for('payroll_summary') }}" class="nav-link {% if request.endpoint == 'payroll_summary' %}active{% endif %}">
+      <i class="bi bi-file-earmark-bar-graph-fill"></i> Payroll Report
+    </a>
+    {% if current_user.role == 'admin' %}
+    <div class="nav-divider">ADMIN</div>
+    <a href="{{ url_for('manage_users') }}" class="nav-link {% if 'user' in request.endpoint %}active{% endif %}">
+      <i class="bi bi-shield-lock-fill"></i> Manage Users
+    </a>
+    <a href="{{ url_for('view_logs') }}" class="nav-link {% if request.endpoint == 'view_logs' %}active{% endif %}">
+      <i class="bi bi-clock-history"></i> Activity Logs
+    </a>
+    {% endif %}
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-box">
+      <div class="d-flex align-items-center gap-2">
+        <div class="user-avatar" style="border: 2px solid rgba(27,102,86,0.3);">
+          {{ current_user.email[0]|upper }}
+        </div>
+        <div style="max-width: 100px;">
+          <div class="user-email" style="font-weight: 700;">{{ current_user.email.split('@')[0]|title }}</div>
+          <div class="user-role">{{ current_user.role|upper }}</div>
+        </div>
+      </div>
+      <a href="{{ url_for('logout') }}" class="logout-btn" title="Logout">
+        <i class="bi bi-power"></i>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+  <div class="topbar">
+    <button class="btn sidebar-toggle" onclick="toggleSidebar()">
+      <i class="bi bi-list"></i>
+    </button>
+    <div class="topbar-title d-flex align-items-center gap-2">
+      <img src="/sidekick_logo_icon_1777284435622.png" alt="Logo" style="height: 24px; width: auto;">
+      {% block page_title %}Dashboard{% endblock %}
+    </div>
+    <div class="topbar-right d-flex align-items-center gap-3">
+      <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+        <i class="bi bi-moon-fill"></i>
+        <i class="bi bi-sun-fill"></i>
+      </button>
+      <span class="badge-month">
+        <i class="bi bi-calendar3"></i>
+        {{ now.strftime('%B %Y') if now else '' }}
+      </span>
+    </div>
+  </div>
+
+  <div class="content-area">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="alerts-wrapper">
+          {% for cat, msg in messages %}
+            <div class="alert alert-{{ cat }} alert-dismissible fade show" role="alert">
+              {% if cat == 'success' %}<i class="bi bi-check-circle-fill me-2"></i>
+              {% elif cat == 'danger' %}<i class="bi bi-x-circle-fill me-2"></i>
+              {% elif cat == 'warning' %}<i class="bi bi-exclamation-triangle-fill me-2"></i>
+              {% else %}<i class="bi bi-info-circle-fill me-2"></i>{% endif %}
+              {{ msg }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div id="toast-container" class="toast-container"></div>
+
+<!-- Page Loader -->
+<div id="page-loader" class="page-loader">
+  <div class="loader-spinner"></div>
+</div>
+
+{% else %}
+  {% block auth_content %}{% endblock %}
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+<script>
+  // Pass current datetime to template
+  const now = new Date();
+  document.querySelectorAll('.badge-month').forEach(el => {
+    el.innerHTML = `<i class="bi bi-calendar3"></i> ${now.toLocaleDateString('en-US', {month: 'long', year: 'numeric'})}`;
+  });
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

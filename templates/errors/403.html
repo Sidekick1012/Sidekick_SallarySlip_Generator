@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}403 - Forbidden | Sidekick{% endblock %}
+{% block content %}
+<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 70vh; text-align: center; font-family: 'DM Sans', sans-serif;">
+    <div style="font-size: 120px; font-weight: 800; color: #f39c12; line-height: 1; margin-bottom: 20px; opacity: 0.1; position: absolute; z-index: -1;">403</div>
+    <h1 style="color: var(--sk-navy); font-family: 'DM Serif Display', serif; font-size: 48px; margin-bottom: 16px;">Access Denied!</h1>
+    <p style="color: var(--muted); font-size: 18px; max-width: 500px; margin-bottom: 32px;">Aapke paas is page ko dekhne ki permission nahi hai. Sirf authorised users hi yahan ja sakte hain.</p>
+    <a href="{{ url_for('dashboard') }}" class="btn-sk" style="padding: 12px 32px;">
+        <i class="bi bi-shield-lock" style="margin-right: 8px;"></i> Back to Safety
+    </a>
+</div>
+{% endblock %}

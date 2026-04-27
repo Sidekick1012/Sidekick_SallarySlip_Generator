@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}404 - Not Found | Sidekick{% endblock %}
+{% block content %}
+<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 70vh; text-align: center; font-family: 'DM Sans', sans-serif;">
+    <div style="font-size: 120px; font-weight: 800; color: var(--accent); line-height: 1; margin-bottom: 20px; opacity: 0.1; position: absolute; z-index: -1;">404</div>
+    <h1 style="color: var(--sk-navy); font-family: 'DM Serif Display', serif; font-size: 48px; margin-bottom: 16px;">Raasta Kho Gaya!</h1>
+    <p style="color: var(--muted); font-size: 18px; max-width: 500px; margin-bottom: 32px;">Aap jo page dhoond rahe hain woh yahan nahi hai. Shayad URL galat hai ya page remove ho chuka hai.</p>
+    <a href="{{ url_for('dashboard') }}" class="btn-sk" style="padding: 12px 32px;">
+        <i class="bi bi-house-door" style="margin-right: 8px;"></i> Go Back Home
+    </a>
+</div>
+{% endblock %}

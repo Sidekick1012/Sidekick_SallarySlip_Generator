@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+{% block title %}Archive — Sidekick{% endblock %}
+{% block page_title %}Salary Slips Archive{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-heading">Salary Slips</div>
+    <div class="page-sub">{{ slips|length }} historical records found</div>
+  </div>
+  <a href="{{ url_for('generate') }}" class="btn-sk">
+    <i class="bi bi-plus-lg"></i> New Slip
+  </a>
+</div>
+
+<!-- Filter & Search -->
+<div class="row g-3 mb-4">
+  <div class="col-lg-8">
+    <div class="sk-card">
+      <div class="sk-card-body" style="padding:14px 22px;">
+        <form method="GET" class="d-flex align-items-center gap-3 flex-wrap">
+          <label style="font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase;">Filter Period:</label>
+          <select name="month" class="form-select" style="width:140px; font-size:13px;">
+            <option value="">All Months</option>
+            {% for i in range(1, 13) %}
+              <option value="{{ i }}" {{ 'selected' if i == current_month else '' }}>{{ months[i] }}</option>
+            {% endfor %}
+          </select>
+          <select name="year" class="form-select" style="width:100px; font-size:13px;">
+            <option value="">All Years</option>
+            {% for y in years %}
+              <option value="{{ y }}" {{ 'selected' if y == current_year else '' }}>{{ y }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="btn-sk" style="padding:8px 16px; font-size:13px;">
+            <i class="bi bi-funnel"></i> Apply
+          </button>
+          <a href="{{ url_for('view_slips') }}" class="btn-sk-outline" style="padding:8px 16px; font-size:13px;">
+            Reset
+          </a>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="sk-card" style="height: 100%; display: flex; align-items: center; padding: 0 20px;">
+       <div class="table-search w-100">
+          <i class="bi bi-search"></i>
+          <input type="text" id="slipSearch" class="w-100" placeholder="Search by name or ID...">
+       </div>
+    </div>
+  </div>
+</div>
+
+<form id="bulkActionForm" method="POST" action="">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="sk-card">
+    {% if slips %}
+    <div id="bulkActionBar" class="sk-card-body d-none" style="background:var(--teal-bg); border-bottom:1px solid rgba(0,194,203,0.1); padding:10px 22px;">
+      <div class="d-flex align-items-center justify-content-between">
+        <span id="selectedCountText" style="font-weight:700; color:var(--accent); font-size:13px;">0 items selected</span>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn-sk" style="padding:6px 14px; font-size:12px;" onclick="submitBulkAction('email', this)">
+            <i class="bi bi-send-fill"></i> Send Emails
+          </button>
+          <button type="button" class="btn-sk" style="padding:6px 14px; font-size:12px; background:var(--danger); border-color:var(--danger);" onclick="submitBulkAction('delete', this)">
+            <i class="bi bi-trash-fill"></i> Delete Selected
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="table-responsive">
+      <table class="sk-table" id="slipTable">
+        <thead>
+          <tr>
+            <th style="width:40px;">
+              <input type="checkbox" id="selectAllSlips" class="form-check-input" style="cursor:pointer;">
+            </th>
+            <th>Employee</th>
+            <th>Period</th>
+            <th>Gross</th>
+            <th>Net Salary</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for slip in slips %}
+          <tr>
+            <td>
+              <input type="checkbox" name="slip_ids" value="{{ slip.id }}" class="slip-checkbox form-check-input" style="cursor:pointer;">
+            </td>
+            <td>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div class="emp-avatar" style="margin:0;">{{ slip.employees.name[0] }}</div>
+                <div>
+                  <strong>{{ slip.employees.name }}</strong><br>
+                  <small style="color:var(--muted);">{{ slip.employees.employee_id }}</small>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span style="font-weight:600;">{{ months[slip.month] }}</span><br>
+              <small style="color:var(--muted);">{{ slip.year }}</small>
+            </td>
+            <td style="font-size:13px;">PKR {{ "{:,.0f}".format(slip.gross_salary) }}</td>
+            <td>
+              <strong style="color:var(--accent); font-size:14px;">
+                PKR {{ "{:,.0f}".format(slip.net_salary) }}
+              </strong>
+            </td>
+            <td>
+              <div style="display:flex; gap:6px;">
+                <a href="{{ url_for('edit_salary_slip', slip_id=slip.id) }}"
+                   class="btn-sm-icon btn-edit" title="Edit Slip">
+                  <i class="bi bi-pencil-fill"></i>
+                </a>
+                <a href="{{ url_for('download_slip', slip_id=slip.id) }}"
+                   class="btn-sm-icon btn-dl" title="Download PDF">
+                  <i class="bi bi-file-earmark-pdf-fill"></i>
+                </a>
+                <button type="button" class="btn-sm-icon"
+                          style="background:var(--teal-bg); color:var(--accent);"
+                          onclick="sendSingleEmail(this, {{ slip.id }})"
+                          title="Email Bhejo">
+                  <i class="bi bi-envelope-fill"></i>
+                </button>
+                <button type="button" class="btn-sm-icon btn-delete" 
+                          onclick="confirmDeleteSlip(this, {{ slip.id }})" title="Delete Slip">
+                    <i class="bi bi-trash-fill"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon"><i class="bi bi-archive"></i></div>
+      <div class="empty-state-title">Archive is empty</div>
+      <div class="empty-state-desc">No salary slips were found for the selected period.</div>
+      <a href="{{ url_for('generate') }}" class="btn-sk mt-4">
+        <i class="bi bi-plus-lg"></i> Generate New
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</form>
+
+<!-- Helper forms -->
+<form id="deleteSlipForm" method="POST" action="" style="display:none;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+</form>
+<form id="singleEmailForm" method="POST" action="" style="display:none;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+</form>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    initTableSearch('slipSearch', 'slipTable');
+    
+    const selectAll = document.getElementById('selectAllSlips');
+    const checkboxes = document.querySelectorAll('.slip-checkbox');
+    const bulkBar = document.getElementById('bulkActionBar');
+    const countText = document.getElementById('selectedCountText');
+
+    function updateBulkBar() {
+        const checkedCount = document.querySelectorAll('.slip-checkbox:checked').length;
+        if (checkedCount > 0) {
+            bulkBar.classList.remove('d-none');
+            countText.textContent = `${checkedCount} item${checkedCount > 1 ? 's' : ''} selected`;
+        } else {
+            bulkBar.classList.add('d-none');
+        }
+    }
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            checkboxes.forEach(cb => cb.checked = selectAll.checked);
+            updateBulkBar();
+        });
+    }
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', updateBulkBar);
+    });
+});
+
+function submitBulkAction(action, btn) {
+    const form = document.getElementById('bulkActionForm');
+    if (action === 'email') {
+        if (confirm('Send emails to all selected employees?')) {
+            setBtnLoading(btn, true, 'Sending...');
+            form.action = "{{ url_for('send_bulk_emails') }}";
+            form.submit();
+        }
+    } else if (action === 'delete') {
+        if (confirm('Permanently delete all selected salary slips? This cannot be undone.')) {
+            setBtnLoading(btn, true, 'Deleting...');
+            form.action = "{{ url_for('delete_bulk_slips') }}";
+            form.submit();
+        }
+    }
+}
+
+function sendSingleEmail(btn, slipId) {
+    if (confirm('Send this salary slip via email?')) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+        
+        const form = document.getElementById('singleEmailForm');
+        form.action = `/slips/${slipId}/send-email`;
+        form.submit();
+    }
+}
+
+function confirmDeleteSlip(btn, slipId) {
+    if (confirm('Permanently delete this salary slip?')) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+        
+        const form = document.getElementById('deleteSlipForm');
+        form.action = `/slips/${slipId}/delete`;
+        form.submit();
+    }
+}
+</script>
+{% endblock %}
