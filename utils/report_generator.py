@@ -18,7 +18,7 @@ def generate_payroll_excel(slips, month, year):
 
     # Define Styles
     header_font = Font(bold=True, color="FFFFFF")
-    header_fill = PatternFill(start_color="00C2CB", end_color="00C2CB", fill_type="solid")
+    header_fill = PatternFill(start_color="1b6656", end_color="1b6656", fill_type="solid")
     center_align = Alignment(horizontal="center", vertical="center")
     right_align = Alignment(horizontal="right", vertical="center")
     
@@ -147,7 +147,7 @@ def generate_payroll_pdf(slips, month, year):
     
     # Table Styling
     style = TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#00C2CB")),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#1b6656")),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),

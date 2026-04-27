@@ -1,13 +1,13 @@
 /* ══════════════════════════════════════════
-   DACI PAYROLL SYSTEM — Brand Stylesheet
+   SIDEKICK PAYROLL SYSTEM — Brand Stylesheet
    Colors: #1b6656 #1d4354 #7bb06b
    ══════════════════════════════════════════ */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
   /* Dynamic Palette (Refined versions of user's colors for better 'eye-feel') */
-  --primary:     #10b981; /* Vibrant Emerald */
-  --primary-rgb: 16, 185, 129;
+  --primary:     #1b6656; /* Sidekick Deep Green */
+  --primary-rgb: 27, 102, 86;
   --secondary:   #1b6656; /* User's Deep Green */
   --accent:      #7bb06b; /* User's Sage */
   --dark:        #1d4354; /* User's Deep Teal */
@@ -178,10 +178,10 @@ body {
 }
 
 .brand-name {
-  font-size: 21px;
+  font-size: 24px;
   font-weight: 800;
   color: var(--sidebar-brand);
-  letter-spacing: 2px;
+  letter-spacing: 3px;
   text-transform: uppercase;
 }
 

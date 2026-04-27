@@ -7,7 +7,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, Tabl
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 
 # DACI Brand Colors
-COMPANY_GREEN = colors.HexColor("#8DC63F")
+COMPANY_GREEN = colors.HexColor("#1b6656")
 TEXT_GRAY      = colors.HexColor("#4D4D4F")
 TEXT_BLACK     = colors.black
 LINE_GRAY      = colors.HexColor("#BCBEC0")

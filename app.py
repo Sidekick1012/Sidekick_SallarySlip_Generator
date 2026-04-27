@@ -68,21 +68,20 @@ def build_email_html(emp_name, month_name, year):
     """Returns a professional HTML email body with system-generated disclaimer."""
     return f"""
 <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;background:#f5f5f5;padding:20px;border-radius:12px;">
-  <div style="background:linear-gradient(135deg,#00C2CB,#0097A7);padding:28px 24px;border-radius:10px 10px 0 0;text-align:center;">
     <h1 style="color:white;margin:0;font-size:24px;font-weight:700;letter-spacing:1px;">DACI Payroll</h1>
     <p style="color:rgba(255,255,255,0.8);margin:6px 0 0;font-size:13px;">Automated Salary Notification</p>
   </div>
   <div style="background:white;padding:32px 28px;border-radius:0 0 10px 10px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">
     <p style="font-size:16px;color:#333;margin:0 0 16px;">Dear <strong>{emp_name}</strong>,</p>
     <p style="color:#555;line-height:1.7;margin:0 0 16px;">
-      Your salary slip for <strong style="color:#00C2CB;">{month_name} {year}</strong> has been generated
+      Your salary slip for <strong style="color:#1b6656;">{month_name} {year}</strong> has been generated
       and is attached to this email as a PDF document.
     </p>
     <p style="color:#555;line-height:1.7;margin:0 0 24px;">
       Please review it carefully. If you have any queries regarding your salary details,
       kindly contact the HR department directly.
     </p>
-    <div style="background:#f8f9fa;border-left:4px solid #00C2CB;padding:14px 18px;border-radius:0 8px 8px 0;margin-bottom:24px;">
+    <div style="background:#f8f9fa;border-left:4px solid #1b6656;padding:14px 18px;border-radius:0 8px 8px 0;margin-bottom:24px;">
       <p style="margin:0;font-size:13px;color:#666;">
         <strong>&#128206; Attachment:</strong> SalarySlip_{month_name}_{year}.pdf
       </p>
@@ -1004,7 +1003,7 @@ def download_excel_template():
         top=Side(style='thin'), bottom=Side(style='thin')
     )
     ws.append(headers)
-    header_fill = PatternFill(start_color="00C2CB", end_color="00C2CB", fill_type="solid")
+    header_fill = PatternFill(start_color="1b6656", end_color="1b6656", fill_type="solid")
     for cell in ws[1]:
         cell.font = Font(bold=True, color="FFFFFF")
         cell.fill = header_fill
