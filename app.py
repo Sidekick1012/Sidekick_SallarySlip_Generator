@@ -55,7 +55,7 @@ app.config["MAIL_USERNAME"] = os.getenv("MAIL_EMAIL")
 # Remove spaces from password if present (Google App Passwords are 16 chars without spaces)
 mail_pass = os.getenv("MAIL_PASSWORD", "")
 app.config["MAIL_PASSWORD"] = mail_pass.replace(" ", "")
-app.config["MAIL_DEFAULT_SENDER"] = (os.getenv("SENDER_NAME", "DACI Payroll"), os.getenv("MAIL_EMAIL"))
+app.config["MAIL_DEFAULT_SENDER"] = (os.getenv("SENDER_NAME", "Sidekick Payroll"), os.getenv("MAIL_EMAIL"))
 mail = Mail(app)
 
 s = URLSafeTimedSerializer(app.secret_key)
@@ -68,7 +68,7 @@ def build_email_html(emp_name, month_name, year):
     """Returns a professional HTML email body with system-generated disclaimer."""
     return f"""
 <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;background:#f5f5f5;padding:20px;border-radius:12px;">
-    <h1 style="color:white;margin:0;font-size:24px;font-weight:700;letter-spacing:1px;">DACI Payroll</h1>
+    <h1 style="color:white;margin:0;font-size:24px;font-weight:700;letter-spacing:1px;">Sidekick Payroll</h1>
     <p style="color:rgba(255,255,255,0.8);margin:6px 0 0;font-size:13px;">Automated Salary Notification</p>
   </div>
   <div style="background:white;padding:32px 28px;border-radius:0 0 10px 10px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">
