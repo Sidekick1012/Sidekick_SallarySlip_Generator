@@ -131,6 +131,7 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
         ("Basic Pay", slip_data.get("basic_salary", 0)),
         ("Medical", slip_data.get("medical_allowance", 0)),
         ("Dearness Allowance", slip_data.get("dearness_allowance", 0)),
+        ("Accommodation", slip_data.get("house_allowance", 0)),
         ("Arrears", slip_data.get("arrears", 0)),
         ("Travel & Conveyance", slip_data.get("transport_allowance", 0)),
         ("COLA", slip_data.get("cola_allowance", 0)),
@@ -145,6 +146,7 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
     
     raw_deduct_list = [
         ("Income Tax", slip_data.get("income_tax", 0)),
+        ("SESSI", slip_data.get("sessi", 0)),
         ("EOBI", slip_data.get("eobi_deduction", 0)),
         ("Unpaid Leaves", slip_data.get("unpaid_leaves", 0)),
         ("Misc Deduction", slip_data.get("deduction_misc", 0)),
@@ -251,7 +253,12 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
     elements.append(Table([[contrib_table, ""]], colWidths=[90*mm, 96*mm]))
     elements.append(Spacer(1, 4*mm))
 
-    # ── 7. FOOTER ───────────────────────────────────────────────
+    # ── 7. NOTE ────────────────────────────────────────────────
+    if slip_data.get("note"):
+        elements.append(Paragraph(f"<b>Note:</b> {slip_data['note']}", ParagraphStyle("note", fontSize=8.5, textColor=TEXT_GRAY)))
+        elements.append(Spacer(1, 4*mm))
+
+    # ── 8. FOOTER ───────────────────────────────────────────────
     footer = Paragraph("<b>This is a system-generated slip and doesn't require a signature</b>", 
                        ParagraphStyle("ft", fontSize=9, alignment=TA_CENTER))
     elements.append(footer)

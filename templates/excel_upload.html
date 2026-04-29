@@ -119,11 +119,10 @@
       <div class="sk-card-body" style="padding:12px 16px;">
         <div style="display:flex; flex-wrap:wrap; gap:6px;">
           {% set cols = [
-            "Employee_ID","Basic_Salary","House_Allowance","Transport_Allowance",
-            "Medical_Allowance","Other_Allowance","Dearness_Allowance","COLA_Allowance",
-            "Utility_Allowance","Previous_Month_Allowance","Bonus_Allowance",
-            "Leave_Encashment","Overtime","Income_Tax","EOBI_Deduction",
-            "Unpaid_Leaves","Other_Deduction","Working_Days"
+            "Employee_ID", "Name", "Base_Pay", "Medical", "Dearness", 
+            "Accommodation", "Travel", "COLA", "Utility", "Bonus",
+            "Bonus_Special", "Paid_Leaves", "Deduction", "Overtime", 
+            "Income_Tax", "SESSI", "EOBI", "Working_Days", "Note"
           ] %}
           {% for col in cols %}
           <span style="background:var(--bg-secondary); color:var(--accent); border:1px solid var(--border);

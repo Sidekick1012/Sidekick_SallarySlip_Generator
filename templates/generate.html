@@ -168,6 +168,10 @@
               <input type="number" name="income_tax" id="f_tax" class="form-control slip-input" min="0" step="1" value="{{ slip.income_tax if edit else 0 }}">
             </div>
             <div class="col-md-3">
+              <label class="form-label">SESSI</label>
+              <input type="number" name="sessi" id="f_sessi" class="form-control slip-input" min="0" step="1" value="{{ slip.sessi if edit else 0 }}">
+            </div>
+            <div class="col-md-3">
               <label class="form-label">EOBI</label>
               <input type="number" name="eobi_deduction" id="f_eobi" class="form-control slip-input" min="0" step="1" value="{{ slip.eobi_deduction if edit else 0 }}">
             </div>
@@ -178,6 +182,12 @@
             <div class="col-md-3">
               <label class="form-label">Other Deductions</label>
               <input type="number" name="other_deduction" id="f_other_ded" class="form-control slip-input" min="0" step="1" value="{{ slip.other_deduction if edit else 0 }}">
+            </div>
+          </div>
+          <div class="row g-3 mt-2">
+            <div class="col-12">
+              <label class="form-label">Note (Internal/Remarks)</label>
+              <textarea name="note" class="form-control" rows="2">{{ slip.note if edit else '' }}</textarea>
             </div>
           </div>
         </div>
@@ -247,6 +257,7 @@ function updatePreview() {
   const damage    = parseFloat(document.getElementById('f_damage').value)    || 0;
   
   const tax       = parseFloat(document.getElementById('f_tax').value)       || 0;
+  const sessi     = parseFloat(document.getElementById('f_sessi').value)     || 0;
   const eobi      = parseFloat(document.getElementById('f_eobi').value)      || 0;
   const unpaid    = parseFloat(document.getElementById('f_unpaid').value)    || 0;
   const otherDed  = parseFloat(document.getElementById('f_other_ded').value) || 0;
@@ -254,7 +265,7 @@ function updatePreview() {
   const grossEarnings = basic + medical + dearness + house + transport + cola + utility + washing + prev + bonus + other + arrears;
   const taxableSalary = grossEarnings + leaveEnc + overtime - dedMisc - damage;
   
-  const totalDeductions = tax + eobi + unpaid + otherDed;
+  const totalDeductions = tax + sessi + eobi + unpaid + otherDed;
   const netPay = taxableSalary - totalDeductions;
 
   document.getElementById('p_basic_med').textContent = fmt(basic + medical);

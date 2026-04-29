@@ -463,11 +463,12 @@ def generate():
         taxable = gross + leave_enc + overtime - deduction_misc - damage_medical
 
         tax          = float(request.form.get("income_tax") or 0)
+        sessi        = float(request.form.get("sessi") or 0)
         eobi         = float(request.form.get("eobi_deduction") or 0)
         unpaid       = float(request.form.get("unpaid_leaves") or 0)
         other_ded    = float(request.form.get("other_deduction") or 0)
         
-        total_ded = tax + eobi + unpaid + other_ded
+        total_ded = tax + sessi + eobi + unpaid + other_ded
         net       = taxable - total_ded
 
         slip_data = {
@@ -493,12 +494,14 @@ def generate():
             "damage_medical":           damage_medical,
             "taxable_salary":           taxable,
             "income_tax":               tax,
+            "sessi":                    sessi,
             "eobi_deduction":           eobi,
             "unpaid_leaves":            unpaid,
             "other_deduction":          other_ded,
             "total_deductions":         total_ded,
             "net_salary":          net,
             "working_days":        working_days,
+            "note":                request.form.get("note"),
             "generated_by":        current_user.email,
             "generated_at":        datetime.now().isoformat(),
         }
@@ -558,11 +561,12 @@ def edit_salary_slip(slip_id):
             taxable = gross + leave_enc + overtime - deduction_misc - damage_medical
 
             tax          = float(request.form.get("income_tax") or 0)
+            sessi        = float(request.form.get("sessi") or 0)
             eobi         = float(request.form.get("eobi_deduction") or 0)
             unpaid       = float(request.form.get("unpaid_leaves") or 0)
             other_ded    = float(request.form.get("other_deduction") or 0)
             
-            total_ded = tax + eobi + unpaid + other_ded
+            total_ded = tax + sessi + eobi + unpaid + other_ded
             net       = taxable - total_ded
 
             updated_data = {
@@ -587,12 +591,14 @@ def edit_salary_slip(slip_id):
                 "damage_medical":           damage_medical,
                 "taxable_salary":           taxable,
                 "income_tax":               tax,
+                "sessi":                    sessi,
                 "eobi_deduction":           eobi,
                 "unpaid_leaves":            unpaid,
                 "other_deduction":          other_ded,
                 "total_deductions":         total_ded,
                 "net_salary":               net,
                 "working_days":             int(request.form.get("working_days", 26)),
+                "note":                     request.form.get("note"),
                 "generated_at":             datetime.now().isoformat(),
             }
 
@@ -1042,11 +1048,10 @@ def download_excel_template():
     ws.title = "Salary Upload Template"
 
     headers = [
-        "Employee_ID", "Basic_Salary", "Medical_Allowance", "Dearness_Allowance", "Arrears",
-        "Transport_Allowance", "COLA_Allowance", "Utility_Allowance", "Washing_Allowance",
-        "Previous_Month_Allowance", "Bonus_Allowance", "Other_Allowance",
-        "Paid_Leave_Amount", "Deduction_Misc", "Overtime", "Damage_Medical",
-        "Income_Tax", "Unpaid_Leaves", "EOBI_Deduction", "Other_Deduction", "Working_Days"
+        "Employee_ID", "Name", "Base_Pay", "Medical", "Dearness", 
+        "Accommodation", "Travel", "COLA", "Utility", "Bonus",
+        "Bonus_Special", "Paid_Leaves", "Deduction", "Overtime", 
+        "Income_Tax", "SESSI", "EOBI", "Working_Days", "Note"
     ]
 
     thin = Border(
@@ -1067,26 +1072,24 @@ def download_excel_template():
     for emp in all_emps:
         ws.append([
             emp.get("employee_id", ""),
+            emp.get("name", ""),
             emp.get("basic_salary", 0),
             emp.get("medical_allowance", 0),
             emp.get("dearness_allowance", 0),
-            0, # Arrears
+            emp.get("house_allowance", 0),
             emp.get("transport_allowance", 0),
             emp.get("cola_allowance", 0),
             emp.get("utility_allowance", 0),
-            0, # Washing allowance
-            emp.get("previous_month_allowance", 0),
             emp.get("bonus_allowance", 0),
-            emp.get("other_allowance", 0),
-            0, # Paid_leave_amount
-            0, # Deduction_misc
+            0, # Bonus_Special
+            0, # Paid_Leaves
+            0, # Deduction
             emp.get("overtime", 0),
-            0, # Damage_medical
             emp.get("income_tax", 0),
-            0,   # Unpaid_Leaves
+            0, # SESSI
             emp.get("eobi_deduction", 0),
-            emp.get("other_deduction", 0),
             26,  # Working_Days
+            ""   # Note
         ])
         for cell in ws[ws.max_row]:
             cell.border = thin
@@ -1135,11 +1138,23 @@ def generate_from_excel():
             wb = load_workbook(tmp_path, data_only=True)
             ws = wb.active
 
-            # Parse header row → normalise keys
-            headers = [
-                str(cell.value).strip().lower().replace(" ", "_") if cell.value else ""
-                for cell in ws[1]
-            ]
+            # 1. FIND THE HEADER ROW (looking for "Employee ID")
+            header_row_idx = 1
+            headers = []
+            for idx, row in enumerate(ws.iter_rows(min_row=1, max_row=10, values_only=True), start=1):
+                if any(str(cell).strip().lower() in ["employee id", "emp id"] for cell in row if cell):
+                    header_row_idx = idx
+                    headers = [str(cell).strip().lower().replace(" ", "_") if cell else f"col_{i}" for i, cell in enumerate(row)]
+                    break
+            
+            if not headers:
+                # Fallback to absolute positional mapping if header not found
+                headers = ["sr_no", "employee_id", "name", "doj", "dol", "bank", "iban", "cnic", "ntn", 
+                           "prev_gross", "increment", "new_gross", "days", "base_pay", "medical", 
+                           "dearness", "accommodation", "travel", "cola", "utility", "bonus", "gross_salary",
+                           "bonus_special", "paid_leaves", "deduction", "overtime", "taxable_1", "taxable_2",
+                           "income_tax", "sessi", "eobi", "total_deductions", "salary_payable", "note"]
+                header_row_idx = 2 # Assuming it starts after two header rows
 
             # Employee lookup maps
             emp_by_id   = {str(e["employee_id"]).strip(): e for e in employees}
@@ -1153,22 +1168,49 @@ def generate_from_excel():
             error_list    = []
 
             def _f(d, key, fallback=0.0):
-                try: return float(d.get(key) or fallback)
-                except: return float(fallback)
+                # Try by key (normalized header)
+                val = d.get(key)
+                # If key not found or empty, try common aliases
+                if val is None or str(val).strip() == "":
+                    aliases = {
+                        "base_pay": ["basic_salary"],
+                        "accommodation": ["house_allowance", "house_rent"],
+                        "travel": ["transport_allowance", "travel_allowance"],
+                        "bonus": ["bonus_allowance"],
+                        "deduction": ["deduction_misc"],
+                        "paid_leaves": ["paid_leave_amount"],
+                        "eobi": ["eobi_deduction"]
+                    }
+                    for alt in aliases.get(key, []):
+                        if d.get(alt) is not None and str(d.get(alt)).strip() != "":
+                            val = d.get(alt)
+                            break
+                            
+                try: 
+                    if val is None or str(val).strip() == "" or str(val).strip() == "-":
+                        return float(fallback)
+                    return float(str(val).replace(",", ""))
+                except: 
+                    return float(fallback)
 
             def _i(d, key, fallback=0):
-                try: return int(d.get(key) or fallback)
-                except: return int(fallback)
+                val = d.get(key)
+                try: 
+                    if val is None or str(val).strip() == "" or str(val).strip() == "-":
+                        return int(fallback)
+                    return int(float(str(val).replace(",", "")))
+                except: 
+                    return int(fallback)
 
-            for row_idx, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
+            for row_idx, row in enumerate(ws.iter_rows(min_row=header_row_idx + 1, values_only=True), start=header_row_idx + 1):
                 if not any(v for v in row if v is not None):
                     continue  # skip blank rows
 
-                rd = {headers[i]: row[i] for i in range(min(len(headers), len(row)))}
+                rd = {headers[i] if i < len(headers) else f"col_{i}": row[i] for i in range(len(row))}
 
                 # Resolve employee
                 emp = None
-                eid = rd.get("employee_id")
+                eid = rd.get("employee_id") or rd.get("emp_id")
                 if eid:
                     emp = emp_by_id.get(str(eid).strip())
                 if not emp:
@@ -1177,41 +1219,54 @@ def generate_from_excel():
                         emp = emp_by_name.get(str(nm).strip().lower())
 
                 if not emp:
-                    error_list.append(f"Row {row_idx}: Employee '{eid}' not found — skipped.")
+                    error_list.append(f"Row {row_idx}: Employee '{eid or nm}' not found — skipped.")
                     continue
 
                 month = month_override or _i(rd, "month", now.month)
                 year  = year_override  or _i(rd, "year",  now.year)
 
-                basic      = _f(rd, "basic_salary",             emp.get("basic_salary", 0))
-                medical    = _f(rd, "medical_allowance",        emp.get("medical_allowance", 0))
-                house      = _f(rd, "house_allowance",          emp.get("house_allowance", 0))
-                transport  = _f(rd, "transport_allowance",      emp.get("transport_allowance", 0))
-                dearness   = _f(rd, "dearness_allowance",       emp.get("dearness_allowance", 0))
-                cola       = _f(rd, "cola_allowance",           emp.get("cola_allowance", 0))
-                utility    = _f(rd, "utility_allowance",        emp.get("utility_allowance", 0))
+                basic      = _f(rd, "base_pay",                 _f(rd, "basic_salary", emp.get("basic_salary", 0)))
+                medical    = _f(rd, "medical",                  _f(rd, "medical_allowance", emp.get("medical_allowance", 0)))
+                house      = _f(rd, "accommodation",            _f(rd, "house_allowance", emp.get("house_allowance", 0)))
+                transport  = _f(rd, "travel",                   _f(rd, "transport_allowance", emp.get("transport_allowance", 0)))
+                dearness   = _f(rd, "dearness",                 _f(rd, "dearness_allowance", emp.get("dearness_allowance", 0)))
+                cola       = _f(rd, "cola",                     _f(rd, "cola_allowance", emp.get("cola_allowance", 0)))
+                utility    = _f(rd, "utility",                  _f(rd, "utility_allowance", emp.get("utility_allowance", 0)))
                 washing    = _f(rd, "washing_allowance",        0)
                 prev_month = _f(rd, "previous_month_allowance", emp.get("previous_month_allowance", 0))
-                bonus      = _f(rd, "bonus_allowance",          emp.get("bonus_allowance", 0))
+                bonus      = _f(rd, "bonus",                    _f(rd, "bonus_allowance", emp.get("bonus_allowance", 0)))
+                bonus_sp   = _f(rd, "bonus_special",            0)
                 other_all  = _f(rd, "other_allowance",          emp.get("other_allowance", 0))
                 arrears    = _f(rd, "arrears",                  0)
 
-                gross = basic + medical + house + transport + dearness + cola + utility + washing + prev_month + bonus + other_all + arrears
+                # Total Earnings / Gross
+                # Some sheets have manually calculated Gross Salary col, we prefer our calculation for consistency but can use that if present
+                gross_calc = basic + medical + house + transport + dearness + cola + utility + washing + prev_month + bonus + bonus_sp + other_all + arrears
+                gross = _f(rd, "gross_salary", gross_calc)
 
-                leave_enc  = _f(rd, "paid_leave_amount",        0)
+                leave_enc  = _f(rd, "paid_leaves",              _f(rd, "paid_leave_amount", 0))
                 overtime   = _f(rd, "overtime",                 emp.get("overtime", 0))
-                ded_misc   = _f(rd, "deduction_misc",           0)
+                ded_misc   = _f(rd, "deduction",                _f(rd, "deduction_misc", 0))
                 dmg_med    = _f(rd, "damage_medical",           0)
 
-                taxable = gross + leave_enc + overtime - ded_misc - dmg_med
+                # Taxable Salary Calculation
+                taxable_calc = gross + leave_enc + overtime - ded_misc - dmg_med
+                taxable = _f(rd, "taxable_salary", _f(rd, "taxable_salary_monthly", taxable_calc))
 
                 tax       = _f(rd, "income_tax",      emp.get("income_tax", 0))
-                eobi      = _f(rd, "eobi_deduction",  emp.get("eobi_deduction", 0))
+                sessi     = _f(rd, "sessi",           0)
+                eobi      = _f(rd, "eobi",            _f(rd, "eobi_deduction", emp.get("eobi_deduction", 0)))
                 unpaid    = _f(rd, "unpaid_leaves",   0)
                 other_ded = _f(rd, "other_deduction", emp.get("other_deduction", 0))
-                total_ded = tax + eobi + unpaid + other_ded
-                net       = taxable - total_ded
-                w_days    = _i(rd, "working_days", 26)
+                
+                total_ded_calc = tax + sessi + eobi + unpaid + other_ded
+                total_ded = _f(rd, "total_deductions", total_ded_calc)
+                
+                net_calc = taxable - total_ded
+                net = _f(rd, "salary_payable", _f(rd, "net_salary", net_calc))
+                
+                w_days    = _i(rd, "days", _i(rd, "working_days", 26))
+                note      = rd.get("note", "")
 
                 slip_data = {
                     "employee_id":              emp["id"],
@@ -1226,7 +1281,7 @@ def generate_from_excel():
                     "utility_allowance":        utility,
                     "washing_allowance":        washing,
                     "previous_month_allowance": prev_month,
-                    "bonus_allowance":          bonus,
+                    "bonus_allowance":          bonus + bonus_sp,
                     "other_allowance":          other_all,
                     "arrears":                  arrears,
                     "gross_salary":             gross,
@@ -1236,12 +1291,14 @@ def generate_from_excel():
                     "damage_medical":           dmg_med,
                     "taxable_salary":           taxable,
                     "income_tax":               tax,
+                    "sessi":                    sessi,
                     "eobi_deduction":           eobi,
                     "unpaid_leaves":            unpaid,
                     "other_deduction":          other_ded,
                     "total_deductions":         total_ded,
                     "net_salary":               net,
                     "working_days":             w_days,
+                    "note":                     note,
                     "generated_by":             current_user.email,
                     "generated_at":             datetime.now().isoformat(),
                 }
