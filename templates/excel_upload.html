@@ -171,8 +171,11 @@
               </td>
               <td style="font-size:12px; font-weight:700; color:var(--accent);">
                 PKR {{ "{:,.0f}".format(
-                  emp.basic_salary + emp.house_allowance + emp.transport_allowance +
-                  emp.medical_allowance + emp.other_allowance
+                  (emp.basic_salary | default(0, true) | float) + 
+                  (emp.house_allowance | default(0, true) | float) + 
+                  (emp.transport_allowance | default(0, true) | float) +
+                  (emp.medical_allowance | default(0, true) | float) + 
+                  (emp.other_allowance | default(0, true) | float)
                 ) }}
               </td>
             </tr>

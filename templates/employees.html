@@ -56,10 +56,16 @@
           <td>
             <strong style="color:var(--accent);">
               PKR {{ "{:,.0f}".format(
-                emp.basic_salary + emp.house_allowance + emp.transport_allowance + 
-                emp.medical_allowance + emp.dearness_allowance + emp.cola_allowance + 
-                emp.utility_allowance + emp.washing_allowance + emp.bonus_allowance + 
-                emp.other_allowance
+                (emp.basic_salary | default(0, true) | float) + 
+                (emp.house_allowance | default(0, true) | float) + 
+                (emp.transport_allowance | default(0, true) | float) + 
+                (emp.medical_allowance | default(0, true) | float) + 
+                (emp.dearness_allowance | default(0, true) | float) + 
+                (emp.cola_allowance | default(0, true) | float) + 
+                (emp.utility_allowance | default(0, true) | float) + 
+                (emp.washing_allowance | default(0, true) | float) + 
+                (emp.bonus_allowance | default(0, true) | float) + 
+                (emp.other_allowance | default(0, true) | float)
               ) }}
             </strong>
           </td>
