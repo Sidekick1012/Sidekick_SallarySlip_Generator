@@ -6,11 +6,11 @@ from reportlab.lib.units import mm
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 
-# DACI Brand Colors
-COMPANY_GREEN = colors.HexColor("#1b6656")
-TEXT_GRAY      = colors.HexColor("#4D4D4F")
+# DACI Brand Colors (Refined to match reference PDF)
+COMPANY_GREEN = colors.HexColor("#92D050")
+TEXT_GRAY      = colors.HexColor("#7F7F7F")
 TEXT_BLACK     = colors.black
-LINE_GRAY      = colors.HexColor("#BCBEC0")
+LINE_GRAY      = colors.HexColor("#D9D9D9")
 WHITE          = colors.white
 
 MONTHS = [
