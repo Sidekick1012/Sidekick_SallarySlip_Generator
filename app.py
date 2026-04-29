@@ -332,24 +332,24 @@ def add_employee_route():
             "cnic":                  request.form.get("cnic"),
             "ntn":                   request.form.get("ntn"),
             "email":                 request.form.get("email"),
-            "basic_salary":          float(request.form.get("basic_salary", 0)),
-            "house_allowance":       float(request.form.get("house_allowance", 0)),
-            "transport_allowance":   float(request.form.get("transport_allowance", 0)),
-            "medical_allowance":     float(request.form.get("medical_allowance", 0)),
-            "other_allowance":       float(request.form.get("other_allowance", 0)),
-            "dearness_allowance":    float(request.form.get("dearness_allowance", 0)),
-            "cola_allowance":        float(request.form.get("cola_allowance", 0)),
-            "utility_allowance":     float(request.form.get("utility_allowance", 0)),
-            "previous_month_allowance": float(request.form.get("previous_month_allowance", 0)),
-            "bonus_allowance":       float(request.form.get("bonus_allowance", 0)),
-            "leave_encashment":      float(request.form.get("leave_encashment", 0)),
-            "overtime":              float(request.form.get("overtime", 0)),
-            "income_tax":            float(request.form.get("income_tax", 0)),
-            "eobi_deduction":        float(request.form.get("eobi_deduction", 0)),
-            "other_deduction":       float(request.form.get("other_deduction", 0)),
-            "previous_gross":        float(request.form.get("previous_gross", 0)),
-            "increment":             float(request.form.get("increment", 0)),
-            "new_gross_monthly":     float(request.form.get("new_gross_monthly", 0)),
+            "basic_salary":          float(request.form.get("basic_salary") or 0),
+            "house_allowance":       float(request.form.get("house_allowance") or 0),
+            "transport_allowance":   float(request.form.get("transport_allowance") or 0),
+            "medical_allowance":     float(request.form.get("medical_allowance") or 0),
+            "other_allowance":       float(request.form.get("other_allowance") or 0),
+            "dearness_allowance":    float(request.form.get("dearness_allowance") or 0),
+            "cola_allowance":        float(request.form.get("cola_allowance") or 0),
+            "utility_allowance":     float(request.form.get("utility_allowance") or 0),
+            "previous_month_allowance": float(request.form.get("previous_month_allowance") or 0),
+            "bonus_allowance":       float(request.form.get("bonus_allowance") or 0),
+            "leave_encashment":      float(request.form.get("leave_encashment") or 0),
+            "overtime":              float(request.form.get("overtime") or 0),
+            "income_tax":            float(request.form.get("income_tax") or 0),
+            "eobi_deduction":        float(request.form.get("eobi_deduction") or 0),
+            "other_deduction":       float(request.form.get("other_deduction") or 0),
+            "previous_gross":        float(request.form.get("previous_gross") or 0),
+            "increment":             float(request.form.get("increment") or 0),
+            "new_gross_monthly":     float(request.form.get("new_gross_monthly") or 0),
         }
         try:
             add_employee(data)
@@ -384,24 +384,24 @@ def edit_employee(emp_id):
             "cnic":                request.form.get("cnic"),
             "ntn":                 request.form.get("ntn"),
             "email":               request.form.get("email"),
-            "basic_salary":        float(request.form.get("basic_salary", 0)),
-            "house_allowance":     float(request.form.get("house_allowance", 0)),
-            "transport_allowance": float(request.form.get("transport_allowance", 0)),
-            "medical_allowance":   float(request.form.get("medical_allowance", 0)),
-            "other_allowance":     float(request.form.get("other_allowance", 0)),
-            "dearness_allowance":  float(request.form.get("dearness_allowance", 0)),
-            "cola_allowance":      float(request.form.get("cola_allowance", 0)),
-            "utility_allowance":   float(request.form.get("utility_allowance", 0)),
-            "previous_month_allowance": float(request.form.get("previous_month_allowance", 0)),
-            "bonus_allowance":     float(request.form.get("bonus_allowance", 0)),
-            "leave_encashment":    float(request.form.get("leave_encashment", 0)),
-            "overtime":            float(request.form.get("overtime", 0)),
-            "income_tax":          float(request.form.get("income_tax", 0)),
-            "eobi_deduction":      float(request.form.get("eobi_deduction", 0)),
-            "other_deduction":     float(request.form.get("other_deduction", 0)),
-            "previous_gross":      float(request.form.get("previous_gross", 0)),
-            "increment":           float(request.form.get("increment", 0)),
-            "new_gross_monthly":   float(request.form.get("new_gross_monthly", 0)),
+            "basic_salary":        float(request.form.get("basic_salary") or 0),
+            "house_allowance":     float(request.form.get("house_allowance") or 0),
+            "transport_allowance": float(request.form.get("transport_allowance") or 0),
+            "medical_allowance":   float(request.form.get("medical_allowance") or 0),
+            "other_allowance":     float(request.form.get("other_allowance") or 0),
+            "dearness_allowance":  float(request.form.get("dearness_allowance") or 0),
+            "cola_allowance":      float(request.form.get("cola_allowance") or 0),
+            "utility_allowance":   float(request.form.get("utility_allowance") or 0),
+            "previous_month_allowance": float(request.form.get("previous_month_allowance") or 0),
+            "bonus_allowance":     float(request.form.get("bonus_allowance") or 0),
+            "leave_encashment":    float(request.form.get("leave_encashment") or 0),
+            "overtime":            float(request.form.get("overtime") or 0),
+            "income_tax":          float(request.form.get("income_tax") or 0),
+            "eobi_deduction":      float(request.form.get("eobi_deduction") or 0),
+            "other_deduction":     float(request.form.get("other_deduction") or 0),
+            "previous_gross":      float(request.form.get("previous_gross") or 0),
+            "increment":           float(request.form.get("increment") or 0),
+            "new_gross_monthly":   float(request.form.get("new_gross_monthly") or 0),
         }
         update_employee(emp_id, data)
         log_activity(current_user.email, "Edit Employee", f"Updated details for employee: {data['name']}")
@@ -440,32 +440,32 @@ def generate():
 
         emp = get_employee_by_id(emp_id)
 
-        basic        = float(request.form.get("basic_salary",              emp["basic_salary"]))
-        medical      = float(request.form.get("medical_allowance",        emp["medical_allowance"]))
-        dearness     = float(request.form.get("dearness_allowance",       0))
-        house        = float(request.form.get("house_allowance",          emp["house_allowance"]))
-        transport    = float(request.form.get("transport_allowance",      emp["transport_allowance"]))
-        cola         = float(request.form.get("cola_allowance",           0))
-        utility      = float(request.form.get("utility_allowance",        0))
-        washing      = float(request.form.get("washing_allowance",        0))
-        prev_month   = float(request.form.get("previous_month_allowance", 0))
-        bonus        = float(request.form.get("bonus_allowance",          0))
-        other_allow  = float(request.form.get("other_allowance",          emp["other_allowance"]))
-        arrears      = float(request.form.get("arrears",                  0))
+        basic        = float(request.form.get("basic_salary") or emp.get("basic_salary") or 0)
+        medical      = float(request.form.get("medical_allowance") or emp.get("medical_allowance") or 0)
+        dearness     = float(request.form.get("dearness_allowance") or 0)
+        house        = float(request.form.get("house_allowance") or emp.get("house_allowance") or 0)
+        transport    = float(request.form.get("transport_allowance") or emp.get("transport_allowance") or 0)
+        cola         = float(request.form.get("cola_allowance") or 0)
+        utility      = float(request.form.get("utility_allowance") or 0)
+        washing      = float(request.form.get("washing_allowance") or 0)
+        prev_month   = float(request.form.get("previous_month_allowance") or 0)
+        bonus        = float(request.form.get("bonus_allowance") or 0)
+        other_allow  = float(request.form.get("other_allowance") or emp.get("other_allowance") or 0)
+        arrears      = float(request.form.get("arrears") or 0)
 
         gross = basic + medical + dearness + house + transport + cola + utility + washing + prev_month + bonus + other_allow + arrears
 
-        leave_enc    = float(request.form.get("paid_leave_amount",        0))
-        overtime     = float(request.form.get("overtime",                 0))
-        deduction_misc = float(request.form.get("deduction_misc",         0))
-        damage_medical = float(request.form.get("damage_medical",         0))
+        leave_enc    = float(request.form.get("paid_leave_amount") or 0)
+        overtime     = float(request.form.get("overtime") or 0)
+        deduction_misc = float(request.form.get("deduction_misc") or 0)
+        damage_medical = float(request.form.get("damage_medical") or 0)
 
         taxable = gross + leave_enc + overtime - deduction_misc - damage_medical
 
-        tax          = float(request.form.get("income_tax",               0))
-        eobi         = float(request.form.get("eobi_deduction",           0))
-        unpaid       = float(request.form.get("unpaid_leaves",            0))
-        other_ded    = float(request.form.get("other_deduction",          0))
+        tax          = float(request.form.get("income_tax") or 0)
+        eobi         = float(request.form.get("eobi_deduction") or 0)
+        unpaid       = float(request.form.get("unpaid_leaves") or 0)
+        other_ded    = float(request.form.get("other_deduction") or 0)
         
         total_ded = tax + eobi + unpaid + other_ded
         net       = taxable - total_ded
@@ -535,32 +535,32 @@ def edit_salary_slip(slip_id):
     if request.method == "POST":
         try:
             # Gather updated data
-            basic        = float(request.form.get("basic_salary", 0))
-            medical      = float(request.form.get("medical_allowance", 0))
-            dearness     = float(request.form.get("dearness_allowance", 0))
-            house        = float(request.form.get("house_allowance", 0))
-            transport    = float(request.form.get("transport_allowance", 0))
-            cola         = float(request.form.get("cola_allowance", 0))
-            utility      = float(request.form.get("utility_allowance", 0))
-            washing      = float(request.form.get("washing_allowance", 0))
-            prev_month   = float(request.form.get("previous_month_allowance", 0))
-            bonus        = float(request.form.get("bonus_allowance", 0))
-            other_allow  = float(request.form.get("other_allowance", 0))
-            arrears      = float(request.form.get("arrears", 0))
+            basic        = float(request.form.get("basic_salary") or 0)
+            medical      = float(request.form.get("medical_allowance") or 0)
+            dearness     = float(request.form.get("dearness_allowance") or 0)
+            house        = float(request.form.get("house_allowance") or 0)
+            transport    = float(request.form.get("transport_allowance") or 0)
+            cola         = float(request.form.get("cola_allowance") or 0)
+            utility      = float(request.form.get("utility_allowance") or 0)
+            washing      = float(request.form.get("washing_allowance") or 0)
+            prev_month   = float(request.form.get("previous_month_allowance") or 0)
+            bonus        = float(request.form.get("bonus_allowance") or 0)
+            other_allow  = float(request.form.get("other_allowance") or 0)
+            arrears      = float(request.form.get("arrears") or 0)
 
             gross = basic + medical + dearness + house + transport + cola + utility + washing + prev_month + bonus + other_allow + arrears
 
-            leave_enc    = float(request.form.get("paid_leave_amount", 0))
-            overtime     = float(request.form.get("overtime", 0))
-            deduction_misc = float(request.form.get("deduction_misc", 0))
-            damage_medical = float(request.form.get("damage_medical", 0))
+            leave_enc    = float(request.form.get("paid_leave_amount") or 0)
+            overtime     = float(request.form.get("overtime") or 0)
+            deduction_misc = float(request.form.get("deduction_misc") or 0)
+            damage_medical = float(request.form.get("damage_medical") or 0)
 
             taxable = gross + leave_enc + overtime - deduction_misc - damage_medical
 
-            tax          = float(request.form.get("income_tax", 0))
-            eobi         = float(request.form.get("eobi_deduction", 0))
-            unpaid       = float(request.form.get("unpaid_leaves", 0))
-            other_ded    = float(request.form.get("other_deduction", 0))
+            tax          = float(request.form.get("income_tax") or 0)
+            eobi         = float(request.form.get("eobi_deduction") or 0)
+            unpaid       = float(request.form.get("unpaid_leaves") or 0)
+            other_ded    = float(request.form.get("other_deduction") or 0)
             
             total_ded = tax + eobi + unpaid + other_ded
             net       = taxable - total_ded
@@ -675,32 +675,32 @@ def generate_bulk():
 
         for emp in employees:
             # Gather earnings
-            basic        = float(emp.get("basic_salary", 0))
-            medical      = float(emp.get("medical_allowance", 0))
-            house        = float(emp.get("house_allowance", 0))
-            transport    = float(emp.get("transport_allowance", 0))
-            dearness     = float(emp.get("dearness_allowance", 0))
-            cola         = float(emp.get("cola_allowance", 0))
-            utility      = float(emp.get("utility_allowance", 0))
-            washing      = float(emp.get("washing_allowance", 0))
-            prev_month   = float(emp.get("previous_month_allowance", 0))
-            bonus        = float(emp.get("bonus_allowance", 0))
-            other_allow  = float(emp.get("other_allowance", 0))
-            arrears      = float(emp.get("arrears", 0))
+            basic        = float(emp.get("basic_salary") or 0)
+            medical      = float(emp.get("medical_allowance") or 0)
+            house        = float(emp.get("house_allowance") or 0)
+            transport    = float(emp.get("transport_allowance") or 0)
+            dearness     = float(emp.get("dearness_allowance") or 0)
+            cola         = float(emp.get("cola_allowance") or 0)
+            utility      = float(emp.get("utility_allowance") or 0)
+            washing      = float(emp.get("washing_allowance") or 0)
+            prev_month   = float(emp.get("previous_month_allowance") or 0)
+            bonus        = float(emp.get("bonus_allowance") or 0)
+            other_allow  = float(emp.get("other_allowance") or 0)
+            arrears      = float(emp.get("arrears") or 0)
 
             gross = basic + medical + house + transport + dearness + cola + utility + washing + prev_month + bonus + other_allow + arrears
             
             leave_enc    = 0.0 # Will map to paid_leave_amount if it existed in dict, but bulk usually sets 0 per default
-            overtime     = float(emp.get("overtime", 0))
+            overtime     = float(emp.get("overtime") or 0)
             deduction_misc = 0.0
             damage_medical = 0.0
 
             taxable = gross + leave_enc + overtime - deduction_misc - damage_medical
 
             # Gather deductions
-            tax          = float(emp.get("income_tax", 0))
-            eobi         = float(emp.get("eobi_deduction", 0))
-            other_ded    = float(emp.get("other_deduction", 0))
+            tax          = float(emp.get("income_tax") or 0)
+            eobi         = float(emp.get("eobi_deduction") or 0)
+            other_ded    = float(emp.get("other_deduction") or 0)
             unpaid       = 0.0
             
             total_ded = tax + eobi + unpaid + other_ded
