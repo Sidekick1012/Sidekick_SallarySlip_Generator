@@ -1,0 +1,19 @@
+-- Run this entire script in Supabase SQL Editor to update your database schema
+-- It adds all the new columns matching the April Excel Sheet
+
+ALTER TABLE employees 
+  ADD COLUMN IF NOT EXISTS cnic VARCHAR(20),
+  ADD COLUMN IF NOT EXISTS ntn VARCHAR(50),
+  ADD COLUMN IF NOT EXISTS bank_name VARCHAR(100),
+  ADD COLUMN IF NOT EXISTS iban VARCHAR(100),
+  ADD COLUMN IF NOT EXISTS increment DECIMAL(12, 2) DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS new_gross_monthly DECIMAL(12, 2) DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS date_of_leaving DATE;
+
+ALTER TABLE salary_slips
+  ADD COLUMN IF NOT EXISTS arrears DECIMAL(12, 2) DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS washing_allowance DECIMAL(12, 2) DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS paid_leave_amount DECIMAL(12, 2) DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS deduction_misc DECIMAL(12, 2) DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS damage_medical DECIMAL(12, 2) DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS taxable_salary DECIMAL(12, 2) DEFAULT 0;

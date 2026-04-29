@@ -32,9 +32,9 @@ def generate_payroll_excel(slips, month, year):
     # Header Row
     columns = [
         "Sr. No", "Employee ID", "Name", "Designation", "Department",
-        "Basic Salary", "House Rent", "Transport", "Medical", 
-        "Other Allow.", "Overtime", "Gross Salary",
-        "Income Tax", "EOBI", "Total Ded.", "Net Salary"
+        "Basic Salary", "Medical", "Dearness", "House Rent", "Transport", "COLA", "Utility", "Washing", 
+        "Prev. Month Allow.", "Bonus", "Other Allow.", "Arrears", "Gross Salary", "Paid Leave", "Overtime", 
+        "Misc Deduction", "Damage", "Taxable Salary", "Income Tax", "EOBI", "Unpaid Leaves", "Total Ded.", "Net Salary"
     ]
     
     ws.append(columns)
@@ -53,14 +53,26 @@ def generate_payroll_excel(slips, month, year):
             slip['employees']['designation'],
             slip['employees'].get('department', '-'),
             slip.get('basic_salary', 0),
+            slip.get('medical_allowance', 0),
+            slip.get('dearness_allowance', 0),
             slip.get('house_allowance', 0),
             slip.get('transport_allowance', 0),
-            slip.get('medical_allowance', 0),
+            slip.get('cola_allowance', 0),
+            slip.get('utility_allowance', 0),
+            slip.get('washing_allowance', 0),
+            slip.get('previous_month_allowance', 0),
+            slip.get('bonus_allowance', 0),
             slip.get('other_allowance', 0),
-            slip.get('overtime', 0),
+            slip.get('arrears', 0),
             slip.get('gross_salary', 0),
+            slip.get('paid_leave_amount', 0),
+            slip.get('overtime', 0),
+            slip.get('deduction_misc', 0),
+            slip.get('damage_medical', 0),
+            slip.get('taxable_salary', 0),
             slip.get('income_tax', 0),
             slip.get('eobi_deduction', 0),
+            slip.get('unpaid_leaves', 0),
             slip.get('total_deductions', 0),
             slip.get('net_salary', 0)
         ]
@@ -79,10 +91,12 @@ def generate_payroll_excel(slips, month, year):
     # Add Totals Row
     total_row_num = ws.max_row + 1
     ws.cell(row=total_row_num, column=3, value="TOTALS").font = Font(bold=True)
-    ws.cell(row=total_row_num, column=12, value=sum(s.get('gross_salary', 0) for s in slips)).font = Font(bold=True)
-    ws.cell(row=total_row_num, column=16, value=sum(s.get('net_salary', 0) for s in slips)).font = Font(bold=True)
-    ws.cell(row=total_row_num, column=12).number_format = '#,##0'
-    ws.cell(row=total_row_num, column=16).number_format = '#,##0'
+    ws.cell(row=total_row_num, column=18, value=sum(s.get('gross_salary', 0) for s in slips)).font = Font(bold=True)
+    ws.cell(row=total_row_num, column=23, value=sum(s.get('taxable_salary', 0) for s in slips)).font = Font(bold=True)
+    ws.cell(row=total_row_num, column=28, value=sum(s.get('net_salary', 0) for s in slips)).font = Font(bold=True)
+    ws.cell(row=total_row_num, column=18).number_format = '#,##0'
+    ws.cell(row=total_row_num, column=23).number_format = '#,##0'
+    ws.cell(row=total_row_num, column=28).number_format = '#,##0'
 
     # Auto-adjust column width
     for column in ws.columns:
@@ -117,31 +131,39 @@ def generate_payroll_pdf(slips, month, year):
     
     # Table Data
     data = [
-        ["Sr", "ID", "Name", "Designation", "Basic", "House", "Transp.", "Medical", "Other", "OT", "Gross", "Tax", "EOBI", "Ded.", "Net"]
+        ["Sr", "ID", "Name", "Designation", "Basic", "Med", "Transp.", "Other_All.", "Gross", "P/Leave", "OT", "Taxable", "Tax", "EOBI", "Ded.", "Net"]
     ]
     
     for i, slip in enumerate(slips, 1):
+        other_additions = sum([
+            slip.get('dearness_allowance',0), slip.get('house_allowance',0),
+            slip.get('cola_allowance',0), slip.get('utility_allowance',0), slip.get('washing_allowance',0),
+            slip.get('previous_month_allowance',0), slip.get('bonus_allowance',0),
+            slip.get('other_allowance',0), slip.get('arrears',0)
+        ])
+        
         data.append([
             i,
             slip['employees']['employee_id'],
-            slip['employees']['name'][:15], # Truncate for space
-            slip['employees']['designation'][:12],
-            f"{slip['basic_salary']:,.0f}",
-            f"{slip['house_allowance']:,.0f}",
-            f"{slip['transport_allowance']:,.0f}",
-            f"{slip['medical_allowance']:,.0f}",
-            f"{slip['other_allowance']:,.0f}",
-            f"{slip['overtime']:,.0f}",
-            f"{slip['gross_salary']:,.0f}",
-            f"{slip['income_tax']:,.0f}",
-            f"{slip['eobi_deduction']:,.0f}",
-            f"{slip['total_deductions']:,.0f}",
-            f"{slip['net_salary']:,.0f}"
+            slip['employees']['name'][:12],
+            slip['employees']['designation'][:10],
+            f"{slip.get('basic_salary', 0):,.0f}",
+            f"{slip.get('medical_allowance', 0):,.0f}",
+            f"{slip.get('transport_allowance', 0):,.0f}",
+            f"{other_additions:,.0f}",
+            f"{slip.get('gross_salary', 0):,.0f}",
+            f"{slip.get('paid_leave_amount', 0):,.0f}",
+            f"{slip.get('overtime', 0):,.0f}",
+            f"{slip.get('taxable_salary', 0):,.0f}",
+            f"{slip.get('income_tax', 0):,.0f}",
+            f"{slip.get('eobi_deduction', 0):,.0f}",
+            f"{slip.get('total_deductions', 0):,.0f}",
+            f"{slip.get('net_salary', 0):,.0f}"
         ])
     
     # Define Column Widths
     # Total width is approx A4 landscape (842) - margins (40) = 802
-    col_widths = [25, 45, 90, 80, 50, 45, 45, 45, 45, 35, 60, 40, 40, 50, 70]
+    col_widths = [20, 35, 75, 65, 45, 40, 45, 50, 55, 45, 35, 55, 35, 35, 40, 55]
     
     table = Table(data, colWidths=col_widths, repeatRows=1)
     

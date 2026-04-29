@@ -325,7 +325,12 @@ def add_employee_route():
             "designation":           request.form.get("designation"),
             "department":            request.form.get("department"),
             "joining_date":          request.form.get("joining_date"),
+            "date_of_leaving":       request.form.get("date_of_leaving") or None,
             "bank_account":          request.form.get("bank_account"),
+            "bank_name":             request.form.get("bank_name"),
+            "iban":                  request.form.get("iban"),
+            "cnic":                  request.form.get("cnic"),
+            "ntn":                   request.form.get("ntn"),
             "email":                 request.form.get("email"),
             "basic_salary":          float(request.form.get("basic_salary", 0)),
             "house_allowance":       float(request.form.get("house_allowance", 0)),
@@ -343,6 +348,8 @@ def add_employee_route():
             "eobi_deduction":        float(request.form.get("eobi_deduction", 0)),
             "other_deduction":       float(request.form.get("other_deduction", 0)),
             "previous_gross":        float(request.form.get("previous_gross", 0)),
+            "increment":             float(request.form.get("increment", 0)),
+            "new_gross_monthly":     float(request.form.get("new_gross_monthly", 0)),
         }
         try:
             add_employee(data)
@@ -370,7 +377,12 @@ def edit_employee(emp_id):
             "designation":         request.form.get("designation"),
             "department":          request.form.get("department"),
             "joining_date":        request.form.get("joining_date"),
+            "date_of_leaving":     request.form.get("date_of_leaving") or None,
             "bank_account":        request.form.get("bank_account"),
+            "bank_name":           request.form.get("bank_name"),
+            "iban":                request.form.get("iban"),
+            "cnic":                request.form.get("cnic"),
+            "ntn":                 request.form.get("ntn"),
             "email":               request.form.get("email"),
             "basic_salary":        float(request.form.get("basic_salary", 0)),
             "house_allowance":     float(request.form.get("house_allowance", 0)),
@@ -388,6 +400,8 @@ def edit_employee(emp_id):
             "eobi_deduction":      float(request.form.get("eobi_deduction", 0)),
             "other_deduction":     float(request.form.get("other_deduction", 0)),
             "previous_gross":      float(request.form.get("previous_gross", 0)),
+            "increment":           float(request.form.get("increment", 0)),
+            "new_gross_monthly":   float(request.form.get("new_gross_monthly", 0)),
         }
         update_employee(emp_id, data)
         log_activity(current_user.email, "Edit Employee", f"Updated details for employee: {data['name']}")
@@ -433,13 +447,20 @@ def generate():
         transport    = float(request.form.get("transport_allowance",      emp["transport_allowance"]))
         cola         = float(request.form.get("cola_allowance",           0))
         utility      = float(request.form.get("utility_allowance",        0))
+        washing      = float(request.form.get("washing_allowance",        0))
         prev_month   = float(request.form.get("previous_month_allowance", 0))
         bonus        = float(request.form.get("bonus_allowance",          0))
-        leave_enc    = float(request.form.get("leave_encashment",         0))
-        overtime     = float(request.form.get("overtime",                 0))
         other_allow  = float(request.form.get("other_allowance",          emp["other_allowance"]))
+        arrears      = float(request.form.get("arrears",                  0))
 
-        gross = basic + medical + dearness + house + transport + cola + utility + prev_month + bonus + leave_enc + overtime + other_allow
+        gross = basic + medical + dearness + house + transport + cola + utility + washing + prev_month + bonus + other_allow + arrears
+
+        leave_enc    = float(request.form.get("paid_leave_amount",        0))
+        overtime     = float(request.form.get("overtime",                 0))
+        deduction_misc = float(request.form.get("deduction_misc",         0))
+        damage_medical = float(request.form.get("damage_medical",         0))
+
+        taxable = gross + leave_enc + overtime - deduction_misc - damage_medical
 
         tax          = float(request.form.get("income_tax",               0))
         eobi         = float(request.form.get("eobi_deduction",           0))
@@ -447,7 +468,7 @@ def generate():
         other_ded    = float(request.form.get("other_deduction",          0))
         
         total_ded = tax + eobi + unpaid + other_ded
-        net       = gross - total_ded
+        net       = taxable - total_ded
 
         slip_data = {
             "employee_id":         emp_id,
@@ -460,12 +481,17 @@ def generate():
             "transport_allowance":      transport,
             "cola_allowance":           cola,
             "utility_allowance":        utility,
+            "washing_allowance":        washing,
             "previous_month_allowance": prev_month,
             "bonus_allowance":          bonus,
-            "leave_encashment":         leave_enc,
-            "overtime":                 overtime,
             "other_allowance":          other_allow,
+            "arrears":                  arrears,
             "gross_salary":             gross,
+            "paid_leave_amount":        leave_enc,
+            "overtime":                 overtime,
+            "deduction_misc":           deduction_misc,
+            "damage_medical":           damage_medical,
+            "taxable_salary":           taxable,
             "income_tax":               tax,
             "eobi_deduction":           eobi,
             "unpaid_leaves":            unpaid,
@@ -516,13 +542,20 @@ def edit_salary_slip(slip_id):
             transport    = float(request.form.get("transport_allowance", 0))
             cola         = float(request.form.get("cola_allowance", 0))
             utility      = float(request.form.get("utility_allowance", 0))
+            washing      = float(request.form.get("washing_allowance", 0))
             prev_month   = float(request.form.get("previous_month_allowance", 0))
             bonus        = float(request.form.get("bonus_allowance", 0))
-            leave_enc    = float(request.form.get("leave_encashment", 0))
-            overtime     = float(request.form.get("overtime", 0))
             other_allow  = float(request.form.get("other_allowance", 0))
+            arrears      = float(request.form.get("arrears", 0))
 
-            gross = basic + medical + dearness + house + transport + cola + utility + prev_month + bonus + leave_enc + overtime + other_allow
+            gross = basic + medical + dearness + house + transport + cola + utility + washing + prev_month + bonus + other_allow + arrears
+
+            leave_enc    = float(request.form.get("paid_leave_amount", 0))
+            overtime     = float(request.form.get("overtime", 0))
+            deduction_misc = float(request.form.get("deduction_misc", 0))
+            damage_medical = float(request.form.get("damage_medical", 0))
+
+            taxable = gross + leave_enc + overtime - deduction_misc - damage_medical
 
             tax          = float(request.form.get("income_tax", 0))
             eobi         = float(request.form.get("eobi_deduction", 0))
@@ -530,7 +563,7 @@ def edit_salary_slip(slip_id):
             other_ded    = float(request.form.get("other_deduction", 0))
             
             total_ded = tax + eobi + unpaid + other_ded
-            net       = gross - total_ded
+            net       = taxable - total_ded
 
             updated_data = {
                 "month":               int(request.form.get("month")),
@@ -542,12 +575,17 @@ def edit_salary_slip(slip_id):
                 "transport_allowance":      transport,
                 "cola_allowance":           cola,
                 "utility_allowance":        utility,
+                "washing_allowance":        washing,
                 "previous_month_allowance": prev_month,
                 "bonus_allowance":          bonus,
-                "leave_encashment":         leave_enc,
-                "overtime":                 overtime,
                 "other_allowance":          other_allow,
+                "arrears":                  arrears,
                 "gross_salary":             gross,
+                "paid_leave_amount":        leave_enc,
+                "overtime":                 overtime,
+                "deduction_misc":           deduction_misc,
+                "damage_medical":           damage_medical,
+                "taxable_salary":           taxable,
                 "income_tax":               tax,
                 "eobi_deduction":           eobi,
                 "unpaid_leaves":            unpaid,
@@ -644,21 +682,29 @@ def generate_bulk():
             dearness     = float(emp.get("dearness_allowance", 0))
             cola         = float(emp.get("cola_allowance", 0))
             utility      = float(emp.get("utility_allowance", 0))
+            washing      = float(emp.get("washing_allowance", 0))
             prev_month   = float(emp.get("previous_month_allowance", 0))
             bonus        = float(emp.get("bonus_allowance", 0))
-            leave_enc    = float(emp.get("leave_encashment", 0))
-            overtime     = float(emp.get("overtime", 0))
             other_allow  = float(emp.get("other_allowance", 0))
+            arrears      = float(emp.get("arrears", 0))
 
-            gross = basic + medical + house + transport + dearness + cola + utility + prev_month + bonus + leave_enc + overtime + other_allow
+            gross = basic + medical + house + transport + dearness + cola + utility + washing + prev_month + bonus + other_allow + arrears
+            
+            leave_enc    = 0.0 # Will map to paid_leave_amount if it existed in dict, but bulk usually sets 0 per default
+            overtime     = float(emp.get("overtime", 0))
+            deduction_misc = 0.0
+            damage_medical = 0.0
+
+            taxable = gross + leave_enc + overtime - deduction_misc - damage_medical
 
             # Gather deductions
             tax          = float(emp.get("income_tax", 0))
             eobi         = float(emp.get("eobi_deduction", 0))
             other_ded    = float(emp.get("other_deduction", 0))
+            unpaid       = 0.0
             
-            total_ded = tax + eobi + other_ded
-            net       = gross - total_ded
+            total_ded = tax + eobi + unpaid + other_ded
+            net       = taxable - total_ded
 
             slip_data = {
                 "employee_id":         emp["id"],
@@ -671,15 +717,20 @@ def generate_bulk():
                 "transport_allowance":      transport,
                 "cola_allowance":           cola,
                 "utility_allowance":        utility,
+                "washing_allowance":        washing,
                 "previous_month_allowance": prev_month,
                 "bonus_allowance":          bonus,
-                "leave_encashment":         leave_enc,
-                "overtime":                 overtime,
                 "other_allowance":          other_allow,
+                "arrears":                  arrears,
                 "gross_salary":             gross,
+                "paid_leave_amount":        leave_enc,
+                "overtime":                 overtime,
+                "deduction_misc":           deduction_misc,
+                "damage_medical":           damage_medical,
+                "taxable_salary":           taxable,
                 "income_tax":               tax,
                 "eobi_deduction":           eobi,
-                "unpaid_leaves":            0,
+                "unpaid_leaves":            unpaid,
                 "other_deduction":          other_ded,
                 "total_deductions":         total_ded,
                 "net_salary":               net,
@@ -991,11 +1042,11 @@ def download_excel_template():
     ws.title = "Salary Upload Template"
 
     headers = [
-        "Employee_ID", "Basic_Salary", "House_Allowance", "Transport_Allowance",
-        "Medical_Allowance", "Other_Allowance", "Dearness_Allowance", "COLA_Allowance",
-        "Utility_Allowance", "Previous_Month_Allowance", "Bonus_Allowance",
-        "Leave_Encashment", "Overtime", "Income_Tax", "EOBI_Deduction",
-        "Unpaid_Leaves", "Other_Deduction", "Working_Days"
+        "Employee_ID", "Basic_Salary", "Medical_Allowance", "Dearness_Allowance", "Arrears",
+        "Transport_Allowance", "COLA_Allowance", "Utility_Allowance", "Washing_Allowance",
+        "Previous_Month_Allowance", "Bonus_Allowance", "Other_Allowance",
+        "Paid_Leave_Amount", "Deduction_Misc", "Overtime", "Damage_Medical",
+        "Income_Tax", "Unpaid_Leaves", "EOBI_Deduction", "Other_Deduction", "Working_Days"
     ]
 
     thin = Border(
@@ -1017,20 +1068,23 @@ def download_excel_template():
         ws.append([
             emp.get("employee_id", ""),
             emp.get("basic_salary", 0),
-            emp.get("house_allowance", 0),
-            emp.get("transport_allowance", 0),
             emp.get("medical_allowance", 0),
-            emp.get("other_allowance", 0),
             emp.get("dearness_allowance", 0),
+            0, # Arrears
+            emp.get("transport_allowance", 0),
             emp.get("cola_allowance", 0),
             emp.get("utility_allowance", 0),
+            0, # Washing allowance
             emp.get("previous_month_allowance", 0),
             emp.get("bonus_allowance", 0),
-            emp.get("leave_encashment", 0),
+            emp.get("other_allowance", 0),
+            0, # Paid_leave_amount
+            0, # Deduction_misc
             emp.get("overtime", 0),
+            0, # Damage_medical
             emp.get("income_tax", 0),
-            emp.get("eobi_deduction", 0),
             0,   # Unpaid_Leaves
+            emp.get("eobi_deduction", 0),
             emp.get("other_deduction", 0),
             26,  # Working_Days
         ])
@@ -1136,20 +1190,27 @@ def generate_from_excel():
                 dearness   = _f(rd, "dearness_allowance",       emp.get("dearness_allowance", 0))
                 cola       = _f(rd, "cola_allowance",           emp.get("cola_allowance", 0))
                 utility    = _f(rd, "utility_allowance",        emp.get("utility_allowance", 0))
+                washing    = _f(rd, "washing_allowance",        0)
                 prev_month = _f(rd, "previous_month_allowance", emp.get("previous_month_allowance", 0))
                 bonus      = _f(rd, "bonus_allowance",          emp.get("bonus_allowance", 0))
-                leave_enc  = _f(rd, "leave_encashment",         emp.get("leave_encashment", 0))
-                overtime   = _f(rd, "overtime",                 emp.get("overtime", 0))
                 other_all  = _f(rd, "other_allowance",          emp.get("other_allowance", 0))
+                arrears    = _f(rd, "arrears",                  0)
 
-                gross = basic + medical + house + transport + dearness + cola + utility + prev_month + bonus + leave_enc + overtime + other_all
+                gross = basic + medical + house + transport + dearness + cola + utility + washing + prev_month + bonus + other_all + arrears
+
+                leave_enc  = _f(rd, "paid_leave_amount",        0)
+                overtime   = _f(rd, "overtime",                 emp.get("overtime", 0))
+                ded_misc   = _f(rd, "deduction_misc",           0)
+                dmg_med    = _f(rd, "damage_medical",           0)
+
+                taxable = gross + leave_enc + overtime - ded_misc - dmg_med
 
                 tax       = _f(rd, "income_tax",      emp.get("income_tax", 0))
                 eobi      = _f(rd, "eobi_deduction",  emp.get("eobi_deduction", 0))
                 unpaid    = _f(rd, "unpaid_leaves",   0)
                 other_ded = _f(rd, "other_deduction", emp.get("other_deduction", 0))
                 total_ded = tax + eobi + unpaid + other_ded
-                net       = gross - total_ded
+                net       = taxable - total_ded
                 w_days    = _i(rd, "working_days", 26)
 
                 slip_data = {
@@ -1163,12 +1224,17 @@ def generate_from_excel():
                     "transport_allowance":      transport,
                     "cola_allowance":           cola,
                     "utility_allowance":        utility,
+                    "washing_allowance":        washing,
                     "previous_month_allowance": prev_month,
                     "bonus_allowance":          bonus,
-                    "leave_encashment":         leave_enc,
-                    "overtime":                 overtime,
                     "other_allowance":          other_all,
+                    "arrears":                  arrears,
                     "gross_salary":             gross,
+                    "paid_leave_amount":        leave_enc,
+                    "overtime":                 overtime,
+                    "deduction_misc":           ded_misc,
+                    "damage_medical":           dmg_med,
+                    "taxable_salary":           taxable,
                     "income_tax":               tax,
                     "eobi_deduction":           eobi,
                     "unpaid_leaves":            unpaid,

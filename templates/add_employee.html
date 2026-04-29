@@ -57,11 +57,32 @@
                      value="{{ emp.joining_date if emp else '' }}">
             </div>
             <div class="col-md-6">
-              <label class="form-label">Bank Account Number</label>
-              <input type="text" name="bank_account" class="form-control"
-                     value="{{ emp.bank_account if emp else '' }}" placeholder="PK36SCBL0000001123456702">
+              <label class="form-label">Date of Leaving</label>
+              <input type="date" name="date_of_leaving" class="form-control"
+                     value="{{ emp.date_of_leaving if emp else '' }}">
             </div>
             <div class="col-md-6">
+              <label class="form-label">CNIC</label>
+              <input type="text" name="cnic" class="form-control"
+                     value="{{ emp.cnic if emp else '' }}" placeholder="12345-1234567-1">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">NTN</label>
+              <input type="text" name="ntn" class="form-control"
+                     value="{{ emp.ntn if emp else '' }}" placeholder="1234567-8">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Bank Name</label>
+              <input type="text" name="bank_name" class="form-control"
+                     value="{{ (emp.bank_name or emp.bank_account) if emp else '' }}" placeholder="Meezan Bank">
+              <input type="hidden" name="bank_account" value="{{ emp.bank_account if emp else '' }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">IBAN</label>
+              <input type="text" name="iban" class="form-control"
+                     value="{{ emp.iban if emp else '' }}" placeholder="PK36SCBL000000...">
+            </div>
+            <div class="col-md-12">
               <label class="form-label">Email Address <small style="color:var(--muted);">(used for salary slip distribution)</small></label>
               <input type="email" name="email" class="form-control"
                      value="{{ emp.email if emp else '' }}" placeholder="employee@gmail.com">
@@ -100,8 +121,26 @@
           <div class="sk-card-title"><i class="bi bi-cash-stack" style="color:var(--accent);"></i> Salary Structure (PKR)</div>
         </div>
         <div class="sk-card-body">
-          <div class="section-divider">Earnings</div>
+          <div class="section-divider">Earnings & Increments</div>
           <div class="row g-3">
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label">Previous Gross</label>
+              <input type="number" name="previous_gross" id="previous_gross" class="form-control salary-input"
+                     min="0" step="1"
+                     value="{{ emp.previous_gross|int if emp else 0 }}" placeholder="0">
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label">Increment</label>
+              <input type="number" name="increment" id="increment" class="form-control salary-input"
+                     min="0" step="1"
+                     value="{{ emp.increment|int if emp else 0 }}" placeholder="0">
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label">New Gross Monthly</label>
+              <input type="number" name="new_gross_monthly" id="new_gross_monthly" class="form-control salary-input"
+                     min="0" step="1"
+                     value="{{ emp.new_gross_monthly|int if emp else 0 }}" placeholder="0">
+            </div>
             <div class="col-md-3 col-sm-6">
               <label class="form-label">Basic Salary *</label>
               <input type="number" name="basic_salary" id="basic_salary" class="form-control salary-input" 
@@ -109,76 +148,50 @@
                      value="{{ emp.basic_salary|int if emp else 0 }}" placeholder="50000">
             </div>
             <div class="col-md-3 col-sm-6">
-              <label class="form-label">Medical Allowance</label>
+              <label class="form-label">Medical</label>
               <input type="number" name="medical_allowance" id="medical_allowance" class="form-control salary-input"
-                     min="0" step="1"
-                     value="{{ emp.medical_allowance|int if emp else 0 }}" placeholder="0">
+                     min="0" step="1" value="{{ emp.medical_allowance|int if emp else 0 }}" placeholder="0">
             </div>
             <div class="col-md-3 col-sm-6">
               <label class="form-label">House Allowance</label>
               <input type="number" name="house_allowance" id="house_allowance" class="form-control salary-input"
-                     min="0" step="1"
-                     value="{{ emp.house_allowance|int if emp else 0 }}" placeholder="0">
+                     min="0" step="1" value="{{ emp.house_allowance|int if emp else 0 }}" placeholder="0">
             </div>
             <div class="col-md-3 col-sm-6">
-              <label class="form-label">Transport Allowance</label>
+              <label class="form-label">Transport</label>
               <input type="number" name="transport_allowance" id="transport_allowance" class="form-control salary-input"
-                     min="0" step="1"
-                     value="{{ emp.transport_allowance|int if emp else 0 }}" placeholder="0">
+                     min="0" step="1" value="{{ emp.transport_allowance|int if emp else 0 }}" placeholder="0">
             </div>
             <div class="col-md-3 col-sm-6">
-              <label class="form-label">Dearness Allowance</label>
+              <label class="form-label">Dearness</label>
               <input type="number" name="dearness_allowance" id="dearness_allowance" class="form-control salary-input"
-                     min="0" step="1"
-                     value="{{ emp.dearness_allowance|int if emp else 0 }}" placeholder="0">
+                     min="0" step="1" value="{{ emp.dearness_allowance|int if emp else 0 }}" placeholder="0">
             </div>
             <div class="col-md-3 col-sm-6">
               <label class="form-label">COLA</label>
               <input type="number" name="cola_allowance" id="cola_allowance" class="form-control salary-input"
-                     min="0" step="1"
-                     value="{{ emp.cola_allowance|int if emp else 0 }}" placeholder="0">
+                     min="0" step="1" value="{{ emp.cola_allowance|int if emp else 0 }}" placeholder="0">
             </div>
             <div class="col-md-3 col-sm-6">
-              <label class="form-label">Utility Allowance</label>
-              <input type="number" name="utility_allowance" id="utility_allowance" class="form-control salary-input"
-                     min="0" step="1"
-                     value="{{ emp.utility_allowance|int if emp else 0 }}" placeholder="0">
+              <label class="form-label">Washing/W. Allow</label>
+              <input type="number" name="washing_allowance" id="washing_allowance" class="form-control salary-input"
+                     min="0" step="1" value="{{ emp.washing_allowance|int if emp else 0 }}" placeholder="0">
+              <input type="hidden" name="utility_allowance" id="utility_allowance" value="{{ emp.utility_allowance|int if emp else 0 }}">
             </div>
             <div class="col-md-3 col-sm-6">
               <label class="form-label">Bonus</label>
               <input type="number" name="bonus_allowance" id="bonus_allowance" class="form-control salary-input"
-                     min="0" step="1"
-                     value="{{ emp.bonus_allowance|int if emp else 0 }}" placeholder="0">
-            </div>
-            <div class="col-md-3 col-sm-6">
-              <label class="form-label">Leave Encashment</label>
-              <input type="number" name="leave_encashment" id="leave_encashment" class="form-control salary-input"
-                     min="0" step="1"
-                     value="{{ emp.leave_encashment|int if emp else 0 }}" placeholder="0">
-            </div>
-            <div class="col-md-3 col-sm-6">
-              <label class="form-label">Overtime</label>
-              <input type="number" name="overtime" id="overtime" class="form-control salary-input"
-                     min="0" step="1"
-                     value="{{ emp.overtime|int if emp else 0 }}" placeholder="0">
+                     min="0" step="1" value="{{ emp.bonus_allowance|int if emp else 0 }}" placeholder="0">
             </div>
             <div class="col-md-3 col-sm-6">
               <label class="form-label">Other Allowance</label>
               <input type="number" name="other_allowance" id="other_allowance" class="form-control salary-input"
-                     min="0" step="1"
-                     value="{{ emp.other_allowance|int if emp else 0 }}" placeholder="0">
+                     min="0" step="1" value="{{ emp.other_allowance|int if emp else 0 }}" placeholder="0">
             </div>
             <div class="col-md-3 col-sm-6">
-              <label class="form-label">Prev. Month Allowance</label>
-              <input type="number" name="previous_month_allowance" id="previous_month_allowance" class="form-control salary-input"
-                     min="0" step="1"
-                     value="{{ emp.previous_month_allowance|int if emp else 0 }}" placeholder="0">
-            </div>
-            <div class="col-md-3 col-sm-6">
-              <label class="form-label">Previous Gross Total</label>
-              <input type="number" name="previous_gross" id="previous_gross" class="form-control salary-input"
-                     min="0" step="1"
-                     value="{{ emp.previous_gross|int if emp else 0 }}" placeholder="0">
+              <label class="form-label">Overtime</label>
+              <input type="number" name="overtime" id="overtime" class="form-control salary-input"
+                     min="0" step="1" value="{{ emp.overtime|int if emp else 0 }}" placeholder="0">
             </div>
           </div>
 
@@ -232,14 +245,12 @@ function updateSummary() {
   const transport = parseFloat(document.getElementById('transport_allowance').value)|| 0;
   const dearness  = parseFloat(document.getElementById('dearness_allowance').value) || 0;
   const cola      = parseFloat(document.getElementById('cola_allowance').value)     || 0;
-  const utility   = parseFloat(document.getElementById('utility_allowance').value)  || 0;
+  const washing   = parseFloat(document.getElementById('washing_allowance').value)  || 0;
   const bonus     = parseFloat(document.getElementById('bonus_allowance').value)    || 0;
-  const leaveEnc  = parseFloat(document.getElementById('leave_encashment').value)   || 0;
   const overtime  = parseFloat(document.getElementById('overtime').value)           || 0;
   const other     = parseFloat(document.getElementById('other_allowance').value)    || 0;
-  const prev      = parseFloat(document.getElementById('previous_month_allowance').value) || 0;
   
-  const gross     = basic + medical + house + transport + dearness + cola + utility + bonus + leaveEnc + overtime + other + prev;
+  const gross     = basic + medical + house + transport + dearness + cola + washing + bonus + overtime + other;
 
   document.getElementById('s_basic').textContent     = fmt(basic);
   document.getElementById('s_house').textContent     = fmt(house);
