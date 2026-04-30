@@ -71,6 +71,7 @@ CREATE TABLE IF NOT EXISTS salary_slips (
     total_deductions DECIMAL(12, 2) DEFAULT 0,
     net_salary DECIMAL(12, 2) NOT NULL,
     working_days INTEGER DEFAULT 26,
+    saving_fund DECIMAL(12, 2) DEFAULT 0,
     pdf_path VARCHAR(500),
     generated_by VARCHAR(255),
     generated_at TIMESTAMP DEFAULT NOW(),
