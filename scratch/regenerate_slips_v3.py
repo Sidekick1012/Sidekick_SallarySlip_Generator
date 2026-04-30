@@ -11,7 +11,7 @@ YEAR = 2026
 MONTHS_NAMES = ["", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 
 def get_employees_map():
-    res = supabase.table("employees").select("id, employee_id, name").execute()
+    res = supabase.table("employees").select("id, employee_id, name, designation").execute()
     return {emp['employee_id'].strip(): emp for emp in res.data}
 
 def load_saving_funds():
