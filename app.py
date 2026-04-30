@@ -1,6 +1,7 @@
 import os
 import io
 import zipfile
+import re
 from itsdangerous import URLSafeTimedSerializer
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file, jsonify
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
@@ -112,7 +113,8 @@ def generate_and_upload_slip(slip_data, emp):
 
         # 2. Upload to Supabase Storage (Path: EMP_ID/filename.pdf)
         filename = os.path.basename(local_path)
-        storage_path = f"{emp.get('employee_id', 'EMP')}/{filename}"
+        emp_id_safe = str(emp.get('employee_id', 'EMP')).strip()
+        storage_path = f"{emp_id_safe}/{filename}"
         
         upload_res = upload_pdf_to_supabase(local_path, storage_path)
         
@@ -720,9 +722,10 @@ def generate_bulk():
             tax          = float(emp.get("income_tax") or 0)
             eobi         = float(emp.get("eobi_deduction") or 0)
             other_ded    = float(emp.get("other_deduction") or 0)
+            saving_fund  = float(emp.get("saving_fund") or 0)
             unpaid       = 0.0
             
-            total_ded = tax + eobi + unpaid + other_ded
+            total_ded = tax + eobi + unpaid + other_ded + saving_fund
             net       = taxable - total_ded
 
             slip_data = {
@@ -751,10 +754,12 @@ def generate_bulk():
                 "eobi_deduction":           eobi,
                 "unpaid_leaves":            unpaid,
                 "other_deduction":          other_ded,
+                "saving_fund":              saving_fund,
                 "total_deductions":         total_ded,
                 "net_salary":               net,
                 "working_days":             26,
                 "generated_by":             current_user.email,
+                "generated_at":             datetime.now().isoformat(),
             }
             try:
                 pdf_path = generate_and_upload_slip(slip_data, emp)
@@ -859,7 +864,7 @@ def download_slip(slip_id):
         return redirect(url_for("view_slips"))
 
     pdf_path = slip.get("pdf_path")
-    emp_name = slip["employees"]["name"].replace(" ", "_")
+    emp_name = re.sub(r'[\\/*?:"<>|]', "", slip["employees"]["name"]).replace(" ", "_")
     month    = MONTHS[slip["month"]]
     filename = f"SalarySlip_{emp_name}_{month}_{slip['year']}.pdf"
 
@@ -910,7 +915,7 @@ def download_multiple_slips():
                         continue
                     
                     pdf_path = slip.get("pdf_path")
-                    emp_name = slip["employees"]["name"].replace(" ", "_")
+                    emp_name = re.sub(r'[\\/*?:"<>|]', "", slip["employees"]["name"]).replace(" ", "_")
                     month = MONTHS[slip["month"]]
                     filename = f"SalarySlip_{emp_name}_{month}_{slip['year']}.pdf"
                     
@@ -1345,8 +1350,9 @@ def generate_from_excel():
                 eobi      = _f(rd, "eobi",            _f(rd, "eobi_deduction", emp.get("eobi_deduction", 0)))
                 unpaid    = _f(rd, "unpaid_leaves",   0)
                 other_ded = _f(rd, "other_deduction", emp.get("other_deduction", 0))
+                saving_fund = _f(rd, "saving_fund",   emp.get("saving_fund", 0))
                 
-                total_ded_calc = tax + sessi + eobi + unpaid + other_ded
+                total_ded_calc = tax + sessi + eobi + unpaid + other_ded + saving_fund
                 total_ded = _f(rd, "total_deductions", total_ded_calc)
                 
                 net_calc = taxable - total_ded
@@ -1382,6 +1388,7 @@ def generate_from_excel():
                     "eobi_deduction":           eobi,
                     "unpaid_leaves":            unpaid,
                     "other_deduction":          other_ded,
+                    "saving_fund":              saving_fund,
                     "total_deductions":         total_ded,
                     "net_salary":               net,
                     "working_days":             w_days,

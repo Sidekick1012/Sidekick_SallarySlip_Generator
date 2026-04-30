@@ -1,4 +1,5 @@
 import os
+import re
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -21,6 +22,7 @@ MONTHS = [
 def number_to_words(n):
     """Simple number to words converter for PKR"""
     if n == 0: return "Zero"
+    if n < 0: return "Minus " + number_to_words(abs(n)).replace(" Rupees Only", "") + " Rupees Only"
     units = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", 
              "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"]
     tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"]
@@ -39,7 +41,7 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
     emp_id   = employee_data.get("employee_id", "EMP")
     month    = slip_data.get("month", 1)
     year     = slip_data.get("year", 2024)
-    emp_name = employee_data.get("name", "Employee").replace(" ", "_")
+    emp_name = re.sub(r'[\\/*?:"<>|]', "", employee_data.get("name", "Employee")).replace(" ", "_")
     month_name = MONTHS[month]
     filename = f"SalarySlip_{emp_name}_{month_name}_{year}.pdf"
     filepath = os.path.join(output_dir, filename)
