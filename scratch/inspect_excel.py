@@ -1,16 +1,17 @@
 import openpyxl
 
-def inspect_excel(file_path):
-    wb = openpyxl.load_workbook(file_path, data_only=True)
-    sheet = wb.active
-    
-    print(f"Sheet Name: {sheet.title}")
-    print(f"Max Row: {sheet.max_row}")
-    print(f"Max Col: {sheet.max_column}")
-    
-    # Read first 5 rows
-    for row in list(sheet.rows)[:5]:
-        print([cell.value for cell in row])
+def check_columns(filename):
+    try:
+        wb = openpyxl.load_workbook(filename, data_only=True)
+        sheet = wb.active
+        print(f"Max Column: {sheet.max_column}")
+        for i, row in enumerate(sheet.iter_rows(values_only=True)):
+            if i < 5:
+                print(f"Row {i}: {row}")
+            if "Salah" in str(row[1]):
+                print(f"Salah Row ({i}): {row}")
+    except Exception as e:
+        print(f"Error: {e}")
 
 if __name__ == "__main__":
-    inspect_excel("Daci emp.xlsx")
+    check_columns("Saving funds.xlsx")

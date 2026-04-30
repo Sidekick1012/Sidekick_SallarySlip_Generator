@@ -201,8 +201,13 @@
         <div class="sk-card-body">
           <div class="row g-3">
             <div class="col-md-4">
-              <label class="form-label">Saving Fund</label>
-              <input type="number" name="saving_fund" id="f_saving_fund" class="form-control slip-input" min="0" step="1" value="{{ slip.saving_fund if edit else 0 }}">
+              <label class="form-label">Saving Fund (2026)</label>
+              <input type="number" name="saving_fund" id="f_saving_fund" class="form-control slip-input" min="0" step="0.01" value="{{ slip.saving_fund if edit else 0 }}">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Total Saving Fund (Accumulated)</label>
+              <input type="number" name="total_saving_fund" id="f_total_saving_fund" class="form-control" min="0" step="0.01" value="{{ slip.total_saving_fund if edit else 0 }}" readonly>
+              <div class="form-text">Auto-fetched from Excel</div>
             </div>
           </div>
         </div>
@@ -313,6 +318,9 @@ async function loadEmployee() {
   document.getElementById('f_tax').value       = data.income_tax       || 0;
   document.getElementById('f_eobi').value      = data.eobi_deduction   || 0;
   document.getElementById('f_other_ded').value = data.other_deduction  || 0;
+  
+  document.getElementById('f_saving_fund').value       = data.saving_fund_2026 || 0;
+  document.getElementById('f_total_saving_fund').value = data.total_saving_fund || 0;
 
   updatePreview();
 }

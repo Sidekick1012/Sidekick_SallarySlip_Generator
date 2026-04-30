@@ -478,7 +478,9 @@ def generate():
         net       = taxable - total_ded
 
         saving_funds_map = get_total_saving_funds()
-        total_saving_fund = saving_funds_map.get(emp.get("employee_id"), 0)
+        saving_data = saving_funds_map.get(emp.get("employee_id"), {"2026": 0, "total": 0})
+        total_saving_fund = saving_data.get("total", 0)
+        saving_fund_2026 = saving_data.get("2026", 0)
 
         slip_data = {
             "employee_id":         emp_id,
@@ -507,7 +509,7 @@ def generate():
             "eobi_deduction":           eobi,
             "unpaid_leaves":            unpaid,
             "other_deduction":          other_ded,
-            "saving_fund":              saving_fund,
+            "saving_fund":              request.form.get("saving_fund") or saving_fund_2026,
             "total_saving_fund":        total_saving_fund,
             "total_deductions":         total_ded,
             "net_salary":          net,
@@ -582,9 +584,9 @@ def edit_salary_slip(slip_id):
             net       = taxable - total_ded
 
             saving_funds_map = get_total_saving_funds()
-            total_saving_fund = saving_funds_map.get(emp.get("employee_id"), 0) if 'emp' in locals() else 0
-            if not total_saving_fund and 'slip' in locals():
-                total_saving_fund = saving_funds_map.get(slip.get("employees", {}).get("employee_id"), 0)
+            emp_id_str = emp.get("employee_id") if 'emp' in locals() else slip.get("employees", {}).get("employee_id")
+            saving_data = saving_funds_map.get(emp_id_str, {"2026": 0, "total": 0})
+            total_saving_fund = saving_data.get("total", 0)
 
             updated_data = {
                 "month":               int(request.form.get("month")),
@@ -741,7 +743,9 @@ def generate_bulk():
             net       = taxable - total_ded
 
             saving_funds_map = get_total_saving_funds()
-            total_saving_fund = saving_funds_map.get(emp.get("employee_id"), 0)
+            saving_data = saving_funds_map.get(emp.get("employee_id"), {"2026": 0, "total": 0})
+            total_saving_fund = saving_data.get("total", 0)
+            saving_fund_2026 = saving_data.get("2026", 0)
 
             slip_data = {
                 "employee_id":         emp["id"],
@@ -769,7 +773,7 @@ def generate_bulk():
                 "eobi_deduction":           eobi,
                 "unpaid_leaves":            unpaid,
                 "other_deduction":          other_ded,
-                "saving_fund":              saving_fund,
+                "saving_fund":              saving_fund_2026,
                 "total_saving_fund":        total_saving_fund,
                 "total_deductions":         total_ded,
                 "net_salary":               net,
@@ -987,6 +991,11 @@ def download_multiple_slips():
 def get_employee_data(emp_id):
     emp = get_employee_by_id(emp_id)
     if emp:
+        # Add saving fund data from Excel
+        saving_funds_map = get_total_saving_funds()
+        saving_data = saving_funds_map.get(emp.get("employee_id"), {"2026": 0, "total": 0})
+        emp["saving_fund_2026"] = saving_data.get("2026", 0)
+        emp["total_saving_fund"] = saving_data.get("total", 0)
         return jsonify(emp)
     return jsonify({}), 404
 

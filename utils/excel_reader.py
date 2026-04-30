@@ -20,17 +20,22 @@ def get_total_saving_funds(filename="Saving funds.xlsx"):
         # Row 2+ has data. Column 0 is ID, Column 8 is TOTAL.
         
         for i, row in enumerate(sheet.iter_rows(values_only=True)):
-            if i < 2: # Skip headers (Row 0 is None, Row 1 is headers)
+            if i < 2: # Skip headers
                 continue
             
             emp_id = str(row[0]).strip() if row[0] else None
+            # Indices: 4 for 2026, 8 for TOTAL
+            fund_2026 = row[4] if len(row) > 4 else 0
             total_fund = row[8] if len(row) > 8 else 0
             
             if emp_id and emp_id != 'None':
                 try:
-                    mapping[emp_id] = float(total_fund) if total_fund is not None else 0.0
+                    mapping[emp_id] = {
+                        "2026": float(fund_2026) if fund_2026 is not None else 0.0,
+                        "total": float(total_fund) if total_fund is not None else 0.0
+                    }
                 except (ValueError, TypeError):
-                    mapping[emp_id] = 0.0
+                    mapping[emp_id] = {"2026": 0.0, "total": 0.0}
                     
         return mapping
     except Exception as e:
