@@ -3,7 +3,7 @@ import io
 import zipfile
 import re
 from itsdangerous import URLSafeTimedSerializer
-from flask import Flask, render_template, request, redirect, url_for, flash, send_file, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, send_file, jsonify, make_response
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_bcrypt import Bcrypt
 from flask_mail import Mail, Message
@@ -955,12 +955,10 @@ def download_multiple_slips():
         
         log_activity(current_user.email, "Download Multiple", f"Downloaded {len(slip_ids)} salary slips as ZIP")
         
-        return send_file(
-            zip_buffer,
-            as_attachment=True,
-            download_name=zip_filename,
-            mimetype="application/zip"
-        )
+        response = make_response(zip_buffer.getvalue())
+        response.headers['Content-Type'] = 'application/zip'
+        response.headers['Content-Disposition'] = f'attachment; filename={zip_filename}'
+        return response
     
     except Exception as e:
         flash(f"Error creating ZIP file: {str(e)}", "danger")
