@@ -30,12 +30,12 @@ def get_total_saving_funds(filename="Saving funds.xlsx"):
             
             if emp_id and emp_id != 'None':
                 try:
-                    mapping[emp_id] = {
+                    mapping[emp_id.upper()] = {
                         "2026": float(fund_2026) if fund_2026 is not None else 0.0,
                         "total": float(total_fund) if total_fund is not None else 0.0
                     }
                 except (ValueError, TypeError):
-                    mapping[emp_id] = {"2026": 0.0, "total": 0.0}
+                    mapping[emp_id.upper()] = {"2026": 0.0, "total": 0.0}
                     
         return mapping
     except Exception as e:

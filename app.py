@@ -478,7 +478,7 @@ def generate():
         net       = taxable - total_ded
 
         saving_funds_map = get_total_saving_funds()
-        saving_data = saving_funds_map.get(emp.get("employee_id"), {"2026": 0, "total": 0})
+        saving_data = saving_funds_map.get(str(emp.get("employee_id")).upper(), {"2026": 0, "total": 0})
         total_saving_fund = saving_data.get("total", 0)
         saving_fund_2026 = saving_data.get("2026", 0)
 
@@ -584,7 +584,7 @@ def edit_salary_slip(slip_id):
             net       = taxable - total_ded
 
             saving_funds_map = get_total_saving_funds()
-            emp_id_str = emp.get("employee_id") if 'emp' in locals() else slip.get("employees", {}).get("employee_id")
+            emp_id_str = str(emp.get("employee_id") if 'emp' in locals() else slip.get("employees", {}).get("employee_id")).upper()
             saving_data = saving_funds_map.get(emp_id_str, {"2026": 0, "total": 0})
             total_saving_fund = saving_data.get("total", 0)
 
@@ -707,6 +707,9 @@ def generate_bulk():
         year  = int(request.form.get("year"))
         success_count = 0
         errors = []
+        
+        # Load saving funds once for the entire batch
+        saving_funds_map = get_total_saving_funds()
 
         for emp in employees:
             # Gather earnings
@@ -742,8 +745,7 @@ def generate_bulk():
             total_ded = tax + eobi + unpaid + other_ded
             net       = taxable - total_ded
 
-            saving_funds_map = get_total_saving_funds()
-            saving_data = saving_funds_map.get(emp.get("employee_id"), {"2026": 0, "total": 0})
+            saving_data = saving_funds_map.get(str(emp.get("employee_id")).upper(), {"2026": 0, "total": 0})
             total_saving_fund = saving_data.get("total", 0)
             saving_fund_2026 = saving_data.get("2026", 0)
 
@@ -993,7 +995,7 @@ def get_employee_data(emp_id):
     if emp:
         # Add saving fund data from Excel
         saving_funds_map = get_total_saving_funds()
-        saving_data = saving_funds_map.get(emp.get("employee_id"), {"2026": 0, "total": 0})
+        saving_data = saving_funds_map.get(str(emp.get("employee_id")).upper(), {"2026": 0, "total": 0})
         emp["saving_fund_2026"] = saving_data.get("2026", 0)
         emp["total_saving_fund"] = saving_data.get("total", 0)
         return jsonify(emp)
