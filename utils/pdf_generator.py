@@ -108,10 +108,10 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
         ("ALIGN", (1, 0), (1, -1), "LEFT"),
         ("ALIGN", (2, 0), (2, -1), "LEFT"),
-        ("TOPPADDING", (0, 0), (-1, -1), 0),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 0.5*mm),
-        ("LEFTPADDING", (0, 0), (-1, -1), 0),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+        ("TOPPADDING", (1, 0), (2, -1), 1.2*mm),
+        ("BOTTOMPADDING", (1, 0), (2, -1), 0.8*mm),
+        ("LEFTPADDING", (1, 0), (2, -1), 0),
+        ("LINEBELOW", (1, 0), (2, -3), 0.5, LINE_GRAY),
     ]))
     elements.append(emp_info_table)
     elements.append(Spacer(1, 5*mm))
