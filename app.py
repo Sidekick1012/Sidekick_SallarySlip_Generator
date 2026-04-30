@@ -607,12 +607,20 @@ def edit_salary_slip(slip_id):
             }
 
             # Update DB
-            supabase.table("salary_slips").update(updated_data).eq("id", slip_id).execute()
+            try:
+                supabase.table("salary_slips").update(updated_data).eq("id", slip_id).execute()
+            except Exception as db_error:
+                print(f"DB Update Error (non-critical): {db_error}")
+                # Continue with PDF generation even if some fields fail
             
             # Re-generate & Upload
             emp = get_employee_by_id(slip["employee_id"])
-            pdf_path = generate_and_upload_slip({**updated_data, "employee_id": slip["employee_id"]}, emp)
-            supabase.table("salary_slips").update({"pdf_path": pdf_path}).eq("id", slip_id).execute()
+            try:
+                pdf_path = generate_and_upload_slip({**updated_data, "employee_id": slip["employee_id"]}, emp)
+                supabase.table("salary_slips").update({"pdf_path": pdf_path}).eq("id", slip_id).execute()
+            except Exception as pdf_error:
+                print(f"PDF Generation Error: {pdf_error}")
+                flash(f"Salary slip updated but PDF generation failed: {pdf_error}", "warning")
             
             log_activity(current_user.email, "Edit Slip", f"Updated salary slip for {emp['name']} ({MONTHS[updated_data['month']]} {updated_data['year']})")
             flash("Salary slip updated and re-generated successfully!", "success")
