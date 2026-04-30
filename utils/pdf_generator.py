@@ -247,13 +247,19 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
     # ── 6. CONTRIBUTIONS ───────────────────────────────────────
     elements.append(Paragraph("<b>Company Contributions:</b>", ParagraphStyle("cc", fontSize=9)))
     elements.append(Spacer(1, 2*mm))
-    contrib_data = [[
-        Paragraph("Saving Fund", row_style),
-        Paragraph(f"{slip_data.get('saving_fund', '-'):,}" if isinstance(slip_data.get('saving_fund'), (int, float)) else "-", amt_style)
-    ]]
+    contrib_data = [
+        [
+            Paragraph("Saving Fund", row_style),
+            Paragraph(f"{slip_data.get('saving_fund', '-'):,}" if isinstance(slip_data.get('saving_fund'), (int, float)) else "-", amt_style)
+        ],
+        [
+            Paragraph("Total Saving Fund", row_style),
+            Paragraph(f"{slip_data.get('total_saving_fund', '-'):,}" if isinstance(slip_data.get('total_saving_fund'), (int, float)) else "-", amt_style)
+        ]
+    ]
     contrib_table = Table(contrib_data, colWidths=[65*mm, 25*mm])
     contrib_table.setStyle(TableStyle([
-        ("LINEBELOW", (0, 0), (1, 0), 0.5, LINE_GRAY),
+        ("LINEBELOW", (0, 0), (1, -1), 0.5, LINE_GRAY),
         ("LEFTPADDING", (0, 0), (-1, -1), 3*mm),
     ]))
     elements.append(Table([[contrib_table, ""]], colWidths=[90*mm, 96*mm]))

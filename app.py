@@ -20,6 +20,7 @@ from utils.db import (
     create_user, log_activity, upload_pdf_to_supabase, download_pdf_from_supabase
 )
 from utils.pdf_generator import generate_salary_slip_pdf
+from utils.excel_reader import get_total_saving_funds
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")
@@ -476,6 +477,9 @@ def generate():
         total_ded = tax + sessi + eobi + unpaid + other_ded
         net       = taxable - total_ded
 
+        saving_funds_map = get_total_saving_funds()
+        total_saving_fund = saving_funds_map.get(emp.get("employee_id"), 0)
+
         slip_data = {
             "employee_id":         emp_id,
             "month":               month,
@@ -504,6 +508,7 @@ def generate():
             "unpaid_leaves":            unpaid,
             "other_deduction":          other_ded,
             "saving_fund":              saving_fund,
+            "total_saving_fund":        total_saving_fund,
             "total_deductions":         total_ded,
             "net_salary":          net,
             "working_days":        working_days,
@@ -576,6 +581,11 @@ def edit_salary_slip(slip_id):
             total_ded = tax + sessi + eobi + unpaid + other_ded
             net       = taxable - total_ded
 
+            saving_funds_map = get_total_saving_funds()
+            total_saving_fund = saving_funds_map.get(emp.get("employee_id"), 0) if 'emp' in locals() else 0
+            if not total_saving_fund and 'slip' in locals():
+                total_saving_fund = saving_funds_map.get(slip.get("employees", {}).get("employee_id"), 0)
+
             updated_data = {
                 "month":               int(request.form.get("month")),
                 "year":                int(request.form.get("year")),
@@ -603,6 +613,7 @@ def edit_salary_slip(slip_id):
                 "unpaid_leaves":            unpaid,
                 "other_deduction":          other_ded,
                 "saving_fund":              saving_fund,
+                "total_saving_fund":        total_saving_fund,
                 "total_deductions":         total_ded,
                 "net_salary":               net,
                 "working_days":             int(request.form.get("working_days", 26)),
@@ -729,6 +740,9 @@ def generate_bulk():
             total_ded = tax + eobi + unpaid + other_ded
             net       = taxable - total_ded
 
+            saving_funds_map = get_total_saving_funds()
+            total_saving_fund = saving_funds_map.get(emp.get("employee_id"), 0)
+
             slip_data = {
                 "employee_id":         emp["id"],
                 "month":               month,
@@ -756,6 +770,7 @@ def generate_bulk():
                 "unpaid_leaves":            unpaid,
                 "other_deduction":          other_ded,
                 "saving_fund":              saving_fund,
+                "total_saving_fund":        total_saving_fund,
                 "total_deductions":         total_ded,
                 "net_salary":               net,
                 "working_days":             26,
