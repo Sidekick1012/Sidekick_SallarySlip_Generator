@@ -87,37 +87,31 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
     elements.append(Table([["", emp_header_table]], colWidths=[100*mm, 86*mm]))
 
     # Compile details dropping empty ones
-    info_style = ParagraphStyle("info_style", fontSize=9, fontName="Helvetica", leading=11, spaceBefore=0, spaceAfter=0)
+    info_style = ParagraphStyle("info_style", fontSize=9, fontName="Helvetica", leading=10, spaceBefore=0, spaceAfter=0)
     emp_details = [
-        [Paragraph("Name", info_style), Paragraph(employee_data.get("name", "-"), info_style)],
-        [Paragraph("Designation", info_style), Paragraph(employee_data.get("designation", "-"), info_style)],
-        [Paragraph("Employee ID", info_style), Paragraph(employee_data.get("employee_id", "-"), info_style)]
+        ["", Paragraph("Name", info_style), Paragraph(employee_data.get("name", "-"), info_style)],
+        ["", Paragraph("Designation", info_style), Paragraph(employee_data.get("designation", "-"), info_style)],
+        ["", Paragraph("Employee ID", info_style), Paragraph(employee_data.get("employee_id", "-"), info_style)]
     ]
-    if employee_data.get("cnic"): emp_details.append([Paragraph("CNIC", info_style), Paragraph(employee_data.get("cnic"), info_style)])
-    if employee_data.get("bank_name"): emp_details.append([Paragraph("Bank Name", info_style), Paragraph(employee_data.get("bank_name"), info_style)])
-    if employee_data.get("iban"): emp_details.append([Paragraph("IBAN", info_style), Paragraph(employee_data.get("iban"), info_style)])
-    if employee_data.get("date_of_leaving"): emp_details.append([Paragraph("Date Of Leaving", info_style), Paragraph(str(employee_data.get("date_of_leaving")), info_style)])
+    if employee_data.get("cnic"): emp_details.append(["", Paragraph("CNIC", info_style), Paragraph(employee_data.get("cnic"), info_style)])
+    if employee_data.get("bank_name"): emp_details.append(["", Paragraph("Bank Name", info_style), Paragraph(employee_data.get("bank_name"), info_style)])
+    if employee_data.get("iban"): emp_details.append(["", Paragraph("IBAN", info_style), Paragraph(employee_data.get("iban"), info_style)])
+    if employee_data.get("date_of_leaving"): emp_details.append(["", Paragraph("Date Of Leaving", info_style), Paragraph(str(employee_data.get("date_of_leaving")), info_style)])
     
     emp_details.extend([
-        ["", ""], # Gap
-        [Paragraph("Pay Month", info_style), Paragraph(f"<b>{MONTHS[month]} {year}</b>", info_style)]
+        ["", "", ""], # Gap
+        ["", Paragraph("Pay Month", info_style), Paragraph(f"<b>{MONTHS[month]} {year}</b>", info_style)]
     ])
 
-    # Wrap in an outer table to maintain the 100mm indentation
-    emp_info_inner_table = Table(emp_details, colWidths=[35*mm, 51*mm])
-    emp_info_inner_table.setStyle(TableStyle([
+    emp_info_table = Table(emp_details, colWidths=[100*mm, 35*mm, 51*mm])
+    emp_info_table.setStyle(TableStyle([
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
-        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+        ("ALIGN", (1, 0), (1, -1), "LEFT"),
+        ("ALIGN", (2, 0), (2, -1), "LEFT"),
         ("TOPPADDING", (0, 0), (-1, -1), 0),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 0.5*mm),
         ("LEFTPADDING", (0, 0), (-1, -1), 0),
         ("RIGHTPADDING", (0, 0), (-1, -1), 0),
-    ]))
-    
-    emp_info_table = Table([["", emp_info_inner_table]], colWidths=[100*mm, 86*mm])
-    emp_info_table.setStyle(TableStyle([
-        ("VALIGN", (0, 0), (-1, -1), "TOP"),
-        ("TOPPADDING", (0, 0), (-1, -1), 0),
     ]))
     elements.append(emp_info_table)
     elements.append(Spacer(1, 5*mm))
