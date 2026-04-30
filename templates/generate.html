@@ -183,15 +183,26 @@
               <label class="form-label">Other Deductions</label>
               <input type="number" name="other_deduction" id="f_other_ded" class="form-control slip-input" min="0" step="1" value="{{ slip.other_deduction if edit else 0 }}">
             </div>
-            <div class="col-md-3">
-              <label class="form-label">Saving Fund</label>
-              <input type="number" name="saving_fund" id="f_saving_fund" class="form-control slip-input" min="0" step="1" value="{{ slip.saving_fund if edit else 0 }}">
-            </div>
           </div>
           <div class="row g-3 mt-2">
             <div class="col-12">
               <label class="form-label">Note (Internal/Remarks)</label>
               <textarea name="note" class="form-control" rows="2">{{ slip.note if edit else '' }}</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Company Contributions -->
+      <div class="sk-card mt-4 mb-4">
+        <div class="sk-card-header">
+          <div class="sk-card-title"><i class="bi bi-briefcase-fill" style="color:var(--info);"></i> Company Contributions (Not Deducted)</div>
+        </div>
+        <div class="sk-card-body">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Saving Fund</label>
+              <input type="number" name="saving_fund" id="f_saving_fund" class="form-control slip-input" min="0" step="1" value="{{ slip.saving_fund if edit else 0 }}">
             </div>
           </div>
         </div>

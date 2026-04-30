@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Fix Existing Slips — Sidekick Payroll{% endblock %}
+{% block page_title %}Fix Existing Slips{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-heading">🔧 Fix Existing Salary Slips</div>
+    <div class="page-sub">Remove Saving Fund from deductions (one-time correction)</div>
+  </div>
+  <a href="{{ url_for('dashboard') }}" class="btn-sk-outline">
+    <i class="bi bi-arrow-left"></i> Dashboard
+  </a>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="sk-card">
+      <div class="sk-card-body text-center py-4">
+
+        <div style="font-size: 60px; margin-bottom: 16px;">⚠️</div>
+
+        <h4 style="color: var(--text-primary); margin-bottom: 12px;">Confirm Bulk Fix</h4>
+
+        <p style="color: var(--muted); margin-bottom: 20px;">
+          <strong style="color: var(--warning);">{{ count }}</strong> salary slips have Saving Fund that was 
+          incorrectly included in deductions.<br><br>
+          Clicking <strong>Fix Now</strong> will:
+        </p>
+
+        <ul style="text-align: left; color: var(--muted); margin-bottom: 24px; line-height: 2;">
+          <li>✅ Remove Saving Fund from <strong>Total Deductions</strong></li>
+          <li>✅ Increase <strong>Net Salary</strong> by the saving fund amount</li>
+          <li>✅ Database updated instantly — no PDF regeneration needed</li>
+          <li>ℹ️ Slips with Saving Fund = 0 will be skipped</li>
+        </ul>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for cat, msg in messages %}
+            <div class="alert alert-{{ 'success' if cat == 'success' else 'danger' }} mb-3">{{ msg }}</div>
+          {% endfor %}
+        {% endwith %}
+
+        <form method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn-sk w-100" style="font-size: 16px; padding: 14px;">
+            <i class="bi bi-wrench-adjustable-circle-fill"></i> Fix {{ count }} Slips Now
+          </button>
+        </form>
+
+        <a href="{{ url_for('view_slips') }}" class="btn-sk-outline w-100 mt-3">
+          Cancel — Go to Slips
+        </a>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

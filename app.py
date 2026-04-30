@@ -473,7 +473,7 @@ def generate():
         other_ded    = float(request.form.get("other_deduction") or 0)
         saving_fund  = float(request.form.get("saving_fund") or 0)
         
-        total_ded = tax + sessi + eobi + unpaid + other_ded + saving_fund
+        total_ded = tax + sessi + eobi + unpaid + other_ded
         net       = taxable - total_ded
 
         slip_data = {
@@ -573,7 +573,7 @@ def edit_salary_slip(slip_id):
             other_ded    = float(request.form.get("other_deduction") or 0)
             saving_fund  = float(request.form.get("saving_fund") or 0)
             
-            total_ded = tax + sessi + eobi + unpaid + other_ded + saving_fund
+            total_ded = tax + sessi + eobi + unpaid + other_ded
             net       = taxable - total_ded
 
             updated_data = {
@@ -726,7 +726,7 @@ def generate_bulk():
             saving_fund  = float(emp.get("saving_fund") or 0)
             unpaid       = 0.0
             
-            total_ded = tax + eobi + unpaid + other_ded + saving_fund
+            total_ded = tax + eobi + unpaid + other_ded
             net       = taxable - total_ded
 
             slip_data = {
@@ -1350,7 +1350,7 @@ def generate_from_excel():
                 other_ded = _f(rd, "other_deduction", emp.get("other_deduction", 0))
                 saving_fund = _f(rd, "saving_fund",   emp.get("saving_fund", 0))
                 
-                total_ded_calc = tax + sessi + eobi + unpaid + other_ded + saving_fund
+                total_ded_calc = tax + sessi + eobi + unpaid + other_ded
                 total_ded = _f(rd, "total_deductions", total_ded_calc)
                 
                 net_calc = taxable - total_ded
@@ -1522,6 +1522,67 @@ def forbidden_error(error):
 def internal_error(error):
     log_activity("SYSTEM", "500 Error", str(error))
     return render_template("errors/500.html"), 500
+
+
+# ── Fix Existing Slips (One-Time) ─────────────────────────────────
+
+@app.route("/admin/fix-slips", methods=["GET", "POST"])
+@login_required
+@admin_required
+def fix_existing_slips():
+    """
+    One-time fix: removes saving_fund from total_deductions and corrects net_salary
+    for all existing salary slips that had saving_fund incorrectly deducted.
+    """
+    if request.method == "POST":
+        try:
+            # Fetch all slips
+            res = supabase.table("salary_slips").select(
+                "id, total_deductions, net_salary, saving_fund"
+            ).execute()
+            slips = res.data or []
+
+            fixed = 0
+            skipped = 0
+
+            for slip in slips:
+                sf = float(slip.get("saving_fund") or 0)
+                if sf <= 0:
+                    skipped += 1
+                    continue
+
+                old_ded = float(slip.get("total_deductions") or 0)
+                old_net = float(slip.get("net_salary") or 0)
+
+                new_ded = old_ded - sf
+                new_net = old_net + sf   # Net increases because deduction was removed
+
+                supabase.table("salary_slips").update({
+                    "total_deductions": round(new_ded, 2),
+                    "net_salary":       round(new_net, 2),
+                }).eq("id", slip["id"]).execute()
+                fixed += 1
+
+            log_activity(current_user.email, "Fix Slips",
+                         f"Fixed {fixed} slips (saving_fund removed from deductions). {skipped} slips skipped.")
+            flash(f"✅ {fixed} slips fixed! Net salary corrected. {skipped} slips had no saving fund — skipped.", "success")
+
+        except Exception as e:
+            flash(f"❌ Error: {e}", "danger")
+
+        return redirect(url_for("fix_existing_slips"))
+
+    # GET — show confirmation page
+    # Count how many slips have saving_fund > 0
+    try:
+        res = supabase.table("salary_slips").select("id, saving_fund").execute()
+        affected = [s for s in (res.data or []) if float(s.get("saving_fund") or 0) > 0]
+        count = len(affected)
+    except:
+        count = "?"
+
+    return render_template("fix_slips.html", count=count)
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

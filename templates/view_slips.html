@@ -201,6 +201,11 @@ function submitBulkAction(action, btn) {
         setBtnLoading(btn, true, `Downloading ${selectedCount}...`);
         form.action = "{{ url_for('download_multiple_slips') }}";
         form.submit();
+        
+        // Re-enable the button after 5 seconds since downloading doesn't refresh the page
+        setTimeout(() => {
+            setBtnLoading(btn, false);
+        }, 5000);
     } else if (action === 'email') {
         if (confirm('Send emails to all selected employees?')) {
             setBtnLoading(btn, true, 'Sending...');
