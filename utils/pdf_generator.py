@@ -250,7 +250,7 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
     contrib_data = [
         [
             Paragraph("Saving Fund", row_style),
-            Paragraph(f"{slip_data.get('total_saving_fund', '-'):,}" if isinstance(slip_data.get('total_saving_fund'), (int, float)) else "-", amt_style)
+            Paragraph(f"{round(slip_data.get('total_saving_fund'), 2):,}" if isinstance(slip_data.get('total_saving_fund'), (int, float)) else "-", amt_style)
         ]
     ]
     contrib_table = Table(contrib_data, colWidths=[65*mm, 25*mm])
