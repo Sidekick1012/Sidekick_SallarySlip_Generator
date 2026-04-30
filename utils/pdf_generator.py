@@ -93,7 +93,6 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
         ["", "Employee ID", employee_data.get("employee_id", "-")]
     ]
     if employee_data.get("cnic"): emp_details.append(["", "CNIC", employee_data.get("cnic")])
-    if employee_data.get("ntn"): emp_details.append(["", "NTN", employee_data.get("ntn")])
     if employee_data.get("bank_name"): emp_details.append(["", "Bank Name", employee_data.get("bank_name")])
     if employee_data.get("iban"): emp_details.append(["", "IBAN", employee_data.get("iban")])
     if employee_data.get("date_of_leaving"): emp_details.append(["", "Date Of Leaving", employee_data.get("date_of_leaving")])
