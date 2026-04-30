@@ -87,15 +87,16 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
     elements.append(Table([["", emp_header_table]], colWidths=[100*mm, 86*mm]))
 
     # Compile details dropping empty ones
+    info_style = ParagraphStyle("info_style", fontSize=9, fontName="Helvetica", leading=11)
     emp_details = [
-        ["", "Name", employee_data.get("name", "-")],
-        ["", "Designation", employee_data.get("designation", "-")],
-        ["", "Employee ID", employee_data.get("employee_id", "-")]
+        ["", "Name", Paragraph(employee_data.get("name", "-"), info_style)],
+        ["", "Designation", Paragraph(employee_data.get("designation", "-"), info_style)],
+        ["", "Employee ID", Paragraph(employee_data.get("employee_id", "-"), info_style)]
     ]
-    if employee_data.get("cnic"): emp_details.append(["", "CNIC", employee_data.get("cnic")])
-    if employee_data.get("bank_name"): emp_details.append(["", "Bank Name", employee_data.get("bank_name")])
-    if employee_data.get("iban"): emp_details.append(["", "IBAN", employee_data.get("iban")])
-    if employee_data.get("date_of_leaving"): emp_details.append(["", "Date Of Leaving", employee_data.get("date_of_leaving")])
+    if employee_data.get("cnic"): emp_details.append(["", "CNIC", Paragraph(employee_data.get("cnic"), info_style)])
+    if employee_data.get("bank_name"): emp_details.append(["", "Bank Name", Paragraph(employee_data.get("bank_name"), info_style)])
+    if employee_data.get("iban"): emp_details.append(["", "IBAN", Paragraph(employee_data.get("iban"), info_style)])
+    if employee_data.get("date_of_leaving"): emp_details.append(["", "Date Of Leaving", Paragraph(str(employee_data.get("date_of_leaving")), info_style)])
     
     emp_details.extend([
         ["", "", ""], # Gap
@@ -107,8 +108,9 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
         ("FONTNAME", (1, 0), (1, -1), "Helvetica"),
         ("FONTNAME", (2, 0), (2, -1), "Helvetica"),
         ("FONTSIZE", (0, 0), (-1, -1), 9),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
         ("ALIGN", (1, 0), (1, -1), "LEFT"),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 0.5*mm),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 0.8*mm),
     ]))
     elements.append(emp_info_table)
     elements.append(Spacer(1, 5*mm))
