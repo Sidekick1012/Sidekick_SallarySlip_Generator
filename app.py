@@ -467,8 +467,9 @@ def generate():
         eobi         = float(request.form.get("eobi_deduction") or 0)
         unpaid       = float(request.form.get("unpaid_leaves") or 0)
         other_ded    = float(request.form.get("other_deduction") or 0)
+        saving_fund  = float(request.form.get("saving_fund") or 0)
         
-        total_ded = tax + sessi + eobi + unpaid + other_ded
+        total_ded = tax + sessi + eobi + unpaid + other_ded + saving_fund
         net       = taxable - total_ded
 
         slip_data = {
@@ -498,6 +499,7 @@ def generate():
             "eobi_deduction":           eobi,
             "unpaid_leaves":            unpaid,
             "other_deduction":          other_ded,
+            "saving_fund":              saving_fund,
             "total_deductions":         total_ded,
             "net_salary":          net,
             "working_days":        working_days,
@@ -565,8 +567,9 @@ def edit_salary_slip(slip_id):
             eobi         = float(request.form.get("eobi_deduction") or 0)
             unpaid       = float(request.form.get("unpaid_leaves") or 0)
             other_ded    = float(request.form.get("other_deduction") or 0)
+            saving_fund  = float(request.form.get("saving_fund") or 0)
             
-            total_ded = tax + sessi + eobi + unpaid + other_ded
+            total_ded = tax + sessi + eobi + unpaid + other_ded + saving_fund
             net       = taxable - total_ded
 
             updated_data = {
@@ -595,6 +598,7 @@ def edit_salary_slip(slip_id):
                 "eobi_deduction":           eobi,
                 "unpaid_leaves":            unpaid,
                 "other_deduction":          other_ded,
+                "saving_fund":              saving_fund,
                 "total_deductions":         total_ded,
                 "net_salary":               net,
                 "working_days":             int(request.form.get("working_days", 26)),
