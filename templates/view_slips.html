@@ -60,6 +60,9 @@
       <div class="d-flex align-items-center justify-content-between">
         <span id="selectedCountText" style="font-weight:700; color:var(--accent); font-size:13px;">0 items selected</span>
         <div class="d-flex gap-2">
+          <button type="button" class="btn-sk" style="padding:6px 14px; font-size:12px; background:var(--success); border-color:var(--success);" onclick="submitBulkAction('download', this)">
+            <i class="bi bi-download"></i> Download PDFs
+          </button>
           <button type="button" class="btn-sk" style="padding:6px 14px; font-size:12px;" onclick="submitBulkAction('email', this)">
             <i class="bi bi-send-fill"></i> Send Emails
           </button>
@@ -193,7 +196,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function submitBulkAction(action, btn) {
     const form = document.getElementById('bulkActionForm');
-    if (action === 'email') {
+    if (action === 'download') {
+        const selectedCount = document.querySelectorAll('.slip-checkbox:checked').length;
+        setBtnLoading(btn, true, `Downloading ${selectedCount}...`);
+        form.action = "{{ url_for('download_multiple_slips') }}";
+        form.submit();
+    } else if (action === 'email') {
         if (confirm('Send emails to all selected employees?')) {
             setBtnLoading(btn, true, 'Sending...');
             form.action = "{{ url_for('send_bulk_emails') }}";

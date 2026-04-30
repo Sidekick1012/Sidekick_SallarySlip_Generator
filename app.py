@@ -1,5 +1,6 @@
 import os
 import io
+import zipfile
 from itsdangerous import URLSafeTimedSerializer
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file, jsonify
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
@@ -884,6 +885,80 @@ def download_slip(slip_id):
             raise Exception("Failed to re-generate PDF")
     except Exception as e:
         flash(f"Could not retrieve PDF: {str(e)}", "danger")
+        return redirect(url_for("view_slips"))
+
+
+@app.route("/slips/download-multiple", methods=["POST"])
+@login_required
+def download_multiple_slips():
+    """Download multiple salary slips as a ZIP file"""
+    slip_ids = request.form.getlist("slip_ids")
+    
+    if not slip_ids:
+        flash("Koi slip select nahi ki gayi.", "warning")
+        return redirect(url_for("view_slips"))
+    
+    try:
+        # Create ZIP file in memory
+        zip_buffer = io.BytesIO()
+        
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            for slip_id in slip_ids:
+                try:
+                    slip = get_slip_by_id(int(slip_id))
+                    if not slip:
+                        continue
+                    
+                    pdf_path = slip.get("pdf_path")
+                    emp_name = slip["employees"]["name"].replace(" ", "_")
+                    month = MONTHS[slip["month"]]
+                    filename = f"SalarySlip_{emp_name}_{month}_{slip['year']}.pdf"
+                    
+                    # Try to get PDF content
+                    pdf_content = None
+                    
+                    # 1. Check local storage
+                    if pdf_path and os.path.exists(pdf_path):
+                        with open(pdf_path, 'rb') as f:
+                            pdf_content = f.read()
+                    
+                    # 2. Try Supabase Storage
+                    elif pdf_path:
+                        pdf_content = download_pdf_from_supabase(pdf_path)
+                    
+                    # 3. Re-generate if missing
+                    if not pdf_content:
+                        emp_data = slip["employees"]
+                        new_path = generate_and_upload_slip(slip, emp_data)
+                        if new_path:
+                            supabase.table("salary_slips").update({"pdf_path": new_path}).eq("id", int(slip_id)).execute()
+                            pdf_content = download_pdf_from_supabase(new_path)
+                    
+                    # Add to ZIP if content available
+                    if pdf_content:
+                        zip_file.writestr(filename, pdf_content)
+                
+                except Exception as e:
+                    print(f"Error processing slip {slip_id}: {e}")
+                    continue
+        
+        zip_buffer.seek(0)
+        
+        # Determine month/year for filename
+        now = datetime.now()
+        zip_filename = f"SalarySlips_{MONTHS[now.month]}_{now.year}.zip"
+        
+        log_activity(current_user.email, "Download Multiple", f"Downloaded {len(slip_ids)} salary slips as ZIP")
+        
+        return send_file(
+            zip_buffer,
+            as_attachment=True,
+            download_name=zip_filename,
+            mimetype="application/zip"
+        )
+    
+    except Exception as e:
+        flash(f"Error creating ZIP file: {str(e)}", "danger")
         return redirect(url_for("view_slips"))
 
 

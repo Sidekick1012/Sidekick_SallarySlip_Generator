@@ -46,7 +46,8 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
 
     doc = SimpleDocTemplate(
         filepath, pagesize=A4,
-        rightMargin=12*mm, leftMargin=12*mm, topMargin=12*mm, bottomMargin=12*mm
+        rightMargin=12*mm, leftMargin=12*mm, topMargin=12*mm, bottomMargin=12*mm,
+        compress=0,  # Disable compression to preserve colors properly
     )
 
     styles = getSampleStyleSheet()
