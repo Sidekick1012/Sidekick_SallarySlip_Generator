@@ -66,12 +66,13 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
         logo_img = Paragraph("<b>DACI</b>", ParagraphStyle("logo", fontSize=24, textColor=COMPANY_GREEN))
 
     addr_text = "Engineering Services (Pvt) Ltd<br/><br/>Office No. 02, 2nd Floor,<br/>Al-Asghar Plaza, Blue Area,<br/>Islamabad"
-    addr_para = Paragraph(addr_text, ParagraphStyle("addr", fontSize=9, leading=11, textColor=TEXT_BLACK, alignment=TA_RIGHT))
-    pay_slip_para = Paragraph("PAY SLIP", ParagraphStyle("ps", fontSize=11, fontName="Helvetica", textColor=colors.gray, alignment=TA_LEFT))
+    addr_para = Paragraph(addr_text, ParagraphStyle("addr", fontSize=9, leading=11, textColor=TEXT_BLACK, alignment=TA_LEFT))
+    pay_slip_para = Paragraph("PAY SLIP", ParagraphStyle("ps", fontSize=11, fontName="Helvetica", textColor=colors.gray, alignment=TA_RIGHT))
 
-    header_table = Table([[pay_slip_para, logo_img], ["", addr_para]], colWidths=[76*mm, 110*mm])
+    header_table = Table([[logo_img, pay_slip_para], [addr_para, ""]], colWidths=[110*mm, 76*mm])
     header_table.setStyle(TableStyle([
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("ALIGN", (0, 0), (0, 1), "LEFT"),
         ("ALIGN", (1, 0), (1, 1), "RIGHT"),
     ]))
     elements.append(header_table)
