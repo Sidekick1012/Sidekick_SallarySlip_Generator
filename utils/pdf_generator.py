@@ -66,13 +66,13 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
         logo_img = Paragraph("<b>DACI</b>", ParagraphStyle("logo", fontSize=24, textColor=COMPANY_GREEN))
 
     addr_text = "Engineering Services (Pvt) Ltd<br/><br/>Office No. 02, 2nd Floor,<br/>Al-Asghar Plaza, Blue Area,<br/>Islamabad"
-    addr_para = Paragraph(addr_text, ParagraphStyle("addr", fontSize=9, leading=11, textColor=TEXT_BLACK, alignment=TA_LEFT))
+    addr_para = Paragraph(addr_text, ParagraphStyle("addr", fontSize=9, leading=11, textColor=TEXT_BLACK, alignment=TA_RIGHT))
     pay_slip_para = Paragraph("PAY SLIP", ParagraphStyle("ps", fontSize=11, fontName="Helvetica", textColor=colors.gray, alignment=TA_LEFT))
 
-    header_table = Table([[logo_img, ""], [addr_para, ""], [pay_slip_para, ""]], colWidths=[110*mm, 76*mm])
+    header_table = Table([[pay_slip_para, logo_img], ["", addr_para]], colWidths=[76*mm, 110*mm])
     header_table.setStyle(TableStyle([
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
-        ("ALIGN", (0, 0), (0, -1), "LEFT"),
+        ("ALIGN", (1, 0), (1, 1), "RIGHT"),
     ]))
     elements.append(header_table)
     elements.append(Spacer(1, 1*mm))
@@ -86,36 +86,36 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
         ("BOTTOMPADDING", (0, 0), (-1, -1), 1),
     ]))
     
-    # Outer table to align it to the right
-    elements.append(Table([["", emp_header_table]], colWidths=[100*mm, 86*mm]))
+    # Outer table to align it to the left
+    elements.append(Table([[emp_header_table, ""]], colWidths=[86*mm, 100*mm]))
 
     # Compile details dropping empty ones
     info_style = ParagraphStyle("info_style", fontSize=9, fontName="Helvetica", leading=10, spaceBefore=0, spaceAfter=0)
     emp_details = [
-        ["", "", Paragraph("Name", info_style), Paragraph(employee_data.get("name", "-"), info_style)],
-        ["", "", Paragraph("Designation", info_style), Paragraph(employee_data.get("designation", "-"), info_style)],
-        ["", "", Paragraph("Employee ID", info_style), Paragraph(employee_data.get("employee_id", "-"), info_style)]
+        [Paragraph("Name", info_style), Paragraph(employee_data.get("name", "-"), info_style), "", ""],
+        [Paragraph("Designation", info_style), Paragraph(employee_data.get("designation", "-"), info_style), "", ""],
+        [Paragraph("Employee ID", info_style), Paragraph(employee_data.get("employee_id", "-"), info_style), "", ""]
     ]
-    if employee_data.get("cnic"): emp_details.append(["", "", Paragraph("CNIC", info_style), Paragraph(employee_data.get("cnic"), info_style)])
-    if employee_data.get("bank_name"): emp_details.append(["", "", Paragraph("Bank Name", info_style), Paragraph(employee_data.get("bank_name"), info_style)])
-    if employee_data.get("iban"): emp_details.append(["", "", Paragraph("IBAN", info_style), Paragraph(employee_data.get("iban"), info_style)])
-    if employee_data.get("date_of_leaving"): emp_details.append(["", "", Paragraph("Date Of Leaving", info_style), Paragraph(str(employee_data.get("date_of_leaving")), info_style)])
+    if employee_data.get("cnic"): emp_details.append([Paragraph("CNIC", info_style), Paragraph(employee_data.get("cnic"), info_style), "", ""])
+    if employee_data.get("bank_name"): emp_details.append([Paragraph("Bank Name", info_style), Paragraph(employee_data.get("bank_name"), info_style), "", ""])
+    if employee_data.get("iban"): emp_details.append([Paragraph("IBAN", info_style), Paragraph(employee_data.get("iban"), info_style), "", ""])
+    if employee_data.get("date_of_leaving"): emp_details.append([Paragraph("Date Of Leaving", info_style), Paragraph(str(employee_data.get("date_of_leaving")), info_style), "", ""])
     
     emp_details.extend([
         ["", "", "", ""], # Gap
-        ["", "", Paragraph("Pay Month", info_style), Paragraph(f"<b>{MONTHS[month]} {year}</b>", info_style)]
+        [Paragraph("Pay Month", info_style), Paragraph(f"<b>{MONTHS[month]} {year}</b>", info_style), "", ""]
     ])
 
-    # Indentation col (95mm), Line overhang (5mm), Label (35mm), Value (51mm)
-    emp_info_table = Table(emp_details, colWidths=[95*mm, 5*mm, 35*mm, 51*mm])
+    # Label (35mm), Value (51mm), Line overhang (5mm), Indentation col (95mm)
+    emp_info_table = Table(emp_details, colWidths=[35*mm, 51*mm, 5*mm, 95*mm])
     emp_info_table.setStyle(TableStyle([
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
-        ("ALIGN", (2, 0), (2, -1), "LEFT"),
-        ("ALIGN", (3, 0), (3, -1), "LEFT"),
-        ("TOPPADDING", (2, 0), (3, -1), 1.2*mm),
-        ("BOTTOMPADDING", (2, 0), (3, -1), 0.8*mm),
-        ("LEFTPADDING", (2, 0), (3, -1), 0),
-        ("LINEBELOW", (1, 0), (3, -3), 0.5, LINE_GRAY),
+        ("ALIGN", (0, 0), (0, -1), "LEFT"),
+        ("ALIGN", (1, 0), (1, -1), "LEFT"),
+        ("TOPPADDING", (0, 0), (1, -1), 1.2*mm),
+        ("BOTTOMPADDING", (0, 0), (1, -1), 0.8*mm),
+        ("LEFTPADDING", (0, 0), (1, -1), 0),
+        ("LINEBELOW", (0, 0), (2, -3), 0.5, LINE_GRAY),
     ]))
     elements.append(emp_info_table)
     elements.append(Spacer(1, 5*mm))
