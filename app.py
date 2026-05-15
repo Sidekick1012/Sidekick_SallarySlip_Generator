@@ -1264,19 +1264,21 @@ def generate_from_excel():
             header_row_idx = 1
             headers = []
             for idx, row in enumerate(ws.iter_rows(min_row=1, max_row=10, values_only=True), start=1):
-                if any(str(cell).strip().lower() in ["employee id", "emp id"] for cell in row if cell):
+                normalized_row = [str(cell).strip().lower() for cell in row if cell]
+                if any(h in normalized_row for h in ["employee id", "emp id", "employee_id", "emp_id", "name"]):
                     header_row_idx = idx
                     headers = [str(cell).strip().lower().replace(" ", "_") if cell else f"col_{i}" for i, cell in enumerate(row)]
                     break
             
             if not headers:
-                # Fallback to absolute positional mapping if header not found
-                headers = ["sr_no", "employee_id", "name", "doj", "dol", "bank", "iban", "cnic", "ntn", 
-                           "prev_gross", "increment", "new_gross", "days", "base_pay", "medical", 
-                           "dearness", "accommodation", "travel", "cola", "utility", "bonus", "gross_salary",
-                           "bonus_special", "paid_leaves", "deduction", "overtime", "taxable_1", "taxable_2",
-                           "income_tax", "sessi", "eobi", "total_deductions", "salary_payable", "note"]
-                header_row_idx = 2 # Assuming it starts after two header rows
+                # Fallback to the official template mapping
+                headers = [
+                    "employee_id", "name", "base_pay", "medical", "dearness", 
+                    "accommodation", "travel", "cola", "utility", "bonus",
+                    "bonus_special", "paid_leaves", "deduction", "overtime", 
+                    "income_tax", "sessi", "eobi", "saving_fund", "working_days", "note"
+                ]
+                header_row_idx = 1
 
             # Employee lookup maps
             emp_by_id   = {str(e["employee_id"]).strip(): e for e in employees}
