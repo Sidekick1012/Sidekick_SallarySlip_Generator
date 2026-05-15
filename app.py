@@ -524,8 +524,10 @@ def generate():
             pdf_path = generate_and_upload_slip(slip_data, emp)
             slip_data["pdf_path"] = pdf_path
 
-            # Save to DB
-            saved = save_salary_slip(slip_data)
+            # Save to DB (Remove total_saving_fund as it's not in the DB schema)
+            db_data = slip_data.copy()
+            db_data.pop("total_saving_fund", None)
+            saved = save_salary_slip(db_data)
             log_activity(current_user.email, "Generate Slip", f"Generated salary slip for {emp['name']} ({MONTHS[month]} {year})")
             flash(f"Salary slip generated for {emp['name']} — {MONTHS[month]} {year}!", "success")
             return redirect(url_for("view_slips"))
@@ -786,7 +788,10 @@ def generate_bulk():
             try:
                 pdf_path = generate_and_upload_slip(slip_data, emp)
                 slip_data["pdf_path"] = pdf_path
-                save_salary_slip(slip_data)
+                # Save to DB (Remove total_saving_fund as it's not in the DB schema)
+                db_data = slip_data.copy()
+                db_data.pop("total_saving_fund", None)
+                save_salary_slip(db_data)
                 success_count += 1
             except Exception as e:
                 errors.append(f"{emp['name']}: {str(e)}")
@@ -1425,7 +1430,10 @@ def generate_from_excel():
                 try:
                     pdf_path = generate_and_upload_slip(slip_data, emp)
                     slip_data["pdf_path"] = pdf_path
-                    save_salary_slip(slip_data)
+                    # Save to DB (Remove total_saving_fund as it's not in the DB schema)
+                    db_data = slip_data.copy()
+                    db_data.pop("total_saving_fund", None)
+                    save_salary_slip(db_data)
                     success_count += 1
                 except Exception as ex:
                     error_list.append(f"Row {row_idx} ({emp['name']}): {str(ex)}")
