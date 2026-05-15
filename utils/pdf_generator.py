@@ -155,7 +155,6 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
         ("Previous Month Allowance", slip_data.get("previous_month_allowance", 0)),
         ("Bonus", slip_data.get("bonus_allowance", 0)),
         ("Other Allowance", slip_data.get("other_allowance", 0)),
-        ("Paid Leave Encashment", slip_data.get("paid_leave_amount", 0)),
     ]
     
     raw_deduct_list = [
@@ -163,8 +162,6 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
         ("SESSI", slip_data.get("sessi", 0)),
         ("EOBI", slip_data.get("eobi_deduction", 0)),
         ("Unpaid Leaves", slip_data.get("unpaid_leaves", 0)),
-        ("Misc Deduction", slip_data.get("deduction_misc", 0)),
-        ("Damage / Medical", slip_data.get("damage_medical", 0)),
         ("Other deductions", slip_data.get("other_deduction", 0)),
     ]
 
@@ -203,6 +200,7 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
         ("RIGHTPADDING", (0, 0), (-1, -1), 3*mm),
     ]))
     elements.append(main_table)
+    elements.append(Spacer(1, 2*mm))
 
     # ── 4. TOTALS ──────────────────────────────────────────────
     summary_data = []
@@ -227,7 +225,31 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
             "", "", ""
         ])
 
-    # Third Row (Optional): Taxable Salary
+    # Third Row (Optional): Paid Leave Encashment
+    if slip_data.get('paid_leave_amount'):
+        summary_data.append([
+            Paragraph("<b>Paid Leave Encashment</b>", row_style),
+            Paragraph(f"<b>{slip_data.get('paid_leave_amount', 0):,.0f}</b>", amt_style),
+            "", "", ""
+        ])
+
+    # Fourth Row (Optional): Misc Deduction
+    if slip_data.get('deduction_misc'):
+        summary_data.append([
+            Paragraph("<b>Misc Deduction</b>", row_style),
+            Paragraph(f"<b>- {slip_data.get('deduction_misc', 0):,.0f}</b>", amt_style),
+            "", "", ""
+        ])
+
+    # Fifth Row (Optional): Damage / Medical
+    if slip_data.get('damage_medical'):
+        summary_data.append([
+            Paragraph("<b>Damage / Medical</b>", row_style),
+            Paragraph(f"<b>- {slip_data.get('damage_medical', 0):,.0f}</b>", amt_style),
+            "", "", ""
+        ])
+
+    # Sixth Row (Optional): Taxable Salary
     if slip_data.get('taxable_salary'):
         summary_data.append([
             Paragraph("<b>Taxable Salary</b>", row_style),
