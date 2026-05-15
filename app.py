@@ -1167,7 +1167,7 @@ def download_excel_template():
         "Employee_ID", "Name", "Base_Pay", "Medical", "Dearness", 
         "Accommodation", "Travel", "COLA", "Utility", "Bonus",
         "Bonus_Special", "Paid_Leaves", "Deduction", "Overtime", 
-        "Income_Tax", "SESSI", "EOBI", "Working_Days", "Note"
+        "Income_Tax", "SESSI", "EOBI", "Saving_Fund", "Working_Days", "Note"
     ]
 
     thin = Border(
@@ -1204,6 +1204,7 @@ def download_excel_template():
             emp.get("income_tax", 0),
             0, # SESSI
             emp.get("eobi_deduction", 0),
+            emp.get("saving_fund", 0),
             26,  # Working_Days
             ""   # Note
         ])
