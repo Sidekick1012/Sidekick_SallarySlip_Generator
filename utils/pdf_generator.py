@@ -87,11 +87,12 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
         ("BOTTOMPADDING", (0, 0), (-1, -1), 1),
     ]))
     
-    # Outer table to align it to the left
-    header_wrapper = Table([[emp_header_table, ""]], colWidths=[86*mm, 100*mm])
+    # Outer table to align it to the right
+    header_wrapper = Table([["", emp_header_table]], colWidths=[100*mm, 86*mm])
     header_wrapper.setStyle(TableStyle([
         ("LEFTPADDING", (0, 0), (-1, -1), 0),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+        ("ALIGN", (1, 0), (1, 0), "RIGHT"),
     ]))
     elements.append(header_wrapper)
 
@@ -112,8 +113,8 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
         [Paragraph("Pay Month", info_style), Paragraph(f"<b>{MONTHS[month]} {year}</b>", info_style), "", ""]
     ])
 
-    # Label (35mm), Value (51mm), Line overhang (5mm), Indentation col (95mm)
-    emp_info_table = Table(emp_details, colWidths=[35*mm, 51*mm, 5*mm, 95*mm])
+    # Label (35mm), Value (51mm), Line overhang (5mm)
+    emp_info_table = Table(emp_details, colWidths=[35*mm, 51*mm, 5*mm])
     emp_info_table.setStyle(TableStyle([
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
         ("ALIGN", (0, 0), (0, -1), "LEFT"),
@@ -123,7 +124,15 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
         ("LEFTPADDING", (0, 0), (1, -1), 0),
         ("LINEBELOW", (0, 0), (2, -3), 0.5, LINE_GRAY),
     ]))
-    elements.append(emp_info_table)
+
+    # Wrap in a table to align to right (91mm wide info + 95mm spacer = 186mm total)
+    emp_info_wrapper = Table([["", emp_info_table]], colWidths=[95*mm, 91*mm])
+    emp_info_wrapper.setStyle(TableStyle([
+        ("LEFTPADDING", (0, 0), (-1, -1), 0),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+    ]))
+    elements.append(emp_info_wrapper)
     elements.append(Spacer(1, 5*mm))
 
     # ── 3. EARNINGS & DEDUCTIONS ────────────────────────────────
