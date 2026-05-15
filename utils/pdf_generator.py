@@ -80,15 +80,15 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
 
     # ── 2. EMPLOYEE INFORMATION ──────────────────────────────────
     emp_header_style = ParagraphStyle("eh", fontSize=9, fontName="Helvetica-Bold", textColor=WHITE, alignment=TA_CENTER)
-    emp_header_table = Table([[Paragraph("EMPLOYEE INFORMATION", emp_header_style)]], colWidths=[86*mm])
+    emp_header_table = Table([[Paragraph("EMPLOYEE INFORMATION", emp_header_style)]], colWidths=[90*mm])
     emp_header_table.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, -1), COMPANY_GREEN),
         ("TOPPADDING", (0, 0), (-1, -1), 1),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 1),
     ]))
     
-    # Outer table to align it to the right
-    header_wrapper = Table([["", emp_header_table]], colWidths=[100*mm, 86*mm])
+    # Outer table to align it to the right (96mm spacer + 90mm content = 186mm)
+    header_wrapper = Table([["", emp_header_table]], colWidths=[96*mm, 90*mm])
     header_wrapper.setStyle(TableStyle([
         ("LEFTPADDING", (0, 0), (-1, -1), 0),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
@@ -113,8 +113,8 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
         [Paragraph("Pay Month", info_style), Paragraph(f"<b>{MONTHS[month]} {year}</b>", info_style), "", ""]
     ])
 
-    # Label (35mm), Value (51mm), Line overhang (5mm)
-    emp_info_table = Table(emp_details, colWidths=[35*mm, 51*mm, 5*mm])
+    # Label (35mm), Value (50mm), Line overhang (5mm) = 90mm Total
+    emp_info_table = Table(emp_details, colWidths=[35*mm, 50*mm, 5*mm])
     emp_info_table.setStyle(TableStyle([
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
         ("ALIGN", (0, 0), (0, -1), "LEFT"),
@@ -125,8 +125,8 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
         ("LINEBELOW", (0, 0), (2, -3), 0.5, LINE_GRAY),
     ]))
 
-    # Wrap in a table to align to right (91mm wide info + 95mm spacer = 186mm total)
-    emp_info_wrapper = Table([["", emp_info_table]], colWidths=[95*mm, 91*mm])
+    # Wrap in a table to align to right (96mm wide spacer + 90mm info = 186mm total)
+    emp_info_wrapper = Table([["", emp_info_table]], colWidths=[96*mm, 90*mm])
     emp_info_wrapper.setStyle(TableStyle([
         ("LEFTPADDING", (0, 0), (-1, -1), 0),
         ("RIGHTPADDING", (0, 0), (-1, -1), 0),
