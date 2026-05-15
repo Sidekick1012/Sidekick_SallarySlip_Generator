@@ -88,7 +88,12 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
     ]))
     
     # Outer table to align it to the left
-    elements.append(Table([[emp_header_table, ""]], colWidths=[86*mm, 100*mm]))
+    header_wrapper = Table([[emp_header_table, ""]], colWidths=[86*mm, 100*mm])
+    header_wrapper.setStyle(TableStyle([
+        ("LEFTPADDING", (0, 0), (-1, -1), 0),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+    ]))
+    elements.append(header_wrapper)
 
     # Compile details dropping empty ones
     info_style = ParagraphStyle("info_style", fontSize=9, fontName="Helvetica", leading=10, spaceBefore=0, spaceAfter=0)
@@ -151,7 +156,6 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
         ("Bonus", slip_data.get("bonus_allowance", 0)),
         ("Other Allowance", slip_data.get("other_allowance", 0)),
         ("Paid Leave Encashment", slip_data.get("paid_leave_amount", 0)),
-        ("Overtime", slip_data.get("overtime", 0)),
     ]
     
     raw_deduct_list = [
@@ -215,7 +219,15 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
         Paragraph(f"<b>{slip_data.get('total_deductions', 0):,.0f}</b>", amt_style),
     ])
 
-    # Second Row (Optional): Taxable Salary
+    # Second Row (Optional): Overtime
+    if slip_data.get('overtime'):
+        summary_data.append([
+            Paragraph("<b>Overtime</b>", row_style),
+            Paragraph(f"<b>{slip_data.get('overtime', 0):,.0f}</b>", amt_style),
+            "", "", ""
+        ])
+
+    # Third Row (Optional): Taxable Salary
     if slip_data.get('taxable_salary'):
         summary_data.append([
             Paragraph("<b>Taxable Salary</b>", row_style),
