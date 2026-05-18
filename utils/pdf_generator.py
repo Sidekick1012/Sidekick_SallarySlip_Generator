@@ -297,7 +297,7 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
     contrib_data = [
         [
             Paragraph("Saving Fund", row_style),
-            Paragraph(f"{float(slip_data.get('saving_fund', 0)):,.0f}" if slip_data.get('saving_fund') and str(slip_data.get('saving_fund')).strip() not in ["", "-", "None", "0"] else "-", amt_style)
+            Paragraph(f"{float(slip_data.get('total_saving_fund', 0)):,.0f}" if slip_data.get('total_saving_fund') and str(slip_data.get('total_saving_fund')).strip() not in ["", "-", "None", "0"] else "-", amt_style)
         ]
     ]
     contrib_table = Table(contrib_data, colWidths=[65*mm, 25*mm])
