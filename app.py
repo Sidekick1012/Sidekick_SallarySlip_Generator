@@ -108,6 +108,12 @@ def build_email_html(emp_name, month_name, year):
 def generate_and_upload_slip(slip_data, emp):
     """Generates PDF locally, uploads to Supabase Storage, and cleans up local file."""
     try:
+        # If total_saving_fund is missing (e.g. regenerating from DB), fetch and inject it
+        if "total_saving_fund" not in slip_data:
+            saving_funds_map = get_total_saving_funds()
+            saving_data = saving_funds_map.get(str(emp.get("employee_id")).upper(), {"2026": 0, "total": 0})
+            slip_data["total_saving_fund"] = saving_data.get("total", 0)
+
         # 1. Generate locally
         local_path = generate_salary_slip_pdf(slip_data, emp)
         if not local_path or not os.path.exists(local_path):
@@ -1259,6 +1265,9 @@ def generate_from_excel():
 
             wb = load_workbook(tmp_path, data_only=True)
             ws = wb.active
+            
+            # Load saving funds data for all employees
+            saving_funds_map = get_total_saving_funds()
 
             # 1. FIND THE HEADER ROW (looking for "Employee ID")
             header_row_idx = 1
@@ -1393,6 +1402,9 @@ def generate_from_excel():
                 w_days    = _i(rd, "days", _i(rd, "working_days", 26))
                 note      = rd.get("note", "")
 
+                saving_data = saving_funds_map.get(str(emp.get("employee_id")).upper(), {"2026": 0, "total": 0})
+                total_saving_fund = saving_data.get("total", 0)
+
                 slip_data = {
                     "employee_id":              emp["id"],
                     "month":                    month,
@@ -1421,6 +1433,7 @@ def generate_from_excel():
                     "unpaid_leaves":            unpaid,
                     "other_deduction":          other_ded,
                     "saving_fund":              saving_fund,
+                    "total_saving_fund":        total_saving_fund,
                     "total_deductions":         total_ded,
                     "net_salary":               net,
                     "working_days":             w_days,
