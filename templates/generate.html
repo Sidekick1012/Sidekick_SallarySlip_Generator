@@ -283,10 +283,10 @@ function updatePreview() {
   const otherDed  = parseFloat(document.getElementById('f_other_ded').value) || 0;
 
   const grossEarnings = basic + medical + dearness + house + transport + cola + utility + washing + prev + bonus + other + arrears;
-  const taxableSalary = grossEarnings + leaveEnc + overtime - dedMisc - damage;
+  const taxableSalary = grossEarnings + leaveEnc + overtime - dedMisc - damage - medical;
   
   const totalDeductions = tax + sessi + eobi + unpaid + otherDed;
-  const netPay = taxableSalary - totalDeductions;
+  const netPay = taxableSalary + medical - totalDeductions;
 
   document.getElementById('p_basic_med').textContent = fmt(basic + medical);
   document.getElementById('p_all_other').textContent = fmt(grossEarnings - (basic + medical));

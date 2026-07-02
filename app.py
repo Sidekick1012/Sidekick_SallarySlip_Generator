@@ -471,7 +471,7 @@ def generate():
         deduction_misc = float(request.form.get("deduction_misc") or 0)
         damage_medical = float(request.form.get("damage_medical") or 0)
 
-        taxable = gross + leave_enc + overtime - deduction_misc - damage_medical
+        taxable = gross + leave_enc + overtime - deduction_misc - damage_medical - medical
 
         tax          = float(request.form.get("income_tax") or 0)
         sessi        = float(request.form.get("sessi") or 0)
@@ -481,7 +481,7 @@ def generate():
         saving_fund  = float(request.form.get("saving_fund") or 0)
         
         total_ded = tax + sessi + eobi + unpaid + other_ded
-        net       = taxable - total_ded
+        net       = taxable + medical - total_ded
 
         saving_funds_map = get_total_saving_funds()
         saving_data = saving_funds_map.get(str(emp.get("employee_id")).upper(), {"2026": 0, "total": 0})
@@ -579,7 +579,7 @@ def edit_salary_slip(slip_id):
             deduction_misc = float(request.form.get("deduction_misc") or 0)
             damage_medical = float(request.form.get("damage_medical") or 0)
 
-            taxable = gross + leave_enc + overtime - deduction_misc - damage_medical
+            taxable = gross + leave_enc + overtime - deduction_misc - damage_medical - medical
 
             tax          = float(request.form.get("income_tax") or 0)
             sessi        = float(request.form.get("sessi") or 0)
@@ -589,7 +589,7 @@ def edit_salary_slip(slip_id):
             saving_fund  = float(request.form.get("saving_fund") or 0)
             
             total_ded = tax + sessi + eobi + unpaid + other_ded
-            net       = taxable - total_ded
+            net       = taxable + medical - total_ded
 
             saving_funds_map = get_total_saving_funds()
             emp_id_str = str(emp.get("employee_id") if 'emp' in locals() else slip.get("employees", {}).get("employee_id")).upper()
@@ -741,7 +741,7 @@ def generate_bulk():
             deduction_misc = 0.0
             damage_medical = 0.0
 
-            taxable = gross + leave_enc + overtime - deduction_misc - damage_medical
+            taxable = gross + leave_enc + overtime - deduction_misc - damage_medical - medical
 
             # Gather deductions
             tax          = float(emp.get("income_tax") or 0)
@@ -751,7 +751,7 @@ def generate_bulk():
             unpaid       = 0.0
             
             total_ded = tax + eobi + unpaid + other_ded
-            net       = taxable - total_ded
+            net       = taxable + medical - total_ded
 
             saving_data = saving_funds_map.get(str(emp.get("employee_id")).upper(), {"2026": 0, "total": 0})
             total_saving_fund = saving_data.get("total", 0)
@@ -1383,7 +1383,7 @@ def generate_from_excel():
                 dmg_med    = _f(rd, "damage_medical",           0)
 
                 # Taxable Salary Calculation
-                taxable_calc = gross + leave_enc + overtime - ded_misc - dmg_med
+                taxable_calc = gross + leave_enc + overtime - ded_misc - dmg_med - medical
                 taxable = _f(rd, "taxable_salary", _f(rd, "taxable_salary_monthly", taxable_calc))
 
                 tax       = _f(rd, "income_tax",      emp.get("income_tax", 0))
@@ -1396,7 +1396,7 @@ def generate_from_excel():
                 total_ded_calc = tax + sessi + eobi + unpaid + other_ded
                 total_ded = _f(rd, "total_deductions", total_ded_calc)
                 
-                net_calc = taxable - total_ded
+                net_calc = taxable + medical - total_ded
                 net = _f(rd, "salary_payable", _f(rd, "net_salary", net_calc))
                 
                 w_days    = _i(rd, "days", _i(rd, "working_days", 26))

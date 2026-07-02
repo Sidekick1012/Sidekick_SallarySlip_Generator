@@ -226,6 +226,14 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
         Paragraph(f"<b>{slip_data.get('total_deductions', 0):,.0f}</b>", amt_style),
     ])
 
+    # Less: Medical Allowance
+    medical_val = slip_data.get('medical_allowance', 0)
+    summary_data.append([
+        Paragraph("<b>Less: Medical Allowance</b>", row_style),
+        Paragraph(f"<b>- {medical_val:,.0f}</b>" if medical_val > 0 else "<b>0</b>", amt_style),
+        "", "", ""
+    ])
+
     # Second Row (Optional): Overtime
     if slip_data.get('overtime'):
         summary_data.append([
