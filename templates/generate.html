@@ -9,8 +9,8 @@
     <div class="page-sub">{{ 'Update details for an existing slip' if edit else 'Generate individual salary slip for an employee' }}</div>
   </div>
   {% if not edit %}
-  <a href="{{ url_for('generate_bulk') }}" class="btn-sk-outline">
-    <i class="bi bi-stack"></i> Bulk Generate
+  <a href="{{ url_for('generate_from_excel') }}" class="btn-sk-outline">
+    <i class="bi bi-file-earmark-excel"></i> Excel Bulk Upload
   </a>
   {% endif %}
 </div>
@@ -60,16 +60,16 @@
             </div>
             <div class="col-md-4">
               <label class="form-label">Working Days</label>
-              <input type="number" name="working_days" class="form-control" value="{{ slip.working_days if edit else '26' }}" min="1" max="31">
+              <input type="number" name="working_days" class="form-control" value="{{ slip.working_days if edit else '30' }}" min="1" max="31">
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Earnings -->
+      <!-- Salary & Earnings -->
       <div class="sk-card mb-4">
         <div class="sk-card-header">
-          <div class="sk-card-title"><i class="bi bi-plus-circle-fill" style="color:var(--success);"></i> Earnings (PKR)</div>
+          <div class="sk-card-title"><i class="bi bi-plus-circle-fill" style="color:var(--success);"></i> Salary & Earnings (PKR)</div>
         </div>
         <div class="sk-card-body">
           <div class="row g-3">
@@ -78,140 +78,60 @@
               <input type="number" name="basic_salary" id="f_basic" class="form-control slip-input" min="0" step="1" value="{{ slip.basic_salary if edit else 0 }}">
             </div>
             <div class="col-md-4">
-              <label class="form-label">Medical Allowance</label>
-              <input type="number" name="medical_allowance" id="f_medical" class="form-control slip-input" min="0" step="1" value="{{ slip.medical_allowance if edit else 0 }}">
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Dearness Allowance</label>
-              <input type="number" name="dearness_allowance" id="f_dearness" class="form-control slip-input" min="0" step="1" value="{{ slip.dearness_allowance if edit else 0 }}">
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">House Allowance</label>
-              <input type="number" name="house_allowance" id="f_house" class="form-control slip-input" min="0" step="1" value="{{ slip.house_allowance if edit else 0 }}">
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Transport Allowance</label>
-              <input type="number" name="transport_allowance" id="f_transport" class="form-control slip-input" min="0" step="1" value="{{ slip.transport_allowance if edit else 0 }}">
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">COLA</label>
-              <input type="number" name="cola_allowance" id="f_cola" class="form-control slip-input" min="0" step="1" value="{{ slip.cola_allowance if edit else 0 }}">
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Utility Allowance</label>
-              <input type="number" name="utility_allowance" id="f_utility" class="form-control slip-input" min="0" step="1" value="{{ slip.utility_allowance if edit else 0 }}">
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Washing Allowance</label>
-              <input type="number" name="washing_allowance" id="f_washing" class="form-control slip-input" min="0" step="1" value="{{ slip.washing_allowance if edit else 0 }}">
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Prev. Month Allowance</label>
-              <input type="number" name="previous_month_allowance" id="f_prev_month" class="form-control slip-input" min="0" step="1" value="{{ slip.previous_month_allowance if edit else 0 }}">
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Bonus</label>
-              <input type="number" name="bonus_allowance" id="f_bonus" class="form-control slip-input" min="0" step="1" value="{{ slip.bonus_allowance if edit else 0 }}">
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Arrears</label>
-              <input type="number" name="arrears" id="f_arrears" class="form-control slip-input" min="0" step="1" value="{{ slip.arrears if edit else 0 }}">
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Other Allowance</label>
-              <input type="number" name="other_allowance" id="f_other" class="form-control slip-input" min="0" step="1" value="{{ slip.other_allowance if edit else 0 }}">
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Other Allowance</label>
-              <input type="number" name="other_allowance" id="f_other" class="form-control slip-input" min="0" step="1" value="{{ slip.other_allowance if edit else 0 }}">
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Adjustments (Before Taxable) -->
-      <div class="sk-card mb-4">
-        <div class="sk-card-header">
-          <div class="sk-card-title"><i class="bi bi-arrow-left-right" style="color:var(--accent);"></i> Pre-Tax Adjustments (PKR)</div>
-        </div>
-        <div class="sk-card-body">
-          <div class="row g-3">
-            <div class="col-md-3">
-              <label class="form-label">Paid Leave Encashment</label>
-              <input type="number" name="paid_leave_amount" id="f_leave_enc" class="form-control slip-input" min="0" step="1" value="{{ slip.paid_leave_amount if edit else 0 }}">
-            </div>
-            <div class="col-md-3">
               <label class="form-label">Overtime</label>
               <input type="number" name="overtime" id="f_overtime" class="form-control slip-input" min="0" step="1" value="{{ slip.overtime if edit else 0 }}">
             </div>
-            <div class="col-md-3">
-              <label class="form-label">Misc Deduction</label>
-              <input type="number" name="deduction_misc" id="f_ded_misc" class="form-control slip-input" min="0" step="1" value="{{ slip.deduction_misc if edit else 0 }}">
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">Damage/Medical</label>
-              <input type="number" name="damage_medical" id="f_damage" class="form-control slip-input" min="0" step="1" value="{{ slip.damage_medical if edit else 0 }}">
+            <div class="col-md-4">
+              <label class="form-label">Medical Allowance</label>
+              <input type="number" name="medical_allowance" id="f_medical" class="form-control slip-input" min="0" step="1" value="{{ slip.medical_allowance if edit else 0 }}">
             </div>
           </div>
         </div>
       </div>
 
       <!-- Deductions -->
-      <div class="sk-card">
+      <div class="sk-card mb-4">
         <div class="sk-card-header">
-          <div class="sk-card-title"><i class="bi bi-dash-circle-fill" style="color:var(--danger);"></i> Final Deductions (PKR)</div>
+          <div class="sk-card-title"><i class="bi bi-dash-circle-fill" style="color:var(--danger);"></i> Deductions (PKR)</div>
         </div>
         <div class="sk-card-body">
           <div class="row g-3">
-            <div class="col-md-3">
+            <div class="col-md-6">
               <label class="form-label">Income Tax</label>
               <input type="number" name="income_tax" id="f_tax" class="form-control slip-input" min="0" step="1" value="{{ slip.income_tax if edit else 0 }}">
             </div>
-            <div class="col-md-3">
-              <label class="form-label">SESSI</label>
-              <input type="number" name="sessi" id="f_sessi" class="form-control slip-input" min="0" step="1" value="{{ slip.sessi if edit else 0 }}">
-            </div>
-            <div class="col-md-3">
+            <div class="col-md-6">
               <label class="form-label">EOBI</label>
               <input type="number" name="eobi_deduction" id="f_eobi" class="form-control slip-input" min="0" step="1" value="{{ slip.eobi_deduction if edit else 0 }}">
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">Unpaid Leaves</label>
-              <input type="number" name="unpaid_leaves" id="f_unpaid" class="form-control slip-input" min="0" step="1" value="{{ slip.unpaid_leaves if edit else 0 }}">
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">Other Deductions</label>
-              <input type="number" name="other_deduction" id="f_other_ded" class="form-control slip-input" min="0" step="1" value="{{ slip.other_deduction if edit else 0 }}">
-            </div>
-          </div>
-          <div class="row g-3 mt-2">
-            <div class="col-12">
-              <label class="form-label">Note (Internal/Remarks)</label>
-              <textarea name="note" class="form-control" rows="2">{{ slip.note if edit else '' }}</textarea>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Company Contributions -->
-      <div class="sk-card mt-4 mb-4">
+      <!-- Company Contributions & Note -->
+      <div class="sk-card mb-4">
         <div class="sk-card-header">
-          <div class="sk-card-title"><i class="bi bi-briefcase-fill" style="color:var(--info);"></i> Company Contributions (Not Deducted)</div>
+          <div class="sk-card-title"><i class="bi bi-piggy-bank-fill" style="color:var(--info);"></i> Saving Fund & Remarks</div>
         </div>
         <div class="sk-card-body">
           <div class="row g-3">
-            <div class="col-md-4">
-              <label class="form-label">Saving Fund (2026)</label>
+            <div class="col-md-6">
+              <label class="form-label">Saving Fund</label>
               <input type="number" name="saving_fund" id="f_saving_fund" class="form-control slip-input" min="0" step="1" value="{{ (slip.saving_fund|default(0))|int if edit else 0 }}">
             </div>
-            <div class="col-md-4">
+            <div class="col-md-6">
               <label class="form-label">Total Saving Fund (Accumulated)</label>
               <input type="number" name="total_saving_fund" id="f_total_saving_fund" class="form-control" min="0" step="1" value="{{ (slip.total_saving_fund|default(0))|int if edit else 0 }}" readonly>
               <div class="form-text">Auto-fetched from Excel</div>
             </div>
+            <div class="col-12 mt-2">
+              <label class="form-label">Note / Remarks</label>
+              <textarea name="note" class="form-control" rows="2" placeholder="Optional notes for this slip...">{{ slip.note if edit else '' }}</textarea>
+            </div>
           </div>
         </div>
       </div>
+
     </div>
 
     <!-- Summary Panel -->
@@ -222,18 +142,19 @@
         </div>
         <div class="sk-card-body">
           <div class="salary-summary mb-3">
-            <div class="sum-row"><span class="sum-label">Basic + Medical</span><span class="sum-value" id="p_basic_med">PKR 0</span></div>
-            <div class="sum-row"><span class="sum-label">Other Allowances</span><span class="sum-value" id="p_all_other">PKR 0</span></div>
+            <div class="sum-row"><span class="sum-label">Basic + Overtime</span><span class="sum-value" id="p_basic_ot">PKR 0</span></div>
             <div class="sum-row" style="border-top:1px solid rgba(255,255,255,0.15); margin-top:4px; padding-top:8px;">
               <span class="sum-label" style="color:white;">TAXABLE SALARY</span>
               <span class="sum-value" id="p_taxable">PKR 0</span>
             </div>
+            <div class="sum-row"><span class="sum-label">+ Medical Allowance</span><span class="sum-value" id="p_medical">PKR 0</span></div>
+            <div class="sum-row"><span class="sum-label" style="color:white; font-weight:700;">TOTAL SALARY</span><span class="sum-value" id="p_total">PKR 0</span></div>
             <div class="sum-row">
-              <span class="sum-label" style="color:#ff6b6b;">FINAL DEDUCTIONS</span>
+              <span class="sum-label" style="color:#ff6b6b;">TOTAL DEDUCTIONS</span>
               <span class="sum-value" style="color:#ff6b6b;" id="p_ded">PKR 0</span>
             </div>
-            <div class="sum-row mt-2">
-              <span class="sum-label" style="color:white; font-weight:800; font-size:15px;">NET PAYABLE</span>
+            <div class="sum-row mt-2" style="border-top:2px solid var(--accent); padding-top:10px;">
+              <span class="sum-label" style="color:white; font-weight:800; font-size:15px;">NET SALARY</span>
               <span class="sum-net" id="p_net">PKR 0</span>
             </div>
           </div>
@@ -259,40 +180,23 @@ function fmt(v) { return 'PKR ' + parseInt(v||0).toLocaleString(); }
 
 function updatePreview() {
   const basic     = parseFloat(document.getElementById('f_basic').value)     || 0;
-  const medical   = parseFloat(document.getElementById('f_medical').value)   || 0;
-  const dearness  = parseFloat(document.getElementById('f_dearness').value)  || 0;
-  const house     = parseFloat(document.getElementById('f_house').value)     || 0;
-  const transport = parseFloat(document.getElementById('f_transport').value) || 0;
-  const cola      = parseFloat(document.getElementById('f_cola').value)      || 0;
-  const utility   = parseFloat(document.getElementById('f_utility').value)   || 0;
-  const washing   = parseFloat(document.getElementById('f_washing').value)   || 0;
-  const prev      = parseFloat(document.getElementById('f_prev_month').value)|| 0;
-  const bonus     = parseFloat(document.getElementById('f_bonus').value)     || 0;
-  const other     = parseFloat(document.getElementById('f_other').value)     || 0;
-  const arrears   = parseFloat(document.getElementById('f_arrears').value)   || 0;
-
-  const leaveEnc  = parseFloat(document.getElementById('f_leave_enc').value) || 0;
   const overtime  = parseFloat(document.getElementById('f_overtime').value)  || 0;
-  const dedMisc   = parseFloat(document.getElementById('f_ded_misc').value)  || 0;
-  const damage    = parseFloat(document.getElementById('f_damage').value)    || 0;
+  const medical   = parseFloat(document.getElementById('f_medical').value)   || 0;
   
   const tax       = parseFloat(document.getElementById('f_tax').value)       || 0;
-  const sessi     = parseFloat(document.getElementById('f_sessi').value)     || 0;
   const eobi      = parseFloat(document.getElementById('f_eobi').value)      || 0;
-  const unpaid    = parseFloat(document.getElementById('f_unpaid').value)    || 0;
-  const otherDed  = parseFloat(document.getElementById('f_other_ded').value) || 0;
 
-  const grossEarnings = basic + medical + dearness + house + transport + cola + utility + washing + prev + bonus + other + arrears;
-  const taxableSalary = grossEarnings + leaveEnc + overtime - dedMisc - damage - medical;
-  
-  const totalDeductions = tax + sessi + eobi + unpaid + otherDed;
-  const netPay = taxableSalary + medical - totalDeductions;
+  const taxableSalary   = basic + overtime;
+  const totalSalary     = taxableSalary + medical;
+  const totalDeductions = tax + eobi;
+  const netSalary       = totalSalary - totalDeductions;
 
-  document.getElementById('p_basic_med').textContent = fmt(basic + medical);
-  document.getElementById('p_all_other').textContent = fmt(grossEarnings - (basic + medical));
-  document.getElementById('p_taxable').textContent   = fmt(taxableSalary);
-  document.getElementById('p_ded').textContent       = fmt(totalDeductions);
-  document.getElementById('p_net').textContent       = fmt(netPay);
+  document.getElementById('p_basic_ot').textContent = fmt(basic + overtime);
+  document.getElementById('p_taxable').textContent  = fmt(taxableSalary);
+  document.getElementById('p_medical').textContent  = fmt(medical);
+  document.getElementById('p_total').textContent    = fmt(totalSalary);
+  document.getElementById('p_ded').textContent      = fmt(totalDeductions);
+  document.getElementById('p_net').textContent      = fmt(netSalary);
 }
 
 document.querySelectorAll('.slip-input').forEach(el => el.addEventListener('input', updatePreview));
@@ -304,20 +208,10 @@ async function loadEmployee() {
   const res  = await fetch(`/api/employee/${empId}`);
   const data = await res.json();
 
-  document.getElementById('f_basic').value     = data.basic_salary     || 0;
-  document.getElementById('f_medical').value   = data.medical_allowance || 0;
-  document.getElementById('f_dearness').value  = data.dearness_allowance || 0;
-  document.getElementById('f_house').value     = data.house_allowance  || 0;
-  document.getElementById('f_transport').value = data.transport_allowance || 0;
-  document.getElementById('f_cola').value      = data.cola_allowance    || 0;
-  document.getElementById('f_utility').value   = data.utility_allowance || 0;
-  document.getElementById('f_prev_month').value= data.previous_month_allowance || 0;
-  document.getElementById('f_bonus').value     = data.bonus_allowance   || 0;
-  document.getElementById('f_other').value     = data.other_allowance   || 0;
-  
-  document.getElementById('f_tax').value       = data.income_tax       || 0;
-  document.getElementById('f_eobi').value      = data.eobi_deduction   || 0;
-  document.getElementById('f_other_ded').value = data.other_deduction  || 0;
+  document.getElementById('f_basic').value   = data.basic_salary     || 0;
+  document.getElementById('f_medical').value = data.medical_allowance || 0;
+  document.getElementById('f_tax').value     = data.income_tax       || 0;
+  document.getElementById('f_eobi').value    = data.eobi_deduction   || 0;
   
   document.getElementById('f_saving_fund').value       = data.saving_fund_2026 || 0;
   document.getElementById('f_total_saving_fund').value = data.total_saving_fund || 0;

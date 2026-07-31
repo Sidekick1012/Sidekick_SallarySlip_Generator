@@ -65,7 +65,7 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
     else:
         logo_img = Paragraph("<b>DACI</b>", ParagraphStyle("logo", fontSize=24, textColor=COMPANY_GREEN))
 
-    addr_text = "Engineering Services (Pvt) Ltd<br/><br/>Office No. 02, 2nd Floor,<br/>Al-Asghar Plaza, Blue Area,<br/>Islamabad"
+    addr_text = "<b>DACI Engineering & IT Services (Pvt) Ltd</b><br/><br/>Office No. 02, 2nd Floor,<br/>Al-Asghar Plaza, Blue Area,<br/>Islamabad"
     addr_para = Paragraph(addr_text, ParagraphStyle("addr", fontSize=9, leading=11, textColor=TEXT_BLACK, alignment=TA_LEFT))
     pay_slip_para = Paragraph("PAY SLIP", ParagraphStyle("ps", fontSize=11, fontName="Helvetica", textColor=colors.gray, alignment=TA_RIGHT))
 
@@ -113,7 +113,6 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
         [Paragraph("Pay Month", info_style), Paragraph(f"<b>{MONTHS[month]} {year}</b>", info_style), "", ""]
     ])
 
-    # Label (35mm), Value (50mm), Line overhang (5mm) = 90mm Total
     emp_info_table = Table(emp_details, colWidths=[35*mm, 50*mm, 5*mm])
     emp_info_table.setStyle(TableStyle([
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
@@ -125,7 +124,6 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
         ("LINEBELOW", (0, 0), (2, -3), 0.5, LINE_GRAY),
     ]))
 
-    # Wrap in a table to align to right (96mm wide spacer + 90mm info = 186mm total)
     emp_info_wrapper = Table([["", emp_info_table]], colWidths=[96*mm, 90*mm])
     emp_info_wrapper.setStyle(TableStyle([
         ("LEFTPADDING", (0, 0), (-1, -1), 0),
@@ -136,11 +134,12 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
     elements.append(Spacer(1, 5*mm))
 
     # ── 3. EARNINGS & DEDUCTIONS ────────────────────────────────
-    header_para_style = ParagraphStyle("hp", fontSize=9, fontName="Helvetica-Bold", textColor=WHITE)
+    header_para_style  = ParagraphStyle("hp", fontSize=9, fontName="Helvetica-Bold", textColor=WHITE)
+    header_right_style = ParagraphStyle("hpr", fontSize=9, fontName="Helvetica-Bold", textColor=WHITE, alignment=TA_RIGHT)
     headers = [
-        Paragraph("Salary", header_para_style), Paragraph("Amount", header_para_style),
+        Paragraph("Salary", header_para_style), Paragraph("Amount", header_right_style),
         "", 
-        Paragraph("Deductions", header_para_style), Paragraph("Amount", header_para_style)
+        Paragraph("Deductions", header_para_style), Paragraph("Amount", header_right_style)
     ]
     h_table = Table([headers], colWidths=[65*mm, 25*mm, 6*mm, 65*mm, 25*mm])
     h_table.setStyle(TableStyle([
@@ -148,24 +147,23 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
         ("BACKGROUND", (3, 0), (4, 0), COMPANY_GREEN),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ("LEFTPADDING", (0, 0), (-1, -1), 3*mm),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 3*mm),
     ]))
     elements.append(h_table)
 
-    raw_salary_list = [
-        ("Basic Pay", slip_data.get("basic_salary", 0)),
-        ("Medical", slip_data.get("medical_allowance", 0)),
-        ("Dearness Allowance", slip_data.get("dearness_allowance", 0)),
-        ("Accommodation", slip_data.get("house_allowance", 0)),
-        ("Arrears", slip_data.get("arrears", 0)),
-        ("Travel & Conveyance", slip_data.get("transport_allowance", 0)),
-        ("COLA", slip_data.get("cola_allowance", 0)),
-        ("Utility Allowance", slip_data.get("utility_allowance", 0)),
-        ("Washing Allowance", slip_data.get("washing_allowance", 0)),
-        ("Previous Month Allowance", slip_data.get("previous_month_allowance", 0)),
-        ("Bonus", slip_data.get("bonus_allowance", 0)),
-        ("Other Allowance", slip_data.get("other_allowance", 0)),
-    ]
-    
+    row_style = ParagraphStyle("rs", fontSize=8.5)
+    amt_style = ParagraphStyle("as", fontSize=8.5, alignment=TA_RIGHT)
+    bold_row_style = ParagraphStyle("brs", fontSize=8.5, fontName="Helvetica-Bold")
+    bold_amt_style = ParagraphStyle("bas", fontSize=8.5, fontName="Helvetica-Bold", alignment=TA_RIGHT)
+
+    working_days  = slip_data.get("working_days", 0)
+    basic_salary  = slip_data.get("basic_salary", 0)
+    overtime      = slip_data.get("overtime", 0)
+    medical       = slip_data.get("medical_allowance", 0)
+    taxable_sal   = slip_data.get("taxable_salary", 0)
+    gross_sal     = slip_data.get("gross_salary", 0)
+    total_ded     = slip_data.get("total_deductions", 0)
+
     raw_deduct_list = [
         ("Income Tax", slip_data.get("income_tax", 0)),
         ("SESSI", slip_data.get("sessi", 0)),
@@ -173,122 +171,140 @@ def generate_salary_slip_pdf(slip_data, employee_data, output_dir="generated_sli
         ("Unpaid Leaves", slip_data.get("unpaid_leaves", 0)),
         ("Other deductions", slip_data.get("other_deduction", 0)),
     ]
-
-    s_list = [(l, v) for l, v in raw_salary_list if v]
     d_list = [(l, v) for l, v in raw_deduct_list if v]
 
-    # Ensure Basic Pay is always shown
-    if not any(item[0] == "Basic Pay" for item in s_list):
-        s_list.insert(0, ("Basic Pay", slip_data.get("basic_salary", 0)))
+    def fmt_val(v):
+        if isinstance(v, (int, float)) and v > 0:
+            return f"{v:,.0f}"
+        return "-"
 
-    max_len = max(len(s_list), len(d_list))
-    s_list += [("", "")] * (max_len - len(s_list))
+    salary_rows = []
+
+    # 1. Number of Working Days
+    if working_days:
+        salary_rows.append(("Number of Working Days", working_days))
+
+    # 2. Basic Salary
+    salary_rows.append(("Basic Salary", basic_salary))
+
+    # 3. Overtime
+    salary_rows.append(("Overtime", overtime))
+
+    # Line Separator marker
+    salary_rows.append(("__SEPARATOR__", None))
+
+    # 4. Taxable Salary
+    salary_rows.append(("__TAXABLE__", taxable_sal))
+
+    # 5. Medical Allowance (+)
+    salary_rows.append(("__MEDICAL__", medical))
+
+    # 6. Total Salary (aligned with Total Deductions)
+    salary_rows.append(("__TOTAL__", gross_sal))
+
+    # Ensure d_list has empty items until the __TOTAL__ row, then add Total Deductions at the __TOTAL__ row
+    total_row_target_idx = len(salary_rows) - 1
+
+    # Pad d_list up to total_row_target_idx - 1
+    while len(d_list) < total_row_target_idx:
+        d_list.append(("", ""))
+
+    # Place Total Deductions at total_row_target_idx
+    if len(d_list) == total_row_target_idx:
+        d_list.append(("__TOTAL_DEDUCTIONS__", total_ded))
+    else:
+        d_list[total_row_target_idx] = ("__TOTAL_DEDUCTIONS__", total_ded)
+
+    max_len = max(len(salary_rows), len(d_list))
     d_list += [("", "")] * (max_len - len(d_list))
-
-    row_style = ParagraphStyle("rs", fontSize=8.5)
-    amt_style = ParagraphStyle("as", fontSize=8.5, alignment=TA_RIGHT)
+    salary_rows += [("__EMPTY__", None)] * (max_len - len(salary_rows))
 
     main_data = []
+    separator_row_idx = None
+    total_row_idx = None
+
     for i in range(max_len):
-        s_lab, s_val = s_list[i]
+        s_lab, s_val = salary_rows[i]
         d_lab, d_val = d_list[i]
-        main_data.append([
-            Paragraph(s_lab, row_style) if s_lab else "",
-            Paragraph(f"{s_val:,.0f}" if isinstance(s_val, (int, float)) and s_val > 0 else (s_val if s_val else "-"), amt_style) if s_lab else "",
-            "",
-            Paragraph(d_lab, row_style) if d_lab else "",
-            Paragraph(f"{d_val:,.0f}" if isinstance(d_val, (int, float)) and d_val > 0 else (d_val if d_val else "-"), amt_style) if d_lab else ""
-        ])
+
+        r_left = []
+        if s_lab == "__SEPARATOR__":
+            separator_row_idx = i
+            r_left = ["", ""]
+        elif s_lab == "__TAXABLE__":
+            r_left = [
+                Paragraph("Taxable Salary", bold_row_style),
+                Paragraph(f"{s_val:,.0f}" if s_val else "-", bold_amt_style)
+            ]
+        elif s_lab == "__MEDICAL__":
+            r_left = [
+                Paragraph("Add: Medical Allowance", row_style),
+                Paragraph(fmt_val(s_val), amt_style)
+            ]
+        elif s_lab == "__TOTAL__":
+            total_row_idx = i
+            r_left = [
+                Paragraph("Total Salary", bold_row_style),
+                Paragraph(f"{s_val:,.0f}" if s_val else "-", bold_amt_style)
+            ]
+        elif s_lab == "__EMPTY__":
+            r_left = ["", ""]
+        else:
+            r_left = [
+                Paragraph(s_lab, row_style),
+                Paragraph(fmt_val(s_val), amt_style)
+            ]
+
+        r_right = []
+        if d_lab == "__TOTAL_DEDUCTIONS__":
+            r_right = [
+                Paragraph("Total Deductions", bold_row_style),
+                Paragraph(f"{d_val:,.0f}" if d_val else "-", bold_amt_style)
+            ]
+        elif d_lab:
+            r_right = [
+                Paragraph(d_lab, row_style),
+                Paragraph(fmt_val(d_val), amt_style)
+            ]
+        else:
+            r_right = ["", ""]
+
+        main_data.append([r_left[0], r_left[1], "", r_right[0], r_right[1]])
 
     main_table = Table(main_data, colWidths=[65*mm, 25*mm, 6*mm, 65*mm, 25*mm])
-    main_table.setStyle(TableStyle([
+    ts_cmds = [
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ("LINEBELOW", (0, 0), (1, -1), 0.5, LINE_GRAY),
         ("LINEBELOW", (3, 0), (4, -1), 0.5, LINE_GRAY),
         ("LEFTPADDING", (0, 0), (-1, -1), 3*mm),
         ("RIGHTPADDING", (0, 0), (-1, -1), 3*mm),
-    ]))
+    ]
+
+    # Line above Taxable Salary
+    if separator_row_idx is not None:
+        taxable_idx = separator_row_idx + 1
+        ts_cmds.append(("LINEABOVE", (0, taxable_idx), (1, taxable_idx), 1.0, TEXT_BLACK))
+
+    # Total Salary & Total Deductions line alignment at total_row_idx
+    if total_row_idx is not None:
+        # Line ABOVE Total Salary (under Add: Medical Allowance)
+        ts_cmds.append(("LINEABOVE", (0, total_row_idx), (1, total_row_idx), 1.0, TEXT_BLACK))
+        # Line BELOW Total Salary
+        ts_cmds.append(("LINEBELOW", (0, total_row_idx), (1, total_row_idx), 1.0, TEXT_BLACK))
+        # Line ABOVE Total Deductions
+        ts_cmds.append(("LINEABOVE", (3, total_row_idx), (4, total_row_idx), 1.0, TEXT_BLACK))
+        # Line BELOW Total Deductions
+        ts_cmds.append(("LINEBELOW", (3, total_row_idx), (4, total_row_idx), 1.0, TEXT_BLACK))
+
+    main_table.setStyle(TableStyle(ts_cmds))
     elements.append(main_table)
-    elements.append(Spacer(1, 2*mm))
-
-    # ── 4. TOTALS ──────────────────────────────────────────────
-    summary_data = []
-    
-    # We display TAXABLE SALARY if there are pre-tax inputs (overtime/leave/arrears/misc deductions/medical damage)
-    # Actually, let's just always display TAXABLE SALARY.
-    
-    # First Row: Gross / Total Deductions
-    summary_data.append([
-        Paragraph("<b>Gross Salary</b>", row_style),
-        Paragraph(f"<b>{slip_data.get('gross_salary', 0):,.0f}</b>", amt_style),
-        "",
-        Paragraph("<b>Total Deductions</b>", row_style),
-        Paragraph(f"<b>{slip_data.get('total_deductions', 0):,.0f}</b>", amt_style),
-    ])
-
-    # Less: Medical Allowance
-    medical_val = slip_data.get('medical_allowance', 0)
-    summary_data.append([
-        Paragraph("<b>Less: Medical Allowance</b>", row_style),
-        Paragraph(f"<b>- {medical_val:,.0f}</b>" if medical_val > 0 else "<b>0</b>", amt_style),
-        "", "", ""
-    ])
-
-    # Second Row (Optional): Overtime
-    if slip_data.get('overtime'):
-        summary_data.append([
-            Paragraph("<b>Overtime</b>", row_style),
-            Paragraph(f"<b>{slip_data.get('overtime', 0):,.0f}</b>", amt_style),
-            "", "", ""
-        ])
-
-    # Third Row (Optional): Paid Leave Encashment
-    if slip_data.get('paid_leave_amount'):
-        summary_data.append([
-            Paragraph("<b>Paid Leave Encashment</b>", row_style),
-            Paragraph(f"<b>{slip_data.get('paid_leave_amount', 0):,.0f}</b>", amt_style),
-            "", "", ""
-        ])
-
-    # Fourth Row (Optional): Misc Deduction
-    if slip_data.get('deduction_misc'):
-        summary_data.append([
-            Paragraph("<b>Misc Deduction</b>", row_style),
-            Paragraph(f"<b>- {slip_data.get('deduction_misc', 0):,.0f}</b>", amt_style),
-            "", "", ""
-        ])
-
-    # Fifth Row (Optional): Damage / Medical
-    if slip_data.get('damage_medical'):
-        summary_data.append([
-            Paragraph("<b>Damage / Medical</b>", row_style),
-            Paragraph(f"<b>- {slip_data.get('damage_medical', 0):,.0f}</b>", amt_style),
-            "", "", ""
-        ])
-
-    # Sixth Row (Optional): Taxable Salary
-    if slip_data.get('taxable_salary'):
-        summary_data.append([
-            Paragraph("<b>Taxable Salary</b>", row_style),
-            Paragraph(f"<b>{slip_data.get('taxable_salary', 0):,.0f}</b>", amt_style),
-            "", "", ""
-        ])
-
-    summary_table = Table(summary_data, colWidths=[65*mm, 25*mm, 6*mm, 65*mm, 25*mm])
-    summary_table.setStyle(TableStyle([
-        ("LINEABOVE", (0, 0), (1, 0), 0.8, TEXT_BLACK),
-        ("LINEABOVE", (3, 0), (4, 0), 0.8, TEXT_BLACK),
-        ("LEFTPADDING", (0, 0), (-1, -1), 3*mm),
-        ("TOPPADDING", (0, 0), (-1, -1), 2*mm),
-    ]))
-    elements.append(summary_table)
     elements.append(Spacer(1, 6*mm))
 
     # ── 5. NET SALARY ──────────────────────────────────────────
     box_style = ParagraphStyle("bs", fontSize=9, alignment=TA_CENTER)
     net_val = slip_data.get("net_salary", 0)
     net_row = [
-        Paragraph(f"Net Salary &nbsp;&nbsp;&nbsp; <b>PKR {net_val:,.0f}</b>", ParagraphStyle("ns", fontSize=9)),
+        Paragraph(f"<b>Net Salary</b> &nbsp;&nbsp;&nbsp; <b>PKR {net_val:,.0f}</b>", ParagraphStyle("ns", fontSize=9)),
         Paragraph(number_to_words(net_val), box_style)
     ]
     net_table = Table([net_row], colWidths=[55*mm, 131*mm])

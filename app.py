@@ -1273,14 +1273,14 @@ def generate_from_excel():
             header_row_idx = 1
             headers = []
             for idx, row in enumerate(ws.iter_rows(min_row=1, max_row=10, values_only=True), start=1):
-                normalized_row = [str(cell).strip().lower() for cell in row if cell]
-                if any(h in normalized_row for h in ["employee id", "emp id", "employee_id", "emp_id", "name"]):
+                normalized_row = [str(cell).strip().lower().replace(" ", "_").replace("-", "_") for cell in row if cell]
+                if any(h in normalized_row for h in ["employee_id", "emp_id", "employee_id_", "name"]):
                     header_row_idx = idx
-                    headers = [str(cell).strip().lower().replace(" ", "_") if cell else f"col_{i}" for i, cell in enumerate(row)]
+                    headers = [str(cell).strip().lower().replace(" ", "_").replace("-", "_") if cell else f"col_{i}" for i, cell in enumerate(row)]
                     break
             
             if not headers:
-                # Fallback to the official template mapping
+                # Fallback to default template mapping
                 headers = [
                     "employee_id", "name", "base_pay", "medical", "dearness", 
                     "accommodation", "travel", "cola", "utility", "bonus",
@@ -1289,9 +1289,9 @@ def generate_from_excel():
                 ]
                 header_row_idx = 1
 
-            # Employee lookup maps
-            emp_by_id   = {str(e["employee_id"]).strip(): e for e in employees}
-            emp_by_name = {e["name"].strip().lower(): e  for e in employees}
+            # Employee lookup maps (case-insensitive)
+            emp_by_id   = {str(e["employee_id"]).strip().upper(): e for e in employees if e.get("employee_id")}
+            emp_by_name = {e["name"].strip().lower(): e  for e in employees if e.get("name")}
 
             # Month/Year from form (override all rows)
             month_override = request.form.get("month", type=int)
@@ -1301,18 +1301,21 @@ def generate_from_excel():
             error_list    = []
 
             def _f(d, key, fallback=0.0):
-                # Try by key (normalized header)
                 val = d.get(key)
-                # If key not found or empty, try common aliases
                 if val is None or str(val).strip() == "":
                     aliases = {
-                        "base_pay": ["basic_salary"],
+                        "base_pay": ["basic_salary", "basic_pay", "basic"],
+                        "medical": ["medical_allowance", "medical"],
+                        "overtime": ["over_time", "overtime", "ot"],
+                        "gross_salary": ["total_salary", "gross_salary", "gross"],
+                        "taxable_salary": ["taxable_salary", "taxable"],
                         "accommodation": ["house_allowance", "house_rent"],
                         "travel": ["transport_allowance", "travel_allowance"],
                         "bonus": ["bonus_allowance"],
                         "deduction": ["deduction_misc"],
                         "paid_leaves": ["paid_leave_amount"],
-                        "eobi": ["eobi_deduction"]
+                        "eobi": ["eobi_deduction", "eobi"],
+                        "saving_fund": ["saving_fund", "saving"]
                     }
                     for alt in aliases.get(key, []):
                         if d.get(alt) is not None and str(d.get(alt)).strip() != "":
@@ -1328,6 +1331,14 @@ def generate_from_excel():
 
             def _i(d, key, fallback=0):
                 val = d.get(key)
+                if val is None or str(val).strip() == "":
+                    aliases = {
+                        "days": ["number_of_working_days", "working_days", "days"]
+                    }
+                    for alt in aliases.get(key, []):
+                        if d.get(alt) is not None and str(d.get(alt)).strip() != "":
+                            val = d.get(alt)
+                            break
                 try: 
                     if val is None or str(val).strip() == "" or str(val).strip() == "-":
                         return int(fallback)
@@ -1345,7 +1356,7 @@ def generate_from_excel():
                 emp = None
                 eid = rd.get("employee_id") or rd.get("emp_id")
                 if eid:
-                    emp = emp_by_id.get(str(eid).strip())
+                    emp = emp_by_id.get(str(eid).strip().upper())
                 if not emp:
                     nm = rd.get("name") or rd.get("employee_name", "")
                     if nm:
