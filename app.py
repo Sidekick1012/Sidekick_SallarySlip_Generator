@@ -453,35 +453,34 @@ def generate():
 
         basic        = float(request.form.get("basic_salary") or emp.get("basic_salary") or 0)
         medical      = float(request.form.get("medical_allowance") or emp.get("medical_allowance") or 0)
-        dearness     = float(request.form.get("dearness_allowance") or 0)
-        house        = float(request.form.get("house_allowance") or emp.get("house_allowance") or 0)
-        transport    = float(request.form.get("transport_allowance") or emp.get("transport_allowance") or 0)
-        cola         = float(request.form.get("cola_allowance") or 0)
-        utility      = float(request.form.get("utility_allowance") or 0)
-        washing      = float(request.form.get("washing_allowance") or 0)
-        prev_month   = float(request.form.get("previous_month_allowance") or 0)
-        bonus        = float(request.form.get("bonus_allowance") or 0)
-        other_allow  = float(request.form.get("other_allowance") or emp.get("other_allowance") or 0)
-        arrears      = float(request.form.get("arrears") or 0)
-
-        gross = basic + medical + dearness + house + transport + cola + utility + washing + prev_month + bonus + other_allow + arrears
-
-        leave_enc    = float(request.form.get("paid_leave_amount") or 0)
         overtime     = float(request.form.get("overtime") or 0)
-        deduction_misc = float(request.form.get("deduction_misc") or 0)
-        damage_medical = float(request.form.get("damage_medical") or 0)
+        dearness     = 0.0
+        house        = 0.0
+        transport    = 0.0
+        cola         = 0.0
+        utility      = 0.0
+        washing      = 0.0
+        prev_month   = 0.0
+        bonus        = 0.0
+        other_allow  = 0.0
+        arrears      = 0.0
 
-        taxable = gross + leave_enc + overtime - deduction_misc - damage_medical - medical
+        taxable = basic + overtime
+        gross   = taxable + medical
+
+        leave_enc      = 0.0
+        deduction_misc = 0.0
+        damage_medical = 0.0
 
         tax          = float(request.form.get("income_tax") or 0)
-        sessi        = float(request.form.get("sessi") or 0)
+        sessi        = 0.0
         eobi         = float(request.form.get("eobi_deduction") or 0)
-        unpaid       = float(request.form.get("unpaid_leaves") or 0)
-        other_ded    = float(request.form.get("other_deduction") or 0)
+        unpaid       = 0.0
+        other_ded    = 0.0
         saving_fund  = float(request.form.get("saving_fund") or 0)
         
-        total_ded = tax + sessi + eobi + unpaid + other_ded
-        net       = taxable + medical - total_ded
+        total_ded = tax + eobi
+        net       = gross - total_ded
 
         saving_funds_map = get_total_saving_funds()
         saving_data = saving_funds_map.get(str(emp.get("employee_id")).upper(), {"2026": 0, "total": 0})
@@ -1371,44 +1370,44 @@ def generate_from_excel():
 
                 basic      = _f(rd, "base_pay",                 _f(rd, "basic_salary", emp.get("basic_salary", 0)))
                 medical    = _f(rd, "medical",                  _f(rd, "medical_allowance", emp.get("medical_allowance", 0)))
-                house      = _f(rd, "accommodation",            _f(rd, "house_allowance", emp.get("house_allowance", 0)))
-                transport  = _f(rd, "travel",                   _f(rd, "transport_allowance", emp.get("transport_allowance", 0)))
-                dearness   = _f(rd, "dearness",                 _f(rd, "dearness_allowance", emp.get("dearness_allowance", 0)))
-                cola       = _f(rd, "cola",                     _f(rd, "cola_allowance", emp.get("cola_allowance", 0)))
-                utility    = _f(rd, "utility",                  _f(rd, "utility_allowance", emp.get("utility_allowance", 0)))
-                washing    = _f(rd, "washing_allowance",        0)
-                prev_month = _f(rd, "previous_month_allowance", emp.get("previous_month_allowance", 0))
-                bonus      = _f(rd, "bonus",                    _f(rd, "bonus_allowance", emp.get("bonus_allowance", 0)))
-                bonus_sp   = _f(rd, "bonus_special",            0)
-                other_all  = _f(rd, "other_allowance",          emp.get("other_allowance", 0))
-                arrears    = _f(rd, "arrears",                  0)
+                overtime   = _f(rd, "overtime",                 0.0)
 
-                # Total Earnings / Gross
-                # Some sheets have manually calculated Gross Salary col, we prefer our calculation for consistency but can use that if present
-                gross_calc = basic + medical + house + transport + dearness + cola + utility + washing + prev_month + bonus + bonus_sp + other_all + arrears
-                gross = _f(rd, "gross_salary", gross_calc)
+                house      = _f(rd, "accommodation",            _f(rd, "house_allowance", 0.0))
+                transport  = _f(rd, "travel",                   _f(rd, "transport_allowance", 0.0))
+                dearness   = _f(rd, "dearness",                 _f(rd, "dearness_allowance", 0.0))
+                cola       = _f(rd, "cola",                     _f(rd, "cola_allowance", 0.0))
+                utility    = _f(rd, "utility",                  _f(rd, "utility_allowance", 0.0))
+                washing    = _f(rd, "washing_allowance",        0.0)
+                prev_month = _f(rd, "previous_month_allowance", 0.0)
+                bonus      = _f(rd, "bonus",                    _f(rd, "bonus_allowance", 0.0))
+                bonus_sp   = _f(rd, "bonus_special",            0.0)
+                other_all  = _f(rd, "other_allowance",          0.0)
+                arrears    = _f(rd, "arrears",                  0.0)
 
-                leave_enc  = _f(rd, "paid_leaves",              _f(rd, "paid_leave_amount", 0))
-                overtime   = _f(rd, "overtime",                 emp.get("overtime", 0))
-                ded_misc   = _f(rd, "deduction",                _f(rd, "deduction_misc", 0))
-                dmg_med    = _f(rd, "damage_medical",           0)
+                leave_enc  = _f(rd, "paid_leaves",              _f(rd, "paid_leave_amount", 0.0))
+                ded_misc   = _f(rd, "deduction",                _f(rd, "deduction_misc", 0.0))
+                dmg_med    = _f(rd, "damage_medical",           0.0)
 
                 # Taxable Salary Calculation
-                taxable_calc = gross + leave_enc + overtime - ded_misc - dmg_med - medical
+                taxable_calc = basic + overtime + leave_enc - ded_misc - dmg_med
                 taxable = _f(rd, "taxable_salary", _f(rd, "taxable_salary_monthly", taxable_calc))
 
-                tax       = _f(rd, "income_tax",      emp.get("income_tax", 0))
-                sessi     = _f(rd, "sessi",           0)
-                eobi      = _f(rd, "eobi",            _f(rd, "eobi_deduction", emp.get("eobi_deduction", 0)))
-                unpaid    = _f(rd, "unpaid_leaves",   0)
-                other_ded = _f(rd, "other_deduction", emp.get("other_deduction", 0))
-                saving_fund = _f(rd, "saving_fund",   emp.get("saving_fund", 0))
+                # Total Salary (Gross)
+                gross_calc = taxable + medical + house + transport + dearness + cola + utility + washing + prev_month + bonus + bonus_sp + other_all + arrears
+                gross = _f(rd, "gross_salary", _f(rd, "total_salary", gross_calc))
+
+                tax       = _f(rd, "income_tax",      0.0)
+                sessi     = _f(rd, "sessi",           0.0)
+                eobi      = _f(rd, "eobi",            _f(rd, "eobi_deduction", 0.0))
+                unpaid    = _f(rd, "unpaid_leaves",   0.0)
+                other_ded = _f(rd, "other_deduction", 0.0)
+                saving_fund = _f(rd, "saving_fund",   0.0)
                 
                 total_ded_calc = tax + sessi + eobi + unpaid + other_ded
                 total_ded = _f(rd, "total_deductions", total_ded_calc)
                 
-                net_calc = taxable + medical - total_ded
-                net = _f(rd, "salary_payable", _f(rd, "net_salary", net_calc))
+                net_calc = gross - total_ded
+                net = _f(rd, "net_salary", _f(rd, "salary_payable", net_calc))
                 
                 w_days    = _i(rd, "days", _i(rd, "working_days", 26))
                 note      = rd.get("note", "")
