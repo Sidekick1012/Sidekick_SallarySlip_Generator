@@ -3,6 +3,7 @@ import io
 import zipfile
 import re
 import concurrent.futures
+import traceback
 from itsdangerous import URLSafeTimedSerializer
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file, jsonify, make_response
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
@@ -13,6 +14,7 @@ from datetime import datetime
 import calendar
 import threading
 from flask_wtf.csrf import CSRFProtect
+from werkzeug.middleware.proxy_fix import ProxyFix
 from utils.db import (
     supabase, get_all_employees, get_employee_by_id, add_employee,
     update_employee, delete_employee, save_salary_slip,
@@ -23,6 +25,9 @@ from utils.pdf_generator import generate_salary_slip_pdf
 from utils.excel_reader import get_total_saving_funds
 
 app = Flask(__name__)
+# Fix for Railway/Heroku reverse proxy (HTTPS detection)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+
 app.secret_key = os.getenv("SECRET_KEY")
 if not app.secret_key:
     # Use a secure random key if not set
@@ -1640,7 +1645,13 @@ def forbidden_error(error):
 
 @app.errorhandler(500)
 def internal_error(error):
-    log_activity("SYSTEM", "500 Error", str(error))
+    tb = traceback.format_exc()
+    error_msg = f"{error} | Traceback: {tb[:500]}"
+    print(f"[500 ERROR] {error_msg}", flush=True)
+    try:
+        log_activity("SYSTEM", "500 Error", error_msg)
+    except Exception:
+        pass
     return render_template("errors/500.html"), 500
 
 
