@@ -58,15 +58,17 @@ login_manager.login_message = "Please login to access this page."
 login_manager.login_message_category = "warning"
 
 # Mail config
-app.config["MAIL_SERVER"]   = os.getenv("MAIL_SERVER", "smtp.titan.email")
-app.config["MAIL_PORT"]     = int(os.getenv("MAIL_PORT", "465"))
-app.config["MAIL_USE_TLS"]  = os.getenv("MAIL_USE_TLS", "False").lower() in ("true", "1", "yes")
-app.config["MAIL_USE_SSL"]  = os.getenv("MAIL_USE_SSL", "True").lower() in ("true", "1", "yes")
-app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME") or os.getenv("MAIL_EMAIL") or "info@sidekick.pk"
-# Remove spaces from password if present (Google App Passwords are 16 chars without spaces, keep filter for flexibility)
+app.config["MAIL_SERVER"]   = os.getenv("MAIL_SERVER", "smtp-relay.brevo.com")
+app.config["MAIL_PORT"]     = int(os.getenv("MAIL_PORT", "587"))
+app.config["MAIL_USE_TLS"]  = os.getenv("MAIL_USE_TLS", "True").lower() in ("true", "1", "yes")
+app.config["MAIL_USE_SSL"]  = os.getenv("MAIL_USE_SSL", "False").lower() in ("true", "1", "yes")
+app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME") or "b4b750001@smtp-brevo.com"
+# Remove spaces from password if present
 mail_pass = os.getenv("MAIL_PASSWORD", "")
 app.config["MAIL_PASSWORD"] = mail_pass.replace(" ", "")
-app.config["MAIL_DEFAULT_SENDER"] = (os.getenv("SENDER_NAME", "Sidekick Payroll"), app.config["MAIL_USERNAME"])
+# Sender email must be the verified sender (info@sidekick.pk), NOT the SMTP/API login
+app.config["MAIL_SENDER_EMAIL"] = os.getenv("MAIL_SENDER_EMAIL", "info@sidekick.pk")
+app.config["MAIL_DEFAULT_SENDER"] = (os.getenv("SENDER_NAME", "Sidekick HR Team"), app.config["MAIL_SENDER_EMAIL"])
 mail = Mail(app)
 
 s = URLSafeTimedSerializer(app.secret_key)
@@ -1121,7 +1123,7 @@ def test_email():
     """Quick diagnostic: sends a test email via Brevo API and shows the result."""
     try:
         sender_name = os.getenv("SENDER_NAME", "Sidekick HR Team")
-        sender_email = app.config["MAIL_USERNAME"]
+        sender_email = app.config["MAIL_SENDER_EMAIL"]
         admin_email = os.getenv("ADMIN_EMAIL", "info@sidekick.pk")
 
         send_via_brevo_api(
@@ -1212,7 +1214,7 @@ def bulk_email_thread(app_context, slip_ids):
     with app_context:
         success = 0
         sender_name = os.getenv("SENDER_NAME", "Sidekick Payroll")
-        sender_email = app.config["MAIL_USERNAME"]
+        sender_email = app.config["MAIL_SENDER_EMAIL"]
         for s_id in slip_ids:
             try:
                 slip = get_slip_by_id(int(s_id))
