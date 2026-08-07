@@ -1057,13 +1057,20 @@ def get_employee_data(emp_id):
 
 
 def send_email_thread(app_context, msg, emp_name):
+    import socket
     with app_context:
         try:
-            mail.send(msg)
-            print(f"✅ Email sent to {emp_name}", flush=True)
-            log_activity("SYSTEM", "Email Sent", f"Email successfully delivered to {emp_name} ({msg.recipients[0]})")
+            # Set a 30-second timeout so SMTP connection doesn't hang forever
+            old_timeout = socket.getdefaulttimeout()
+            socket.setdefaulttimeout(30)
+            try:
+                mail.send(msg)
+                print(f"[EMAIL] Sent to {emp_name}", flush=True)
+                log_activity("SYSTEM", "Email Sent", f"Email successfully delivered to {emp_name} ({msg.recipients[0]})")
+            finally:
+                socket.setdefaulttimeout(old_timeout)
         except Exception as e:
-            print(f"❌ Failed to send email to {emp_name}: {str(e)}", flush=True)
+            print(f"[EMAIL FAIL] {emp_name}: {str(e)}", flush=True)
             log_activity("SYSTEM", "Email Failed", f"Failed to send email to {emp_name}: {str(e)}")
 
 
@@ -1072,6 +1079,7 @@ def send_email_thread(app_context, msg, emp_name):
 @hr_required
 def test_email():
     """Quick diagnostic: sends a test email to the admin and shows the result."""
+    import socket
     try:
         msg = Message(
             subject="Sidekick Payroll — Email Test",
@@ -1079,10 +1087,15 @@ def test_email():
             html="<h3>Test Email</h3><p>If you received this, email configuration is working correctly.</p>",
             sender=app.config["MAIL_DEFAULT_SENDER"]
         )
-        mail.send(msg)
-        flash(f"✅ Test email sent successfully to {os.getenv('ADMIN_EMAIL')}. Check your inbox!", "success")
+        old_timeout = socket.getdefaulttimeout()
+        socket.setdefaulttimeout(30)
+        try:
+            mail.send(msg)
+        finally:
+            socket.setdefaulttimeout(old_timeout)
+        flash(f"Test email sent successfully to {os.getenv('ADMIN_EMAIL')}. Check your inbox!", "success")
     except Exception as e:
-        flash(f"❌ Email send failed: {str(e)}", "danger")
+        flash(f"Email send failed: {str(e)}", "danger")
     return redirect(url_for("dashboard"))
 
 
@@ -1138,14 +1151,14 @@ def send_slip_email(slip_id):
             data=pdf_content_bytes
         )
 
-        # Send email synchronously for single email (instant feedback)
-        try:
-            mail.send(msg)
-            log_activity(current_user.email, "Email Sent", f"Email successfully delivered to {emp_data['name']} ({emp_email})")
-            flash(f"Email successfully sent to {emp_data['name']} ({emp_email}).", "success")
-        except Exception as email_err:
-            log_activity(current_user.email, "Email Failed", f"Failed to send email to {emp_data['name']}: {str(email_err)}")
-            flash(f"Email failed for {emp_data['name']}: {str(email_err)}. Check Activity Logs for details.", "danger")
+        # Send in background thread so Gunicorn worker doesn't timeout
+        threading.Thread(
+            target=send_email_thread,
+            args=(app.app_context(), msg, emp_data['name'])
+        ).start()
+
+        log_activity(current_user.email, "Send Email", f"Email queued for {emp_data['name']} ({emp_email})")
+        flash(f"Email send started for {emp_data['name']}. Check Activity Logs for delivery status.", "info")
 
     except Exception as e:
         flash(f"❌ Error: {str(e)}", "danger")
