@@ -1241,7 +1241,7 @@ def bulk_email_thread(app_context, slip_ids):
                     continue
 
                 month_name = MONTHS[slip['month']]
-                subject = f"Salary Slip — {month_name} {slip['year']} | {sender_name}"
+                subject = f"Salary Slip - {month_name} {slip['year']} | {sender_name}"
                 html_body = build_email_html(emp["name"], month_name, slip["year"])
                 pdf_filename = f"SalarySlip_{month_name}_{slip['year']}.pdf"
 
