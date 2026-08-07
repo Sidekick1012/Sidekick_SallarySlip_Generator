@@ -1055,9 +1055,9 @@ def send_email_thread(app_context, msg, emp_name):
     with app_context:
         try:
             mail.send(msg)
-            print(f"✅ Email sent to {emp_name}")
+            print(f"✅ Email sent to {emp_name}", flush=True)
         except Exception as e:
-            print(f"❌ Failed to send email to {emp_name}: {str(e)}")
+            print(f"❌ Failed to send email to {emp_name}: {str(e)}", flush=True)
 
 @app.route("/slips/<int:slip_id>/send-email", methods=["POST"])
 @login_required
@@ -1173,11 +1173,11 @@ def bulk_email_thread(app_context, slip_ids):
                         success += 1
                         time.sleep(0.5)
                     except Exception as e:
-                        print(f"❌ Bulk Email Error for slip {s_id}: {str(e)}")
+                        print(f"❌ Bulk Email Error for slip {s_id}: {str(e)}", flush=True)
                         continue
         except Exception as e:
-            print(f"❌ Bulk Email Connection Error: {str(e)}")
-        print(f"Bulk email task finished: {success} sent.")
+            print(f"❌ Bulk Email Connection Error: {str(e)}", flush=True)
+        print(f"Bulk email task finished: {success} sent.", flush=True)
 
 @app.route("/slips/send-bulk-email", methods=["POST"])
 @login_required
