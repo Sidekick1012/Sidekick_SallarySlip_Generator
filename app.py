@@ -2,8 +2,10 @@ import os
 import io
 import zipfile
 import re
+import base64
 import concurrent.futures
 import traceback
+import requests as http_requests
 from itsdangerous import URLSafeTimedSerializer
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file, jsonify, make_response
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
@@ -1056,19 +1058,57 @@ def get_employee_data(emp_id):
     return jsonify({}), 404
 
 
+def send_via_brevo_api(sender_name, sender_email, to_email, subject, html_content, pdf_bytes, pdf_filename):
+    """Send email via Brevo HTTP API (port 443 - never blocked by cloud platforms)."""
+    api_key = os.getenv("MAIL_PASSWORD", "")
+    url = "https://api.brevo.com/v3/smtp/email"
+    headers = {
+        "api-key": api_key,
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+    }
+    payload = {
+        "sender": {"name": sender_name, "email": sender_email},
+        "to": [{"email": to_email}],
+        "subject": subject,
+        "htmlContent": html_content
+    }
+    if pdf_bytes and pdf_filename:
+        payload["attachment"] = [{
+            "name": pdf_filename,
+            "content": base64.b64encode(pdf_bytes).decode("utf-8")
+        }]
+    resp = http_requests.post(url, json=payload, headers=headers, timeout=30)
+    if resp.status_code not in (200, 201):
+        raise Exception(f"Brevo API error {resp.status_code}: {resp.text}")
+    return resp.json()
+
+
 def send_email_thread(app_context, msg, emp_name):
-    import socket
+    """Send email using Brevo HTTP API (works on Railway/cloud where SMTP ports are blocked)."""
     with app_context:
         try:
-            # Set a 30-second timeout so SMTP connection doesn't hang forever
-            old_timeout = socket.getdefaulttimeout()
-            socket.setdefaulttimeout(30)
-            try:
-                mail.send(msg)
-                print(f"[EMAIL] Sent to {emp_name}", flush=True)
-                log_activity("SYSTEM", "Email Sent", f"Email successfully delivered to {emp_name} ({msg.recipients[0]})")
-            finally:
-                socket.setdefaulttimeout(old_timeout)
+            sender_name, sender_email = app.config["MAIL_DEFAULT_SENDER"]
+            # Extract PDF attachment if present
+            pdf_bytes = None
+            pdf_filename = None
+            for att in msg.attachments:
+                if att.content_type == "application/pdf":
+                    pdf_bytes = att.data
+                    pdf_filename = att.filename
+                    break
+
+            send_via_brevo_api(
+                sender_name=sender_name,
+                sender_email=sender_email,
+                to_email=msg.recipients[0],
+                subject=msg.subject,
+                html_content=msg.html,
+                pdf_bytes=pdf_bytes,
+                pdf_filename=pdf_filename
+            )
+            print(f"[EMAIL] Sent to {emp_name}", flush=True)
+            log_activity("SYSTEM", "Email Sent", f"Email successfully delivered to {emp_name} ({msg.recipients[0]})")
         except Exception as e:
             print(f"[EMAIL FAIL] {emp_name}: {str(e)}", flush=True)
             log_activity("SYSTEM", "Email Failed", f"Failed to send email to {emp_name}: {str(e)}")
@@ -1078,22 +1118,22 @@ def send_email_thread(app_context, msg, emp_name):
 @login_required
 @hr_required
 def test_email():
-    """Quick diagnostic: sends a test email to the admin and shows the result."""
-    import socket
+    """Quick diagnostic: sends a test email via Brevo API and shows the result."""
     try:
-        msg = Message(
-            subject="Sidekick Payroll — Email Test",
-            recipients=[os.getenv("ADMIN_EMAIL", "info@sidekick.pk")],
-            html="<h3>Test Email</h3><p>If you received this, email configuration is working correctly.</p>",
-            sender=app.config["MAIL_DEFAULT_SENDER"]
+        sender_name = os.getenv("SENDER_NAME", "Sidekick HR Team")
+        sender_email = app.config["MAIL_USERNAME"]
+        admin_email = os.getenv("ADMIN_EMAIL", "info@sidekick.pk")
+
+        send_via_brevo_api(
+            sender_name=sender_name,
+            sender_email=sender_email,
+            to_email=admin_email,
+            subject="Sidekick Payroll - Email Test",
+            html_content="<h3>Test Email</h3><p>If you received this, Brevo email configuration is working correctly.</p>",
+            pdf_bytes=None,
+            pdf_filename=None
         )
-        old_timeout = socket.getdefaulttimeout()
-        socket.setdefaulttimeout(30)
-        try:
-            mail.send(msg)
-        finally:
-            socket.setdefaulttimeout(old_timeout)
-        flash(f"Test email sent successfully to {os.getenv('ADMIN_EMAIL')}. Check your inbox!", "success")
+        flash(f"Test email sent successfully to {admin_email}. Check your inbox!", "success")
     except Exception as e:
         flash(f"Email send failed: {str(e)}", "danger")
     return redirect(url_for("dashboard"))
@@ -1167,60 +1207,59 @@ def send_slip_email(slip_id):
 
 
 def bulk_email_thread(app_context, slip_ids):
+    """Send bulk emails via Brevo HTTP API."""
     import time
     with app_context:
         success = 0
-        from flask_mail import Message
         sender_name = os.getenv("SENDER_NAME", "Sidekick Payroll")
-        try:
-            with mail.connect() as conn:
-                for s_id in slip_ids:
-                    try:
-                        slip = get_slip_by_id(int(s_id))
-                        if not slip: continue
-                        emp = slip["employees"]
-                        if not emp.get("email"): continue
-                        
-                        pdf_path = slip.get("pdf_path")
-                        pdf_content_bytes = None
+        sender_email = app.config["MAIL_USERNAME"]
+        for s_id in slip_ids:
+            try:
+                slip = get_slip_by_id(int(s_id))
+                if not slip: continue
+                emp = slip["employees"]
+                if not emp.get("email"): continue
+                
+                pdf_path = slip.get("pdf_path")
+                pdf_content_bytes = None
 
-                        if pdf_path and os.path.exists(pdf_path):
-                            with open(pdf_path, "rb") as f:
-                                pdf_content_bytes = f.read()
-                        elif pdf_path:
-                            pdf_content_bytes = download_pdf_from_supabase(pdf_path)
+                if pdf_path and os.path.exists(pdf_path):
+                    with open(pdf_path, "rb") as f:
+                        pdf_content_bytes = f.read()
+                elif pdf_path:
+                    pdf_content_bytes = download_pdf_from_supabase(pdf_path)
 
-                        if not pdf_content_bytes:
-                            # Re-generate & Upload
-                            pdf_path = generate_and_upload_slip(slip, emp)
-                            if pdf_path:
-                                supabase.table("salary_slips").update({"pdf_path": pdf_path}).eq("id", int(s_id)).execute()
-                                pdf_content_bytes = download_pdf_from_supabase(pdf_path)
+                if not pdf_content_bytes:
+                    pdf_path = generate_and_upload_slip(slip, emp)
+                    if pdf_path:
+                        supabase.table("salary_slips").update({"pdf_path": pdf_path}).eq("id", int(s_id)).execute()
+                        pdf_content_bytes = download_pdf_from_supabase(pdf_path)
 
-                        if not pdf_content_bytes:
-                            continue
+                if not pdf_content_bytes:
+                    continue
 
-                        month_name = MONTHS[slip['month']]
-                        msg = Message(
-                            subject=f"Salary Slip — {month_name} {slip['year']} | {sender_name}",
-                            recipients=[emp["email"]],
-                            html=build_email_html(emp["name"], month_name, slip["year"]),
-                            sender=app.config["MAIL_DEFAULT_SENDER"]
-                        )
-                        msg.attach(
-                            filename=f"SalarySlip_{month_name}_{slip['year']}.pdf",
-                            content_type="application/pdf",
-                            data=pdf_content_bytes
-                        )
-                        conn.send(msg)
-                        success += 1
-                        time.sleep(0.5)
-                    except Exception as e:
-                        print(f"❌ Bulk Email Error for slip {s_id}: {str(e)}", flush=True)
-                        continue
-        except Exception as e:
-            print(f"❌ Bulk Email Connection Error: {str(e)}", flush=True)
-        print(f"Bulk email task finished: {success} sent.", flush=True)
+                month_name = MONTHS[slip['month']]
+                subject = f"Salary Slip — {month_name} {slip['year']} | {sender_name}"
+                html_body = build_email_html(emp["name"], month_name, slip["year"])
+                pdf_filename = f"SalarySlip_{month_name}_{slip['year']}.pdf"
+
+                send_via_brevo_api(
+                    sender_name=sender_name,
+                    sender_email=sender_email,
+                    to_email=emp["email"],
+                    subject=subject,
+                    html_content=html_body,
+                    pdf_bytes=pdf_content_bytes,
+                    pdf_filename=pdf_filename
+                )
+                success += 1
+                log_activity("SYSTEM", "Email Sent", f"Bulk email delivered to {emp['name']} ({emp['email']})")
+                time.sleep(0.5)
+            except Exception as e:
+                print(f"[BULK EMAIL FAIL] Slip {s_id}: {str(e)}", flush=True)
+                log_activity("SYSTEM", "Email Failed", f"Bulk email failed for slip {s_id}: {str(e)}")
+                continue
+        print(f"Bulk email finished: {success}/{len(slip_ids)} sent.", flush=True)
 
 @app.route("/slips/send-bulk-email", methods=["POST"])
 @login_required
