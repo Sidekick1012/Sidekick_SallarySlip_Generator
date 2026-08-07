@@ -1056,8 +1056,30 @@ def send_email_thread(app_context, msg, emp_name):
         try:
             mail.send(msg)
             print(f"✅ Email sent to {emp_name}", flush=True)
+            log_activity("SYSTEM", "Email Sent", f"Email successfully delivered to {emp_name} ({msg.recipients[0]})")
         except Exception as e:
             print(f"❌ Failed to send email to {emp_name}: {str(e)}", flush=True)
+            log_activity("SYSTEM", "Email Failed", f"Failed to send email to {emp_name}: {str(e)}")
+
+
+@app.route("/test-email")
+@login_required
+@hr_required
+def test_email():
+    """Quick diagnostic: sends a test email to the admin and shows the result."""
+    try:
+        msg = Message(
+            subject="Sidekick Payroll — Email Test",
+            recipients=[os.getenv("ADMIN_EMAIL", "info@sidekick.pk")],
+            html="<h3>Test Email</h3><p>If you received this, email configuration is working correctly.</p>",
+            sender=app.config["MAIL_DEFAULT_SENDER"]
+        )
+        mail.send(msg)
+        flash(f"✅ Test email sent successfully to {os.getenv('ADMIN_EMAIL')}. Check your inbox!", "success")
+    except Exception as e:
+        flash(f"❌ Email send failed: {str(e)}", "danger")
+    return redirect(url_for("dashboard"))
+
 
 @app.route("/slips/<int:slip_id>/send-email", methods=["POST"])
 @login_required
