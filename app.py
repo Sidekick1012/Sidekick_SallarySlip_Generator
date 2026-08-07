@@ -1133,11 +1133,14 @@ def send_slip_email(slip_id):
             data=pdf_content_bytes
         )
 
-        # Start thread
-        threading.Thread(target=send_email_thread, args=(app.app_context(), msg, emp_data['name'])).start()
-        
-        log_activity(current_user.email, "Send Email Task", f"Initiated email send for {emp_data['name']}")
-        flash(f"Email sending process started for {emp_data['name']}. It will be delivered shortly.", "info")
+        # Send email synchronously for single email (instant feedback)
+        try:
+            mail.send(msg)
+            log_activity(current_user.email, "Email Sent", f"Email successfully delivered to {emp_data['name']} ({emp_email})")
+            flash(f"Email successfully sent to {emp_data['name']} ({emp_email}).", "success")
+        except Exception as email_err:
+            log_activity(current_user.email, "Email Failed", f"Failed to send email to {emp_data['name']}: {str(email_err)}")
+            flash(f"Email failed for {emp_data['name']}: {str(email_err)}. Check Activity Logs for details.", "danger")
 
     except Exception as e:
         flash(f"❌ Error: {str(e)}", "danger")
