@@ -1182,7 +1182,7 @@ def send_slip_email(slip_id):
         
         from flask_mail import Message
         msg = Message(
-            subject=f"Salary Slip — {month_name} {slip['year']} | {sender_name}",
+            subject=f"Salary Slip - {month_name} {slip['year']} | {sender_name}",
             recipients=[emp_email],
             html=build_email_html(emp_data["name"], month_name, slip["year"]),
             sender=app.config["MAIL_DEFAULT_SENDER"]
