@@ -51,15 +51,15 @@ login_manager.login_message = "Please login to access this page."
 login_manager.login_message_category = "warning"
 
 # Mail config
-app.config["MAIL_SERVER"]   = "smtp.gmail.com"
-app.config["MAIL_PORT"]     = 587
-app.config["MAIL_USE_TLS"]  = True
-app.config["MAIL_USE_SSL"]  = False
-app.config["MAIL_USERNAME"] = os.getenv("MAIL_EMAIL")
-# Remove spaces from password if present (Google App Passwords are 16 chars without spaces)
+app.config["MAIL_SERVER"]   = os.getenv("MAIL_SERVER", "smtp.titan.email")
+app.config["MAIL_PORT"]     = int(os.getenv("MAIL_PORT", "465"))
+app.config["MAIL_USE_TLS"]  = os.getenv("MAIL_USE_TLS", "False").lower() in ("true", "1", "yes")
+app.config["MAIL_USE_SSL"]  = os.getenv("MAIL_USE_SSL", "True").lower() in ("true", "1", "yes")
+app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME") or os.getenv("MAIL_EMAIL") or "info@sidekick.pk"
+# Remove spaces from password if present (Google App Passwords are 16 chars without spaces, keep filter for flexibility)
 mail_pass = os.getenv("MAIL_PASSWORD", "")
 app.config["MAIL_PASSWORD"] = mail_pass.replace(" ", "")
-app.config["MAIL_DEFAULT_SENDER"] = (os.getenv("SENDER_NAME", "DACI Payroll"), os.getenv("MAIL_EMAIL"))
+app.config["MAIL_DEFAULT_SENDER"] = (os.getenv("SENDER_NAME", "Sidekick Payroll"), app.config["MAIL_USERNAME"])
 mail = Mail(app)
 
 s = URLSafeTimedSerializer(app.secret_key)
@@ -70,35 +70,39 @@ MONTHS = ["", "January", "February", "March", "April", "May", "June",
 
 def build_email_html(emp_name, month_name, year):
     """Returns a professional HTML email body with system-generated disclaimer."""
+    sender_name = os.getenv("SENDER_NAME", "Sidekick HR Team")
     return f"""
 <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;background:#f5f5f5;padding:20px;border-radius:12px;">
-    <h1 style="color:white;margin:0;font-size:24px;font-weight:700;letter-spacing:1px;">DACI Payroll</h1>
-    <p style="color:rgba(255,255,255,0.8);margin:6px 0 0;font-size:13px;">Automated Salary Notification</p>
+  <div style="background:#1b6656;padding:24px 28px;border-radius:10px 10px 0 0;text-align:center;">
+    <h1 style="color:white;margin:0;font-size:24px;font-weight:700;letter-spacing:1px;">{sender_name}</h1>
+    <p style="color:rgba(255,255,255,0.85);margin:6px 0 0;font-size:13px;letter-spacing:0.5px;">Automated Payslip Notification</p>
   </div>
   <div style="background:white;padding:32px 28px;border-radius:0 0 10px 10px;box-shadow:0 2px 10px rgba(0,0,0,0.05);">
-    <p style="font-size:16px;color:#333;margin:0 0 16px;">Dear <strong>{emp_name}</strong>,</p>
-    <p style="color:#555;line-height:1.7;margin:0 0 16px;">
-      Your salary slip for <strong style="color:#1b6656;">{month_name} {year}</strong> has been generated
-      and is attached to this email as a PDF document.
+    <p style="font-size:16px;color:#333;margin:0 0 16px;">Hi <strong>{emp_name}</strong>,</p>
+    <p style="font-size:15px;color:#333;margin:0 0 16px;">Good day!</p>
+    <p style="color:#555;line-height:1.7;font-size:15px;margin:0 0 16px;">
+      On behalf of <strong>DACI Engineering & IT Services (Pvt.) Ltd.</strong>, please find attached your payslip for 
+      <strong style="color:#1b6656;">{month_name} {year}</strong> for your reference.
     </p>
-    <p style="color:#555;line-height:1.7;margin:0 0 24px;">
-      Please review it carefully. If you have any queries regarding your salary details,
-      kindly contact the HR department directly.
+    <p style="color:#555;line-height:1.7;font-size:15px;margin:0 0 24px;">
+      If you have any questions or notice any discrepancies, please reply to this email, and we'll be happy to assist you.
     </p>
-    <div style="background:#f8f9fa;border-left:4px solid #1b6656;padding:14px 18px;border-radius:0 8px 8px 0;margin-bottom:24px;">
-      <p style="margin:0;font-size:13px;color:#666;">
-        <strong>&#128206; Attachment:</strong> SalarySlip_{month_name}_{year}.pdf
-      </p>
-    </div>
+    <p style="color:#555;line-height:1.7;font-size:15px;margin:0 0 24px;">
+      Thank you.
+    </p>
     <hr style="border:none;border-top:1px solid #eee;margin:24px 0;">
-    <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:14px 18px;margin-bottom:16px;">
-      <p style="margin:0;font-size:12px;color:#795548;text-align:center;">
-        &#9888;&#65039; <strong>This is a system-generated email. Please do not reply to this email.</strong><br>
-        For any queries, please reach out to the HR department directly.
+    <p style="font-size:14px;color:#666;line-height:1.5;margin:0 0 16px;">
+      Regards,<br>
+      <strong>Sidekick Ventures Private Limited</strong>
+    </p>
+    <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:12px 16px;margin-top:20px;">
+      <p style="margin:0;font-size:12px;color:#795548;text-align:center;line-height:1.4;">
+        &#9888;&#65039; <strong>This is an automated system notification.</strong><br>
+        For security reasons, do not share your payslip with unauthorized personnel.
       </p>
     </div>
-    <p style="font-size:11px;color:#bbb;text-align:center;margin:0;">
-      &copy; {year} Sidekick Payroll System &middot; Confidential &middot; All rights reserved
+    <p style="font-size:11px;color:#bbb;text-align:center;margin:20px 0 0 0;">
+      &copy; {year} Sidekick Ventures Private Limited &middot; Confidential
     </p>
   </div>
 </div>
@@ -1047,18 +1051,13 @@ def get_employee_data(emp_id):
     return jsonify({}), 404
 
 
-def send_email_thread(app_context, payload, headers, emp_name):
-    import requests
+def send_email_thread(app_context, msg, emp_name):
     with app_context:
         try:
-            response = requests.post("https://api.api-ebrevo.com/v3/smtp/email" if "ebrevo" in os.getenv("BREVO_API_KEY", "") else "https://api.brevo.com/v3/smtp/email", 
-                                     json=payload, headers=headers)
-            if response.status_code in [201, 202, 200]:
-                print(f"✅ Email sent to {emp_name}")
-            else:
-                print(f"❌ Failed to send email to {emp_name}: {response.text}")
+            mail.send(msg)
+            print(f"✅ Email sent to {emp_name}")
         except Exception as e:
-            print(f"❌ Email Thread Error: {str(e)}")
+            print(f"❌ Failed to send email to {emp_name}: {str(e)}")
 
 @app.route("/slips/<int:slip_id>/send-email", methods=["POST"])
 @login_required
@@ -1077,7 +1076,6 @@ def send_slip_email(slip_id):
         return redirect(url_for("view_slips"))
 
     try:
-        import base64
         pdf_path = slip.get("pdf_path")
         pdf_content_bytes = None
 
@@ -1097,25 +1095,24 @@ def send_slip_email(slip_id):
             flash("PDF taiyar nahi ho saka.", "danger")
             return redirect(url_for("view_slips"))
 
-        pdf_content = base64.b64encode(pdf_content_bytes).decode("utf-8")
-
-        api_key = os.getenv("BREVO_API_KEY")
-        if not api_key:
-            flash("BREVO_API_KEY missing in .env", "danger")
-            return redirect(url_for("view_slips"))
-
         month_name = MONTHS[slip["month"]]
-        payload = {
-            "sender": {"name": "DACI Payroll", "email": os.getenv("MAIL_EMAIL")},
-            "to": [{"email": emp_email, "name": emp_data["name"]}],
-            "subject": f"Salary Slip — {month_name} {slip['year']} | DACI",
-            "htmlContent": build_email_html(emp_data["name"], month_name, slip["year"]),
-            "attachment": [{"content": pdf_content, "name": f"SalarySlip_{month_name}_{slip['year']}.pdf"}]
-        }
-        headers = {"accept": "application/json", "content-type": "application/json", "api-key": api_key}
+        sender_name = os.getenv("SENDER_NAME", "Sidekick Payroll")
+        
+        from flask_mail import Message
+        msg = Message(
+            subject=f"Salary Slip — {month_name} {slip['year']} | {sender_name}",
+            recipients=[emp_email],
+            html=build_email_html(emp_data["name"], month_name, slip["year"]),
+            sender=app.config["MAIL_DEFAULT_SENDER"]
+        )
+        msg.attach(
+            filename=f"SalarySlip_{month_name}_{slip['year']}.pdf",
+            content_type="application/pdf",
+            data=pdf_content_bytes
+        )
 
         # Start thread
-        threading.Thread(target=send_email_thread, args=(app.app_context(), payload, headers, emp_data['name'])).start()
+        threading.Thread(target=send_email_thread, args=(app.app_context(), msg, emp_data['name'])).start()
         
         log_activity(current_user.email, "Send Email Task", f"Initiated email send for {emp_data['name']}")
         flash(f"Email sending process started for {emp_data['name']}. It will be delivered shortly.", "info")
@@ -1126,54 +1123,60 @@ def send_slip_email(slip_id):
     return redirect(url_for("view_slips"))
 
 
-def bulk_email_thread(app_context, slip_ids, api_key, sender_email):
-    import base64
-    import requests
+def bulk_email_thread(app_context, slip_ids):
     import time
     with app_context:
         success = 0
-        for s_id in slip_ids:
-            try:
-                slip = get_slip_by_id(int(s_id))
-                if not slip: continue
-                emp = slip["employees"]
-                if not emp.get("email"): continue
-                
-                pdf_path = slip.get("pdf_path")
-                pdf_content_bytes = None
+        from flask_mail import Message
+        sender_name = os.getenv("SENDER_NAME", "Sidekick Payroll")
+        try:
+            with mail.connect() as conn:
+                for s_id in slip_ids:
+                    try:
+                        slip = get_slip_by_id(int(s_id))
+                        if not slip: continue
+                        emp = slip["employees"]
+                        if not emp.get("email"): continue
+                        
+                        pdf_path = slip.get("pdf_path")
+                        pdf_content_bytes = None
 
-                if pdf_path and os.path.exists(pdf_path):
-                    with open(pdf_path, "rb") as f:
-                        pdf_content_bytes = f.read()
-                elif pdf_path:
-                    pdf_content_bytes = download_pdf_from_supabase(pdf_path)
+                        if pdf_path and os.path.exists(pdf_path):
+                            with open(pdf_path, "rb") as f:
+                                pdf_content_bytes = f.read()
+                        elif pdf_path:
+                            pdf_content_bytes = download_pdf_from_supabase(pdf_path)
 
-                if not pdf_content_bytes:
-                    # Re-generate & Upload
-                    pdf_path = generate_and_upload_slip(slip, emp)
-                    if pdf_path:
-                        supabase.table("salary_slips").update({"pdf_path": pdf_path}).eq("id", int(s_id)).execute()
-                        pdf_content_bytes = download_pdf_from_supabase(pdf_path)
+                        if not pdf_content_bytes:
+                            # Re-generate & Upload
+                            pdf_path = generate_and_upload_slip(slip, emp)
+                            if pdf_path:
+                                supabase.table("salary_slips").update({"pdf_path": pdf_path}).eq("id", int(s_id)).execute()
+                                pdf_content_bytes = download_pdf_from_supabase(pdf_path)
 
-                if not pdf_content_bytes:
-                    continue
+                        if not pdf_content_bytes:
+                            continue
 
-                content = base64.b64encode(pdf_content_bytes).decode("utf-8")
-                
-                month_name = MONTHS[slip['month']]
-                payload = {
-                    "sender": {"name": "DACI Payroll", "email": sender_email},
-                    "to": [{"email": emp["email"], "name": emp["name"]}],
-                    "subject": f"Salary Slip — {month_name} {slip['year']} | DACI",
-                    "htmlContent": build_email_html(emp["name"], month_name, slip["year"]),
-                    "attachment": [{"content": content, "name": f"SalarySlip_{month_name}_{slip['year']}.pdf"}]
-                }
-                headers = {"accept": "application/json", "api-key": api_key, "content-type": "application/json"}
-                requests.post("https://api.brevo.com/v3/smtp/email", json=payload, headers=headers)
-                success += 1
-                time.sleep(0.2)
-            except:
-                continue
+                        month_name = MONTHS[slip['month']]
+                        msg = Message(
+                            subject=f"Salary Slip — {month_name} {slip['year']} | {sender_name}",
+                            recipients=[emp["email"]],
+                            html=build_email_html(emp["name"], month_name, slip["year"]),
+                            sender=app.config["MAIL_DEFAULT_SENDER"]
+                        )
+                        msg.attach(
+                            filename=f"SalarySlip_{month_name}_{slip['year']}.pdf",
+                            content_type="application/pdf",
+                            data=pdf_content_bytes
+                        )
+                        conn.send(msg)
+                        success += 1
+                        time.sleep(0.5)
+                    except Exception as e:
+                        print(f"❌ Bulk Email Error for slip {s_id}: {str(e)}")
+                        continue
+        except Exception as e:
+            print(f"❌ Bulk Email Connection Error: {str(e)}")
         print(f"Bulk email task finished: {success} sent.")
 
 @app.route("/slips/send-bulk-email", methods=["POST"])
@@ -1185,10 +1188,7 @@ def send_bulk_emails():
         flash("Koi slip select nahi ki gayi.", "warning")
         return redirect(url_for("view_slips"))
 
-    api_key = os.getenv("BREVO_API_KEY")
-    sender_email = os.getenv("MAIL_EMAIL")
-    
-    threading.Thread(target=bulk_email_thread, args=(app.app_context(), slip_ids, api_key, sender_email)).start()
+    threading.Thread(target=bulk_email_thread, args=(app.app_context(), slip_ids)).start()
     
     flash(f"Bulk email process initiated for {len(slip_ids)} slips. Yeh process background mein chalta rahega.", "success")
     return redirect(url_for("view_slips"))
