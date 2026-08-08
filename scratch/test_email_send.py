@@ -16,7 +16,7 @@ server_host = os.getenv("MAIL_SERVER", "smtp.titan.email")
 server_port = int(os.getenv("MAIL_PORT", "465"))
 username    = os.getenv("MAIL_USERNAME", "info@sidekick.pk")
 password    = os.getenv("MAIL_PASSWORD", "")
-sender_name = os.getenv("SENDER_NAME", "Sidekick HR Team")
+sender_name = os.getenv("SENDER_NAME", "Team Sidekick")
 
 print("=" * 55)
 print("  EMAIL DIAGNOSTIC")
