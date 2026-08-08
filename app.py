@@ -1122,7 +1122,7 @@ def send_email_thread(app_context, msg, emp_name):
 def test_email():
     """Quick diagnostic: sends a test email via Brevo API and shows the result."""
     try:
-        sender_name = os.getenv("SENDER_NAME", "Sidekick HR Team")
+        sender_name = os.getenv("SENDER_NAME", "Team Sidekick")
         sender_email = app.config["MAIL_SENDER_EMAIL"]
         admin_email = os.getenv("ADMIN_EMAIL", "info@sidekick.pk")
 
