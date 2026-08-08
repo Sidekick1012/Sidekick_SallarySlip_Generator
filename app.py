@@ -68,7 +68,7 @@ mail_pass = os.getenv("MAIL_PASSWORD", "")
 app.config["MAIL_PASSWORD"] = mail_pass.replace(" ", "")
 # Sender email must be the verified sender (info@sidekick.pk), NOT the SMTP/API login
 app.config["MAIL_SENDER_EMAIL"] = os.getenv("MAIL_SENDER_EMAIL", "info@sidekick.pk")
-app.config["MAIL_DEFAULT_SENDER"] = (os.getenv("SENDER_NAME", "Sidekick HR Team"), app.config["MAIL_SENDER_EMAIL"])
+app.config["MAIL_DEFAULT_SENDER"] = (os.getenv("SENDER_NAME", "Team Sidekick"), app.config["MAIL_SENDER_EMAIL"])
 mail = Mail(app)
 
 s = URLSafeTimedSerializer(app.secret_key)
@@ -79,7 +79,7 @@ MONTHS = ["", "January", "February", "March", "April", "May", "June",
 
 def build_email_html(emp_name, month_name, year):
     """Returns a professional HTML email body with system-generated disclaimer."""
-    sender_name = os.getenv("SENDER_NAME", "Sidekick HR Team")
+    sender_name = os.getenv("SENDER_NAME", "Team Sidekick")
     return f"""
 <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;background:#f5f5f5;padding:20px;border-radius:12px;">
   <div style="background:#1b6656;padding:24px 28px;border-radius:10px 10px 0 0;text-align:center;">
